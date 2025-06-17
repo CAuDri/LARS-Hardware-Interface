@@ -1,7 +1,7 @@
 (kicad_sch
-	(version 20231120)
+	(version 20250114)
 	(generator "eeschema")
-	(generator_version "8.0")
+	(generator_version "9.0")
 	(uuid "99e36605-78be-47ea-8e3e-ba8190061b6a")
 	(paper "A4")
 	(title_block
@@ -16,9 +16,13 @@
 	)
 	(lib_symbols
 		(symbol "LARS_Hardware_Interface:C_Small"
-			(pin_numbers hide)
+			(pin_numbers
+				(hide yes)
+			)
 			(pin_names
-				(offset 0.254) hide)
+				(offset 0.254)
+				(hide yes)
+			)
 			(exclude_from_sim no)
 			(in_bom yes)
 			(on_board yes)
@@ -88,10 +92,10 @@
 			(symbol "C_Small_0_1"
 				(polyline
 					(pts
-						(xy -1.524 -0.508) (xy 1.524 -0.508)
+						(xy -1.524 0.508) (xy 1.524 0.508)
 					)
 					(stroke
-						(width 0.3302)
+						(width 0.3048)
 						(type default)
 					)
 					(fill
@@ -100,10 +104,10 @@
 				)
 				(polyline
 					(pts
-						(xy -1.524 0.508) (xy 1.524 0.508)
+						(xy -1.524 -0.508) (xy 1.524 -0.508)
 					)
 					(stroke
-						(width 0.3048)
+						(width 0.3302)
 						(type default)
 					)
 					(fill
@@ -149,10 +153,13 @@
 					)
 				)
 			)
+			(embedded_fonts no)
 		)
 		(symbol "LARS_Hardware_Interface:Connector 1x2"
 			(pin_names
-				(offset 1.016) hide)
+				(offset 1.016)
+				(hide yes)
+			)
 			(exclude_from_sim no)
 			(in_bom yes)
 			(on_board yes)
@@ -219,14 +226,14 @@
 			)
 			(symbol "Connector 1x2_1_1"
 				(rectangle
-					(start -1.27 -2.413)
-					(end 0 -2.667)
+					(start -1.27 1.27)
+					(end 1.27 -3.81)
 					(stroke
-						(width 0.1524)
+						(width 0.254)
 						(type default)
 					)
 					(fill
-						(type none)
+						(type background)
 					)
 				)
 				(rectangle
@@ -241,14 +248,14 @@
 					)
 				)
 				(rectangle
-					(start -1.27 1.27)
-					(end 1.27 -3.81)
+					(start -1.27 -2.413)
+					(end 0 -2.667)
 					(stroke
-						(width 0.254)
+						(width 0.1524)
 						(type default)
 					)
 					(fill
-						(type background)
+						(type none)
 					)
 				)
 				(pin passive line
@@ -288,10 +295,13 @@
 					)
 				)
 			)
+			(embedded_fonts no)
 		)
 		(symbol "LARS_Hardware_Interface:Connector 1x4"
 			(pin_names
-				(offset 1.016) hide)
+				(offset 1.016)
+				(hide yes)
+			)
 			(exclude_from_sim no)
 			(in_bom yes)
 			(on_board yes)
@@ -358,19 +368,19 @@
 			)
 			(symbol "Connector 1x4_1_1"
 				(rectangle
-					(start -1.27 -4.953)
-					(end 0 -5.207)
+					(start -1.27 3.81)
+					(end 1.27 -6.35)
 					(stroke
-						(width 0.1524)
+						(width 0.254)
 						(type default)
 					)
 					(fill
-						(type none)
+						(type background)
 					)
 				)
 				(rectangle
-					(start -1.27 -2.413)
-					(end 0 -2.667)
+					(start -1.27 2.667)
+					(end 0 2.413)
 					(stroke
 						(width 0.1524)
 						(type default)
@@ -391,8 +401,8 @@
 					)
 				)
 				(rectangle
-					(start -1.27 2.667)
-					(end 0 2.413)
+					(start -1.27 -2.413)
+					(end 0 -2.667)
 					(stroke
 						(width 0.1524)
 						(type default)
@@ -402,14 +412,14 @@
 					)
 				)
 				(rectangle
-					(start -1.27 3.81)
-					(end 1.27 -6.35)
+					(start -1.27 -4.953)
+					(end 0 -5.207)
 					(stroke
-						(width 0.254)
+						(width 0.1524)
 						(type default)
 					)
 					(fill
-						(type background)
+						(type none)
 					)
 				)
 				(pin passive line
@@ -485,10 +495,13 @@
 					)
 				)
 			)
+			(embedded_fonts no)
 		)
 		(symbol "LARS_Hardware_Interface:Connector 1x5"
 			(pin_names
-				(offset 1.016) hide)
+				(offset 1.016)
+				(hide yes)
+			)
 			(exclude_from_sim no)
 			(in_bom yes)
 			(on_board yes)
@@ -555,30 +568,19 @@
 			)
 			(symbol "Connector 1x5_1_1"
 				(rectangle
-					(start -1.27 -4.953)
-					(end 0 -5.207)
+					(start -1.27 6.35)
+					(end 1.27 -6.35)
 					(stroke
-						(width 0.1524)
+						(width 0.254)
 						(type default)
 					)
 					(fill
-						(type none)
+						(type background)
 					)
 				)
 				(rectangle
-					(start -1.27 -2.413)
-					(end 0 -2.667)
-					(stroke
-						(width 0.1524)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(rectangle
-					(start -1.27 0.127)
-					(end 0 -0.127)
+					(start -1.27 5.207)
+					(end 0 4.953)
 					(stroke
 						(width 0.1524)
 						(type default)
@@ -599,8 +601,8 @@
 					)
 				)
 				(rectangle
-					(start -1.27 5.207)
-					(end 0 4.953)
+					(start -1.27 0.127)
+					(end 0 -0.127)
 					(stroke
 						(width 0.1524)
 						(type default)
@@ -610,14 +612,25 @@
 					)
 				)
 				(rectangle
-					(start -1.27 6.35)
-					(end 1.27 -6.35)
+					(start -1.27 -2.413)
+					(end 0 -2.667)
 					(stroke
-						(width 0.254)
+						(width 0.1524)
 						(type default)
 					)
 					(fill
-						(type background)
+						(type none)
+					)
+				)
+				(rectangle
+					(start -1.27 -4.953)
+					(end 0 -5.207)
+					(stroke
+						(width 0.1524)
+						(type default)
+					)
+					(fill
+						(type none)
 					)
 				)
 				(pin passive line
@@ -711,10 +724,13 @@
 					)
 				)
 			)
+			(embedded_fonts no)
 		)
 		(symbol "LARS_Hardware_Interface:Connector 1x6"
 			(pin_names
-				(offset 1.016) hide)
+				(offset 1.016)
+				(hide yes)
+			)
 			(exclude_from_sim no)
 			(in_bom yes)
 			(on_board yes)
@@ -781,41 +797,19 @@
 			)
 			(symbol "Connector 1x6_1_1"
 				(rectangle
-					(start -1.27 -7.493)
-					(end 0 -7.747)
+					(start -1.27 6.35)
+					(end 1.27 -8.89)
 					(stroke
-						(width 0.1524)
+						(width 0.254)
 						(type default)
 					)
 					(fill
-						(type none)
+						(type background)
 					)
 				)
 				(rectangle
-					(start -1.27 -4.953)
-					(end 0 -5.207)
-					(stroke
-						(width 0.1524)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(rectangle
-					(start -1.27 -2.413)
-					(end 0 -2.667)
-					(stroke
-						(width 0.1524)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(rectangle
-					(start -1.27 0.127)
-					(end 0 -0.127)
+					(start -1.27 5.207)
+					(end 0 4.953)
 					(stroke
 						(width 0.1524)
 						(type default)
@@ -836,8 +830,8 @@
 					)
 				)
 				(rectangle
-					(start -1.27 5.207)
-					(end 0 4.953)
+					(start -1.27 0.127)
+					(end 0 -0.127)
 					(stroke
 						(width 0.1524)
 						(type default)
@@ -847,14 +841,36 @@
 					)
 				)
 				(rectangle
-					(start -1.27 6.35)
-					(end 1.27 -8.89)
+					(start -1.27 -2.413)
+					(end 0 -2.667)
 					(stroke
-						(width 0.254)
+						(width 0.1524)
 						(type default)
 					)
 					(fill
-						(type background)
+						(type none)
+					)
+				)
+				(rectangle
+					(start -1.27 -4.953)
+					(end 0 -5.207)
+					(stroke
+						(width 0.1524)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(rectangle
+					(start -1.27 -7.493)
+					(end 0 -7.747)
+					(stroke
+						(width 0.1524)
+						(type default)
+					)
+					(fill
+						(type none)
 					)
 				)
 				(pin passive line
@@ -966,10 +982,13 @@
 					)
 				)
 			)
+			(embedded_fonts no)
 		)
 		(symbol "LARS_Hardware_Interface:Pin Header 1x4"
 			(pin_names
-				(offset 1.016) hide)
+				(offset 1.016)
+				(hide yes)
+			)
 			(exclude_from_sim no)
 			(in_bom yes)
 			(on_board yes)
@@ -1049,21 +1068,53 @@
 				)
 			)
 			(symbol "Pin Header 1x4_1_1"
-				(polyline
-					(pts
-						(xy 1.27 -5.08) (xy 0.8636 -5.08)
-					)
+				(rectangle
+					(start 0.8636 2.667)
+					(end 0 2.413)
 					(stroke
 						(width 0.1524)
 						(type default)
 					)
 					(fill
-						(type none)
+						(type outline)
+					)
+				)
+				(rectangle
+					(start 0.8636 0.127)
+					(end 0 -0.127)
+					(stroke
+						(width 0.1524)
+						(type default)
+					)
+					(fill
+						(type outline)
+					)
+				)
+				(rectangle
+					(start 0.8636 -2.413)
+					(end 0 -2.667)
+					(stroke
+						(width 0.1524)
+						(type default)
+					)
+					(fill
+						(type outline)
+					)
+				)
+				(rectangle
+					(start 0.8636 -4.953)
+					(end 0 -5.207)
+					(stroke
+						(width 0.1524)
+						(type default)
+					)
+					(fill
+						(type outline)
 					)
 				)
 				(polyline
 					(pts
-						(xy 1.27 -2.54) (xy 0.8636 -2.54)
+						(xy 1.27 2.54) (xy 0.8636 2.54)
 					)
 					(stroke
 						(width 0.1524)
@@ -1087,7 +1138,7 @@
 				)
 				(polyline
 					(pts
-						(xy 1.27 2.54) (xy 0.8636 2.54)
+						(xy 1.27 -2.54) (xy 0.8636 -2.54)
 					)
 					(stroke
 						(width 0.1524)
@@ -1097,48 +1148,16 @@
 						(type none)
 					)
 				)
-				(rectangle
-					(start 0.8636 -4.953)
-					(end 0 -5.207)
+				(polyline
+					(pts
+						(xy 1.27 -5.08) (xy 0.8636 -5.08)
+					)
 					(stroke
 						(width 0.1524)
 						(type default)
 					)
 					(fill
-						(type outline)
-					)
-				)
-				(rectangle
-					(start 0.8636 -2.413)
-					(end 0 -2.667)
-					(stroke
-						(width 0.1524)
-						(type default)
-					)
-					(fill
-						(type outline)
-					)
-				)
-				(rectangle
-					(start 0.8636 0.127)
-					(end 0 -0.127)
-					(stroke
-						(width 0.1524)
-						(type default)
-					)
-					(fill
-						(type outline)
-					)
-				)
-				(rectangle
-					(start 0.8636 2.667)
-					(end 0 2.413)
-					(stroke
-						(width 0.1524)
-						(type default)
-					)
-					(fill
-						(type outline)
+						(type none)
 					)
 				)
 				(pin passive line
@@ -1214,11 +1233,16 @@
 					)
 				)
 			)
+			(embedded_fonts no)
 		)
 		(symbol "LARS_Hardware_Interface:R_Small"
-			(pin_numbers hide)
+			(pin_numbers
+				(hide yes)
+			)
 			(pin_names
-				(offset 0.254) hide)
+				(offset 0.254)
+				(hide yes)
+			)
 			(exclude_from_sim no)
 			(in_bom yes)
 			(on_board yes)
@@ -1336,12 +1360,17 @@
 					)
 				)
 			)
+			(embedded_fonts no)
 		)
 		(symbol "power:+3.3V"
 			(power)
-			(pin_numbers hide)
+			(pin_numbers
+				(hide yes)
+			)
 			(pin_names
-				(offset 0) hide)
+				(offset 0)
+				(hide yes)
+			)
 			(exclude_from_sim no)
 			(in_bom yes)
 			(on_board yes)
@@ -1413,7 +1442,7 @@
 				)
 				(polyline
 					(pts
-						(xy 0 0) (xy 0 2.54)
+						(xy 0 2.54) (xy 0.762 1.27)
 					)
 					(stroke
 						(width 0)
@@ -1425,7 +1454,7 @@
 				)
 				(polyline
 					(pts
-						(xy 0 2.54) (xy 0.762 1.27)
+						(xy 0 0) (xy 0 2.54)
 					)
 					(stroke
 						(width 0)
@@ -1456,12 +1485,17 @@
 					)
 				)
 			)
+			(embedded_fonts no)
 		)
 		(symbol "power:+5V"
 			(power)
-			(pin_numbers hide)
+			(pin_numbers
+				(hide yes)
+			)
 			(pin_names
-				(offset 0) hide)
+				(offset 0)
+				(hide yes)
+			)
 			(exclude_from_sim no)
 			(in_bom yes)
 			(on_board yes)
@@ -1533,7 +1567,7 @@
 				)
 				(polyline
 					(pts
-						(xy 0 0) (xy 0 2.54)
+						(xy 0 2.54) (xy 0.762 1.27)
 					)
 					(stroke
 						(width 0)
@@ -1545,7 +1579,7 @@
 				)
 				(polyline
 					(pts
-						(xy 0 2.54) (xy 0.762 1.27)
+						(xy 0 0) (xy 0 2.54)
 					)
 					(stroke
 						(width 0)
@@ -1576,12 +1610,17 @@
 					)
 				)
 			)
+			(embedded_fonts no)
 		)
 		(symbol "power:GND"
 			(power)
-			(pin_numbers hide)
+			(pin_numbers
+				(hide yes)
+			)
 			(pin_names
-				(offset 0) hide)
+				(offset 0)
+				(hide yes)
+			)
 			(exclude_from_sim no)
 			(in_bom yes)
 			(on_board yes)
@@ -1672,7 +1711,232 @@
 					)
 				)
 			)
+			(embedded_fonts no)
 		)
+	)
+	(rectangle
+		(start 101.6 105.41)
+		(end 180.34 173.355)
+		(stroke
+			(width 0)
+			(type dash)
+		)
+		(fill
+			(type none)
+		)
+		(uuid 07ced9b2-5231-40ac-8b9c-bd92e016272d)
+	)
+	(rectangle
+		(start 186.69 105.41)
+		(end 278.13 143.51)
+		(stroke
+			(width 0)
+			(type dash)
+		)
+		(fill
+			(type none)
+		)
+		(uuid 73730a0c-d9a1-44da-ac93-28938f5b0895)
+	)
+	(rectangle
+		(start 19.05 124.46)
+		(end 95.25 174.625)
+		(stroke
+			(width 0)
+			(type dash)
+		)
+		(fill
+			(type none)
+		)
+		(uuid 8220940c-a597-4812-b563-3c9599d8b650)
+	)
+	(rectangle
+		(start 101.6 19.05)
+		(end 180.34 55.88)
+		(stroke
+			(width 0)
+			(type dash)
+		)
+		(fill
+			(type none)
+		)
+		(uuid 83dafc43-d446-428e-a045-d45ce60f66de)
+	)
+	(rectangle
+		(start 101.6 62.23)
+		(end 180.34 99.06)
+		(stroke
+			(width 0)
+			(type dash)
+		)
+		(fill
+			(type none)
+		)
+		(uuid 95db7ddd-04bf-43f4-bdb9-1d2a07464b05)
+	)
+	(rectangle
+		(start 186.69 19.05)
+		(end 278.13 99.06)
+		(stroke
+			(width 0)
+			(type dash)
+		)
+		(fill
+			(type none)
+		)
+		(uuid a2d3d75f-4b89-4d53-8791-3bf032d59d99)
+	)
+	(rectangle
+		(start 19.05 62.23)
+		(end 95.25 117.475)
+		(stroke
+			(width 0)
+			(type dash)
+		)
+		(fill
+			(type none)
+		)
+		(uuid afd6e57d-6ace-4327-9b60-5d81ce584f4b)
+	)
+	(rectangle
+		(start 19.05 19.05)
+		(end 95.25 55.88)
+		(stroke
+			(width 0)
+			(type dash)
+		)
+		(fill
+			(type none)
+		)
+		(uuid db7472d0-4948-4038-8cde-0e10fff55295)
+	)
+	(rectangle
+		(start 204.47 78.74)
+		(end 204.47 78.74)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(fill
+			(type none)
+		)
+		(uuid f8350aa3-37b7-42df-ad65-43585bf51208)
+	)
+	(text "Servos + Analog Inputs\n"
+		(exclude_from_sim no)
+		(at 125.984 112.776 0)
+		(effects
+			(font
+				(size 2.032 2.032)
+				(thickness 0.4064)
+				(bold yes)
+			)
+		)
+		(uuid "086be58c-4c03-44a6-add1-f3e27de7875d")
+	)
+	(text "CAN Bus"
+		(exclude_from_sim no)
+		(at 31.75 25.654 0)
+		(effects
+			(font
+				(size 2.032 2.032)
+				(thickness 0.4064)
+				(bold yes)
+			)
+		)
+		(uuid "1be6c3fc-7f73-47cc-ad57-74d28af91acf")
+	)
+	(text "Timer"
+		(exclude_from_sim no)
+		(at 111.252 68.326 0)
+		(effects
+			(font
+				(size 2.032 2.032)
+				(thickness 0.4064)
+				(bold yes)
+			)
+		)
+		(uuid "37a8a4e4-982a-4751-a843-682c3a4aa0e8")
+	)
+	(text "5V Output"
+		(exclude_from_sim no)
+		(at 75.946 80.01 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		(uuid "6e509122-22f0-4204-b0db-0f9a5e901290")
+	)
+	(text "Power Outputs"
+		(exclude_from_sim no)
+		(at 36.068 68.58 0)
+		(effects
+			(font
+				(size 2.032 2.032)
+				(thickness 0.4064)
+				(bold yes)
+			)
+		)
+		(uuid "6e904116-60c1-477b-8a2d-19b254525191")
+	)
+	(text "SPI"
+		(exclude_from_sim no)
+		(at 110.236 24.892 0)
+		(effects
+			(font
+				(size 2.032 2.032)
+				(thickness 0.4064)
+				(bold yes)
+			)
+		)
+		(uuid "7c482d40-b73e-406a-b8fa-02754ea27f2d")
+	)
+	(text "UART\n"
+		(exclude_from_sim no)
+		(at 193.294 111.506 0)
+		(effects
+			(font
+				(size 2.032 2.032)
+				(thickness 0.4064)
+				(bold yes)
+			)
+		)
+		(uuid "90ef9b49-e246-45d3-b596-bd4a17f07d5f")
+	)
+	(text "I2C"
+		(exclude_from_sim no)
+		(at 193.294 25.654 0)
+		(effects
+			(font
+				(size 2.032 2.032)
+				(thickness 0.4064)
+				(bold yes)
+			)
+		)
+		(uuid "c33dd6b3-bea2-46b9-bbfe-8300c62fc3de")
+	)
+	(text "Additional GPIO"
+		(exclude_from_sim no)
+		(at 37.338 131.318 0)
+		(effects
+			(font
+				(size 2.032 2.032)
+				(thickness 0.4064)
+				(bold yes)
+			)
+		)
+		(uuid "ca6f269f-a1a0-4428-8df8-d57591e602ef")
+	)
+	(text "3.3V Output"
+		(exclude_from_sim no)
+		(at 42.926 80.01 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		(uuid "d4f007c0-75ed-4411-adaf-10b6df292c13")
 	)
 	(junction
 		(at 81.28 39.37)
@@ -3197,230 +3461,6 @@
 			(type default)
 		)
 		(uuid "fe2f0f7c-e6fb-46d0-bebf-7db5341aa78c")
-	)
-	(rectangle
-		(start 101.6 105.41)
-		(end 180.34 173.355)
-		(stroke
-			(width 0)
-			(type dash)
-		)
-		(fill
-			(type none)
-		)
-		(uuid 07ced9b2-5231-40ac-8b9c-bd92e016272d)
-	)
-	(rectangle
-		(start 186.69 105.41)
-		(end 278.13 143.51)
-		(stroke
-			(width 0)
-			(type dash)
-		)
-		(fill
-			(type none)
-		)
-		(uuid 73730a0c-d9a1-44da-ac93-28938f5b0895)
-	)
-	(rectangle
-		(start 19.05 124.46)
-		(end 95.25 174.625)
-		(stroke
-			(width 0)
-			(type dash)
-		)
-		(fill
-			(type none)
-		)
-		(uuid 8220940c-a597-4812-b563-3c9599d8b650)
-	)
-	(rectangle
-		(start 101.6 19.05)
-		(end 180.34 55.88)
-		(stroke
-			(width 0)
-			(type dash)
-		)
-		(fill
-			(type none)
-		)
-		(uuid 83dafc43-d446-428e-a045-d45ce60f66de)
-	)
-	(rectangle
-		(start 101.6 62.23)
-		(end 180.34 99.06)
-		(stroke
-			(width 0)
-			(type dash)
-		)
-		(fill
-			(type none)
-		)
-		(uuid 95db7ddd-04bf-43f4-bdb9-1d2a07464b05)
-	)
-	(rectangle
-		(start 186.69 19.05)
-		(end 278.13 99.06)
-		(stroke
-			(width 0)
-			(type dash)
-		)
-		(fill
-			(type none)
-		)
-		(uuid a2d3d75f-4b89-4d53-8791-3bf032d59d99)
-	)
-	(rectangle
-		(start 19.05 62.23)
-		(end 95.25 117.475)
-		(stroke
-			(width 0)
-			(type dash)
-		)
-		(fill
-			(type none)
-		)
-		(uuid afd6e57d-6ace-4327-9b60-5d81ce584f4b)
-	)
-	(rectangle
-		(start 19.05 19.05)
-		(end 95.25 55.88)
-		(stroke
-			(width 0)
-			(type dash)
-		)
-		(fill
-			(type none)
-		)
-		(uuid db7472d0-4948-4038-8cde-0e10fff55295)
-	)
-	(rectangle
-		(start 204.47 78.74)
-		(end 204.47 78.74)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(fill
-			(type none)
-		)
-		(uuid f8350aa3-37b7-42df-ad65-43585bf51208)
-	)
-	(text "Servos + Analog Inputs\n"
-		(exclude_from_sim no)
-		(at 125.984 112.776 0)
-		(effects
-			(font
-				(size 2.032 2.032)
-				(thickness 0.4064)
-				(bold yes)
-			)
-		)
-		(uuid "086be58c-4c03-44a6-add1-f3e27de7875d")
-	)
-	(text "CAN Bus"
-		(exclude_from_sim no)
-		(at 31.75 25.654 0)
-		(effects
-			(font
-				(size 2.032 2.032)
-				(thickness 0.4064)
-				(bold yes)
-			)
-		)
-		(uuid "1be6c3fc-7f73-47cc-ad57-74d28af91acf")
-	)
-	(text "Timer"
-		(exclude_from_sim no)
-		(at 111.252 68.326 0)
-		(effects
-			(font
-				(size 2.032 2.032)
-				(thickness 0.4064)
-				(bold yes)
-			)
-		)
-		(uuid "37a8a4e4-982a-4751-a843-682c3a4aa0e8")
-	)
-	(text "5V Output"
-		(exclude_from_sim no)
-		(at 75.946 80.01 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-		)
-		(uuid "6e509122-22f0-4204-b0db-0f9a5e901290")
-	)
-	(text "Power Outputs"
-		(exclude_from_sim no)
-		(at 36.068 68.58 0)
-		(effects
-			(font
-				(size 2.032 2.032)
-				(thickness 0.4064)
-				(bold yes)
-			)
-		)
-		(uuid "6e904116-60c1-477b-8a2d-19b254525191")
-	)
-	(text "SPI"
-		(exclude_from_sim no)
-		(at 110.236 24.892 0)
-		(effects
-			(font
-				(size 2.032 2.032)
-				(thickness 0.4064)
-				(bold yes)
-			)
-		)
-		(uuid "7c482d40-b73e-406a-b8fa-02754ea27f2d")
-	)
-	(text "UART\n"
-		(exclude_from_sim no)
-		(at 193.294 111.506 0)
-		(effects
-			(font
-				(size 2.032 2.032)
-				(thickness 0.4064)
-				(bold yes)
-			)
-		)
-		(uuid "90ef9b49-e246-45d3-b596-bd4a17f07d5f")
-	)
-	(text "I2C"
-		(exclude_from_sim no)
-		(at 193.294 25.654 0)
-		(effects
-			(font
-				(size 2.032 2.032)
-				(thickness 0.4064)
-				(bold yes)
-			)
-		)
-		(uuid "c33dd6b3-bea2-46b9-bbfe-8300c62fc3de")
-	)
-	(text "Additional GPIO"
-		(exclude_from_sim no)
-		(at 37.338 131.318 0)
-		(effects
-			(font
-				(size 2.032 2.032)
-				(thickness 0.4064)
-				(bold yes)
-			)
-		)
-		(uuid "ca6f269f-a1a0-4428-8df8-d57591e602ef")
-	)
-	(text "3.3V Output"
-		(exclude_from_sim no)
-		(at 42.926 80.01 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-		)
-		(uuid "d4f007c0-75ed-4411-adaf-10b6df292c13")
 	)
 	(global_label "I2C1_SCL"
 		(shape input)

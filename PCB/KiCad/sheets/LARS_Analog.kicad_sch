@@ -1,7 +1,7 @@
 (kicad_sch
-	(version 20231120)
+	(version 20250114)
 	(generator "eeschema")
-	(generator_version "8.0")
+	(generator_version "9.0")
 	(uuid "2e7adc90-5042-4740-96b0-9df36bc35093")
 	(paper "A4")
 	(title_block
@@ -100,7 +100,31 @@
 				)
 				(polyline
 					(pts
-						(xy 11.43 -10.16) (xy 13.97 -10.16)
+						(xy 11.43 0) (xy 13.97 0)
+					)
+					(stroke
+						(width 0.127)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 11.43 0) (xy 13.97 0) (xy 12.7 -2.54)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type outline)
+					)
+				)
+				(polyline
+					(pts
+						(xy 11.43 -2.54) (xy 13.97 -2.54)
 					)
 					(stroke
 						(width 0.127)
@@ -136,7 +160,19 @@
 				)
 				(polyline
 					(pts
-						(xy 11.43 -2.54) (xy 13.97 -2.54)
+						(xy 11.43 -7.62) (xy 13.97 -7.62) (xy 12.7 -10.16)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type outline)
+					)
+				)
+				(polyline
+					(pts
+						(xy 11.43 -10.16) (xy 13.97 -10.16)
 					)
 					(stroke
 						(width 0.127)
@@ -148,19 +184,7 @@
 				)
 				(polyline
 					(pts
-						(xy 11.43 0) (xy 13.97 0)
-					)
-					(stroke
-						(width 0.127)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy 12.7 -10.16) (xy 13.97 -7.62)
+						(xy 12.7 1.27) (xy 12.7 -11.43)
 					)
 					(stroke
 						(width 0.127)
@@ -196,7 +220,7 @@
 				)
 				(polyline
 					(pts
-						(xy 12.7 1.27) (xy 12.7 -11.43)
+						(xy 12.7 -10.16) (xy 13.97 -7.62)
 					)
 					(stroke
 						(width 0.127)
@@ -204,30 +228,6 @@
 					)
 					(fill
 						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy 11.43 -7.62) (xy 13.97 -7.62) (xy 12.7 -10.16)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type outline)
-					)
-				)
-				(polyline
-					(pts
-						(xy 11.43 0) (xy 13.97 0) (xy 12.7 -2.54)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type outline)
 					)
 				)
 			)
@@ -262,24 +262,6 @@
 					)
 				)
 				(pin passive line
-					(at 12.7 -16.51 90)
-					(length 5.08)
-					(name "2"
-						(effects
-							(font
-								(size 0 0)
-							)
-						)
-					)
-					(number "2"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin passive line
 					(at 12.7 -5.08 0)
 					(length 2.54)
 					(name "3"
@@ -297,10 +279,31 @@
 						)
 					)
 				)
+				(pin passive line
+					(at 12.7 -16.51 90)
+					(length 5.08)
+					(name "2"
+						(effects
+							(font
+								(size 0 0)
+							)
+						)
+					)
+					(number "2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
 			)
+			(embedded_fonts no)
 		)
 		(symbol "LARS_Hardware_Interface:C"
-			(pin_numbers hide)
+			(pin_numbers
+				(hide yes)
+			)
 			(pin_names
 				(offset 0.254)
 			)
@@ -373,7 +376,7 @@
 			(symbol "C_0_1"
 				(polyline
 					(pts
-						(xy -2.032 -0.762) (xy 2.032 -0.762)
+						(xy -2.032 0.762) (xy 2.032 0.762)
 					)
 					(stroke
 						(width 0.508)
@@ -385,7 +388,7 @@
 				)
 				(polyline
 					(pts
-						(xy -2.032 0.762) (xy 2.032 0.762)
+						(xy -2.032 -0.762) (xy 2.032 -0.762)
 					)
 					(stroke
 						(width 0.508)
@@ -434,11 +437,16 @@
 					)
 				)
 			)
+			(embedded_fonts no)
 		)
 		(symbol "LARS_Hardware_Interface:C_Small"
-			(pin_numbers hide)
+			(pin_numbers
+				(hide yes)
+			)
 			(pin_names
-				(offset 0.254) hide)
+				(offset 0.254)
+				(hide yes)
+			)
 			(exclude_from_sim no)
 			(in_bom yes)
 			(on_board yes)
@@ -508,10 +516,10 @@
 			(symbol "C_Small_0_1"
 				(polyline
 					(pts
-						(xy -1.524 -0.508) (xy 1.524 -0.508)
+						(xy -1.524 0.508) (xy 1.524 0.508)
 					)
 					(stroke
-						(width 0.3302)
+						(width 0.3048)
 						(type default)
 					)
 					(fill
@@ -520,10 +528,10 @@
 				)
 				(polyline
 					(pts
-						(xy -1.524 0.508) (xy 1.524 0.508)
+						(xy -1.524 -0.508) (xy 1.524 -0.508)
 					)
 					(stroke
-						(width 0.3048)
+						(width 0.3302)
 						(type default)
 					)
 					(fill
@@ -569,6 +577,7 @@
 					)
 				)
 			)
+			(embedded_fonts no)
 		)
 		(symbol "LARS_Hardware_Interface:OPA2834IDGKR"
 			(pin_names
@@ -663,7 +672,7 @@
 				)
 				(polyline
 					(pts
-						(xy 6.858 -5.08) (xy 5.842 -5.08)
+						(xy 6.858 0) (xy 5.842 0)
 					)
 					(stroke
 						(width 0.2032)
@@ -675,7 +684,7 @@
 				)
 				(polyline
 					(pts
-						(xy 6.858 0) (xy 5.842 0)
+						(xy 6.858 -5.08) (xy 5.842 -5.08)
 					)
 					(stroke
 						(width 0.2032)
@@ -697,17 +706,17 @@
 						(type background)
 					)
 				)
-				(pin output line
-					(at 20.32 -2.54 180)
+				(pin input line
+					(at 0 0 0)
 					(length 5.08)
-					(name "VOUT1"
+					(name "VIN1+"
 						(effects
 							(font
 								(size 0 0)
 							)
 						)
 					)
-					(number "1"
+					(number "3"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -733,17 +742,17 @@
 						)
 					)
 				)
-				(pin input line
-					(at 0 0 0)
+				(pin power_in line
+					(at 10.16 5.08 270)
 					(length 5.08)
-					(name "VIN1+"
+					(name "VS+"
 						(effects
 							(font
 								(size 0 0)
 							)
 						)
 					)
-					(number "3"
+					(number "8"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -769,17 +778,17 @@
 						)
 					)
 				)
-				(pin power_in line
-					(at 10.16 5.08 270)
+				(pin output line
+					(at 20.32 -2.54 180)
 					(length 5.08)
-					(name "VS+"
+					(name "VOUT1"
 						(effects
 							(font
 								(size 0 0)
 							)
 						)
 					)
-					(number "8"
+					(number "1"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -803,7 +812,7 @@
 				)
 				(polyline
 					(pts
-						(xy 6.858 -5.08) (xy 5.842 -5.08)
+						(xy 6.858 0) (xy 5.842 0)
 					)
 					(stroke
 						(width 0.2032)
@@ -815,7 +824,7 @@
 				)
 				(polyline
 					(pts
-						(xy 6.858 0) (xy 5.842 0)
+						(xy 6.858 -5.08) (xy 5.842 -5.08)
 					)
 					(stroke
 						(width 0.2032)
@@ -892,9 +901,12 @@
 					)
 				)
 			)
+			(embedded_fonts no)
 		)
 		(symbol "LARS_Hardware_Interface:R"
-			(pin_numbers hide)
+			(pin_numbers
+				(hide yes)
+			)
 			(pin_names
 				(offset 0)
 			)
@@ -1013,12 +1025,17 @@
 					)
 				)
 			)
+			(embedded_fonts no)
 		)
 		(symbol "power:+3.3V"
 			(power)
-			(pin_numbers hide)
+			(pin_numbers
+				(hide yes)
+			)
 			(pin_names
-				(offset 0) hide)
+				(offset 0)
+				(hide yes)
+			)
 			(exclude_from_sim no)
 			(in_bom yes)
 			(on_board yes)
@@ -1090,7 +1107,7 @@
 				)
 				(polyline
 					(pts
-						(xy 0 0) (xy 0 2.54)
+						(xy 0 2.54) (xy 0.762 1.27)
 					)
 					(stroke
 						(width 0)
@@ -1102,7 +1119,7 @@
 				)
 				(polyline
 					(pts
-						(xy 0 2.54) (xy 0.762 1.27)
+						(xy 0 0) (xy 0 2.54)
 					)
 					(stroke
 						(width 0)
@@ -1133,12 +1150,17 @@
 					)
 				)
 			)
+			(embedded_fonts no)
 		)
 		(symbol "power:GND"
 			(power)
-			(pin_numbers hide)
+			(pin_numbers
+				(hide yes)
+			)
 			(pin_names
-				(offset 0) hide)
+				(offset 0)
+				(hide yes)
+			)
 			(exclude_from_sim no)
 			(in_bom yes)
 			(on_board yes)
@@ -1229,7 +1251,77 @@
 					)
 				)
 			)
+			(embedded_fonts no)
 		)
+	)
+	(rectangle
+		(start 19.05 19.05)
+		(end 149.86 143.51)
+		(stroke
+			(width 0)
+			(type dash)
+		)
+		(fill
+			(type none)
+		)
+		(uuid 62164bb8-5764-49d4-bd07-070a9f8853af)
+	)
+	(rectangle
+		(start 156.21 19.05)
+		(end 278.13 143.51)
+		(stroke
+			(width 0)
+			(type dash)
+		)
+		(fill
+			(type none)
+		)
+		(uuid f2659e31-96b2-4acd-aaf8-2f054051966b)
+	)
+	(text "Servos Analog\n"
+		(exclude_from_sim no)
+		(at 174.752 26.416 0)
+		(effects
+			(font
+				(size 2.032 2.032)
+				(thickness 0.4064)
+				(bold yes)
+			)
+		)
+		(uuid "150325b2-7cc8-41cd-b3d8-9a62ec583886")
+	)
+	(text "Low-Pass Cut-Off Frequency; ~1.5 kHz"
+		(exclude_from_sim no)
+		(at 183.388 33.02 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		(uuid "c0fb2596-6f99-450b-acc2-68153103b333")
+	)
+	(text "External Analog Inputs\n"
+		(exclude_from_sim no)
+		(at 42.418 26.416 0)
+		(effects
+			(font
+				(size 2.032 2.032)
+				(thickness 0.4064)
+				(bold yes)
+			)
+		)
+		(uuid "e1181181-1b51-4d33-9a3e-4b3ff52d983d")
+	)
+	(text "Analog Inputs will be buffered and clamped between 0V and 3.3V.\nAn additional resistor can be soldered to the input to form a voltage-divider.\n\nThe output capacitor can be chosen depending on the desired cut-off frequency.\nIt is given by:  f = 1 / (2pi * R * C)\n"
+		(exclude_from_sim no)
+		(at 25.146 35.814 0)
+		(effects
+			(font
+				(size 1.016 1.016)
+			)
+			(justify left)
+		)
+		(uuid "fd946288-ab6f-4245-98db-1d4991e53f80")
 	)
 	(junction
 		(at 196.85 111.76)
@@ -2015,78 +2107,8 @@
 		)
 		(uuid "fe41bd58-23ab-40d0-97ec-ce02503337bd")
 	)
-	(rectangle
-		(start 19.05 19.05)
-		(end 149.86 143.51)
-		(stroke
-			(width 0)
-			(type dash)
-		)
-		(fill
-			(type none)
-		)
-		(uuid 62164bb8-5764-49d4-bd07-070a9f8853af)
-	)
-	(rectangle
-		(start 156.21 19.05)
-		(end 278.13 143.51)
-		(stroke
-			(width 0)
-			(type dash)
-		)
-		(fill
-			(type none)
-		)
-		(uuid f2659e31-96b2-4acd-aaf8-2f054051966b)
-	)
-	(text "Servos Analog\n"
-		(exclude_from_sim no)
-		(at 174.752 26.416 0)
-		(effects
-			(font
-				(size 2.032 2.032)
-				(thickness 0.4064)
-				(bold yes)
-			)
-		)
-		(uuid "150325b2-7cc8-41cd-b3d8-9a62ec583886")
-	)
-	(text "Low-Pass Cut-Off Frequency; ~1.5 kHz"
-		(exclude_from_sim no)
-		(at 183.388 33.02 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-		)
-		(uuid "c0fb2596-6f99-450b-acc2-68153103b333")
-	)
-	(text "External Analog Inputs\n"
-		(exclude_from_sim no)
-		(at 42.418 26.416 0)
-		(effects
-			(font
-				(size 2.032 2.032)
-				(thickness 0.4064)
-				(bold yes)
-			)
-		)
-		(uuid "e1181181-1b51-4d33-9a3e-4b3ff52d983d")
-	)
-	(text "Analog Inputs will be buffered and clamped between 0V and 3.3V.\nAn additional resistor can be soldered to the input to form a voltage-divider.\n\nThe output capacitor can be chosen depending on the desired cut-off frequency.\nIt is given by:  f = 1 / (2pi * R * C)\n"
-		(exclude_from_sim no)
-		(at 25.146 35.814 0)
-		(effects
-			(font
-				(size 1.016 1.016)
-			)
-			(justify left)
-		)
-		(uuid "fd946288-ab6f-4245-98db-1d4991e53f80")
-	)
 	(label "SERVO1_OP_IN"
 		(at 207.01 62.23 180)
-		(fields_autoplaced yes)
 		(effects
 			(font
 				(size 0.508 0.508)
@@ -2097,7 +2119,6 @@
 	)
 	(label "SERVO2_OP_IN"
 		(at 207.01 111.76 180)
-		(fields_autoplaced yes)
 		(effects
 			(font
 				(size 0.508 0.508)
@@ -2108,7 +2129,6 @@
 	)
 	(label "ANALOG1_OP_OUT"
 		(at 105.41 64.77 180)
-		(fields_autoplaced yes)
 		(effects
 			(font
 				(size 0.508 0.508)
@@ -2119,7 +2139,6 @@
 	)
 	(label "ANALOG1_OP_IN"
 		(at 76.2 62.23 180)
-		(fields_autoplaced yes)
 		(effects
 			(font
 				(size 0.508 0.508)
@@ -2130,7 +2149,6 @@
 	)
 	(label "SERVO2_OP_OUT"
 		(at 236.22 114.3 180)
-		(fields_autoplaced yes)
 		(effects
 			(font
 				(size 0.508 0.508)
@@ -2141,7 +2159,6 @@
 	)
 	(label "ANALOG2_OP_OUT"
 		(at 105.41 114.3 180)
-		(fields_autoplaced yes)
 		(effects
 			(font
 				(size 0.508 0.508)
@@ -2152,7 +2169,6 @@
 	)
 	(label "SERVO1_OP_OUT"
 		(at 236.22 64.77 180)
-		(fields_autoplaced yes)
 		(effects
 			(font
 				(size 0.508 0.508)
@@ -2163,7 +2179,6 @@
 	)
 	(label "ANALOG2_OP_IN"
 		(at 76.2 111.76 180)
-		(fields_autoplaced yes)
 		(effects
 			(font
 				(size 0.508 0.508)
