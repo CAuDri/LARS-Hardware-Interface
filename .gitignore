@@ -1,5 +1,4 @@
 ## Ignore temporary KiCad files
 hardware_interface-backups/
 fp-info-cache
-sym-lib-table
 *.kicad_prl
