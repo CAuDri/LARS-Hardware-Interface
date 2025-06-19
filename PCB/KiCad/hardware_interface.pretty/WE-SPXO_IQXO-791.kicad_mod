@@ -154,7 +154,7 @@
 		(solder_mask_margin 0.102)
 		(uuid "1e9817eb-2fce-4092-ac25-304fc74d01df")
 	)
-	(model "${KIPRJMOD}/LARS_Hardware_Interface.pretty/3D_Models/WE-SPXO_IQXO-791.step"
+	(model "${KIPRJMOD}/hardware_interface.pretty/3D_Models/WE-SPXO_IQXO-791.step"
 		(offset
 			(xyz 0 0 0)
 		)

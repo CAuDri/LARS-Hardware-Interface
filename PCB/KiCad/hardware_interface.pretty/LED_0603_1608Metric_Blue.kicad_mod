@@ -212,7 +212,7 @@
 		(roundrect_rratio 0.25)
 		(uuid "690100f4-a25e-41af-b303-e1cc8463bd48")
 	)
-	(model "${KIPRJMOD}/LARS_Hardware_Interface.pretty/3D_Models/SMD_0603LED_BLUE.STEP"
+	(model "${KIPRJMOD}/hardware_interface.pretty/3D_Models/SMD_0603LED_BLUE.STEP"
 		(offset
 			(xyz 0 0 0)
 		)

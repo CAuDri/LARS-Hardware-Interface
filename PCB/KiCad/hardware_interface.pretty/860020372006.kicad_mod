@@ -156,7 +156,7 @@
 		(solder_mask_margin 0.102)
 		(uuid "76756cd9-d237-441f-8354-22df864d6671")
 	)
-	(model "${KIPRJMOD}/LARS_Hardware_Interface.pretty/3D_Models/860020372006.stp"
+	(model "${KIPRJMOD}/hardware_interface.pretty/3D_Models/860020372006.stp"
 		(offset
 			(xyz 0 0 0)
 		)

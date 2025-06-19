@@ -682,7 +682,7 @@
 		(layers "F.Cu" "F.Paste" "F.Mask")
 		(uuid "192fda5c-cc35-4326-9c26-d6e8965116e3")
 	)
-	(model "${KIPRJMOD}/LARS_Hardware_Interface.pretty/3D_Models/TCAN1057AVDRQ1.STEP"
+	(model "${KIPRJMOD}/hardware_interface.pretty/3D_Models/TCAN1057AVDRQ1.STEP"
 		(offset
 			(xyz 0 0 0)
 		)

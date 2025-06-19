@@ -590,7 +590,7 @@
 		(layers "F.Cu" "F.Paste" "F.Mask")
 		(uuid "6cdfc48c-0031-473a-8d02-796cf97bc7cc")
 	)
-	(model "${KIPRJMOD}/LARS_Hardware_Interface.pretty/3D_Models/MIC2039AYM6-TR.STEP"
+	(model "${KIPRJMOD}/hardware_interface.pretty/3D_Models/MIC2039AYM6-TR.STEP"
 		(offset
 			(xyz 0 0 0)
 		)

@@ -513,7 +513,7 @@
 		(layers "F.Cu" "F.Paste" "F.Mask")
 		(uuid "03c97740-672e-4edf-8434-46ecb204a307")
 	)
-	(model "${KIPRJMOD}/LARS_Hardware_Interface.pretty/3D_Models/LD1117AS33TR.STEP"
+	(model "${KIPRJMOD}/hardware_interface.pretty/3D_Models/LD1117AS33TR.STEP"
 		(offset
 			(xyz 0 0 0)
 		)

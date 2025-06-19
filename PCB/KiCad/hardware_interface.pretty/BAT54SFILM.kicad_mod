@@ -447,7 +447,7 @@
 		(layers "F.Cu" "F.Paste" "F.Mask")
 		(uuid "fc239c43-fc2c-4d10-8964-7eb6120e31ef")
 	)
-	(model "${KIPRJMOD}/LARS_Hardware_Interface.pretty/3D_Models/BAT54SFILM.step"
+	(model "${KIPRJMOD}/hardware_interface.pretty/3D_Models/BAT54SFILM.step"
 		(offset
 			(xyz 0 0 0)
 		)

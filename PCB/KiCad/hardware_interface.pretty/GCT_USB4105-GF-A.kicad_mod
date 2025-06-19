@@ -491,7 +491,7 @@
 		(solder_mask_margin 0.102)
 		(uuid "85ab9e0a-467b-4ebc-a8a5-d2481d19941f")
 	)
-	(model "${KIPRJMOD}/LARS_Hardware_Interface.pretty/3D_Models/USB4105-GF-A.step"
+	(model "${KIPRJMOD}/hardware_interface.pretty/3D_Models/USB4105-GF-A.step"
 		(offset
 			(xyz 0 0 0)
 		)

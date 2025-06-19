@@ -244,7 +244,7 @@
 		(remove_unused_layers no)
 		(uuid "09ceeb43-9fac-40b4-a3bb-4f36cdd20ed2")
 	)
-	(model "${KIPRJMOD}/LARS_Hardware_Interface.pretty/3D_Models/PinHeader_1x02_Jumper.step"
+	(model "${KIPRJMOD}/hardware_interface.pretty/3D_Models/PinHeader_1x02_Jumper.step"
 		(offset
 			(xyz 0 0 0)
 		)

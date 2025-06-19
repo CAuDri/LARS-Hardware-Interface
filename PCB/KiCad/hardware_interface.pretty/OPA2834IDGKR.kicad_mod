@@ -196,7 +196,7 @@
 		(layers "F.Cu" "F.Paste" "F.Mask")
 		(uuid "2fd6b6d2-e48e-4d66-b0f1-d33b0613dc47")
 	)
-	(model "${KIPRJMOD}/LARS_Hardware_Interface.pretty/3D_Models/OPA2834IDGKR.STEP"
+	(model "${KIPRJMOD}/hardware_interface.pretty/3D_Models/OPA2834IDGKR.STEP"
 		(offset
 			(xyz 0 0 0)
 		)

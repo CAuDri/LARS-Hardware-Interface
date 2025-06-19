@@ -1396,7 +1396,7 @@
 		(solder_mask_margin 0.102)
 		(uuid "87c90b31-1cb3-45a2-bf49-06a8fc14876a")
 	)
-	(model "${KIPRJMOD}/LARS_Hardware_Interface.pretty/3D_Models/STM32F429ZIT6TR.step"
+	(model "${KIPRJMOD}/hardware_interface.pretty/3D_Models/STM32F429ZIT6TR.step"
 		(offset
 			(xyz 0 0 0.9)
 		)

@@ -993,7 +993,7 @@
 		(layers "F.Cu" "F.Paste" "F.Mask")
 		(uuid "fc0b79fd-d67a-4f78-8c33-1f2f56b1bd90")
 	)
-	(model "${KIPRJMOD}/LARS_Hardware_Interface.pretty/3D_Models/SN74S1051DR.STEP"
+	(model "${KIPRJMOD}/hardware_interface.pretty/3D_Models/SN74S1051DR.STEP"
 		(offset
 			(xyz 0 0 0)
 		)

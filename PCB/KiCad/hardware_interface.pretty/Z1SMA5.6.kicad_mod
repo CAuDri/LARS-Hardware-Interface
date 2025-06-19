@@ -199,7 +199,7 @@
 		(roundrect_rratio 0.1388888889)
 		(uuid "4d2ac36b-4dec-4a0f-aab5-408e1b9a00cb")
 	)
-	(model "${KIPRJMOD}/LARS_Hardware_Interface.pretty/3D_Models/Z1SMA5.6.STEP"
+	(model "${KIPRJMOD}/hardware_interface.pretty/3D_Models/Z1SMA5.6.STEP"
 		(offset
 			(xyz 2 0 0)
 		)
