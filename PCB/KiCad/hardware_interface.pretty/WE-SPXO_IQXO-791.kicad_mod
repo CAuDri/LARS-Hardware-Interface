@@ -1,0 +1,168 @@
+(footprint "WE-SPXO_IQXO-791"
+	(version 20240108)
+	(generator "pcbnew")
+	(generator_version "8.0")
+	(layer "F.Cu")
+	(descr "<B>WE-SPXO Simple Packaged Quartz Oscillator<br><br>Size : </b>IQXO-791<br>L X W X H = 2.5mm X 2.0mm X 1.0mm")
+	(property "Reference" "REF**"
+		(at 0 -1.9048 0)
+		(layer "F.SilkS")
+		(uuid "7505722c-b073-4fea-8aaa-4f9e24b493c4")
+		(effects
+			(font
+				(size 0.48 0.48)
+				(thickness 0.12)
+			)
+		)
+	)
+	(property "Value" "WE-SPXO_IQXO-791"
+		(at 3.0768 1.8952 0)
+		(layer "F.Fab")
+		(uuid "368a9333-11a2-4148-91c0-2eb7a04dfa24")
+		(effects
+			(font
+				(size 0.48 0.48)
+				(thickness 0.12)
+			)
+		)
+	)
+	(property "Footprint" ""
+		(at 0 0 0)
+		(layer "F.Fab")
+		(hide yes)
+		(uuid "a583370d-7ab5-4652-b162-f4a3135836fb")
+		(effects
+			(font
+				(size 1.27 1.27)
+				(thickness 0.15)
+			)
+		)
+	)
+	(property "Datasheet" ""
+		(at 0 0 0)
+		(layer "F.Fab")
+		(hide yes)
+		(uuid "6fbcd8fa-1724-4f68-9be3-4b5589b57957")
+		(effects
+			(font
+				(size 1.27 1.27)
+				(thickness 0.15)
+			)
+		)
+	)
+	(property "Description" ""
+		(at 0 0 0)
+		(layer "F.Fab")
+		(hide yes)
+		(uuid "558077f8-6d9f-4701-8e68-d3c042fd5391")
+		(effects
+			(font
+				(size 1.27 1.27)
+				(thickness 0.15)
+			)
+		)
+	)
+	(attr smd)
+	(fp_circle
+		(center -1.7 1.4)
+		(end -1.6 1.4)
+		(stroke
+			(width 0.2)
+			(type solid)
+		)
+		(fill none)
+		(layer "F.SilkS")
+		(uuid "f2065926-3c74-4114-bbfa-86a3f7be32b9")
+	)
+	(fp_poly
+		(pts
+			(xy -1.55 -1.3) (xy 1.55 -1.3) (xy 1.55 1.3) (xy -1.55 1.3)
+		)
+		(stroke
+			(width 0.1)
+			(type solid)
+		)
+		(fill solid)
+		(layer "F.CrtYd")
+		(uuid "ae581d77-3748-48fd-9ecb-f7a8f5017922")
+	)
+	(fp_line
+		(start -1.25 -1)
+		(end 1.25 -1)
+		(stroke
+			(width 0.1)
+			(type solid)
+		)
+		(layer "F.Fab")
+		(uuid "c4d21e19-b1ee-4ff4-8c3c-e0c3f46dcf2e")
+	)
+	(fp_line
+		(start -1.25 1)
+		(end -1.25 -1)
+		(stroke
+			(width 0.1)
+			(type solid)
+		)
+		(layer "F.Fab")
+		(uuid "c4891b7a-6b8e-4139-8c5d-b70dd587708f")
+	)
+	(fp_line
+		(start 1.25 -1)
+		(end 1.25 1)
+		(stroke
+			(width 0.1)
+			(type solid)
+		)
+		(layer "F.Fab")
+		(uuid "088335b3-d060-4c0b-b4d8-b1a6d9ce87be")
+	)
+	(fp_line
+		(start 1.25 1)
+		(end -1.25 1)
+		(stroke
+			(width 0.1)
+			(type solid)
+		)
+		(layer "F.Fab")
+		(uuid "5a1702c6-15b0-4c36-9f85-494506329ac1")
+	)
+	(pad "1" smd rect
+		(at -0.85 0.675)
+		(size 1 0.85)
+		(layers "F.Cu" "F.Paste" "F.Mask")
+		(solder_mask_margin 0.102)
+		(uuid "be7b5b41-654a-4c2b-8de8-b88af9d5986e")
+	)
+	(pad "2" smd rect
+		(at 0.85 0.675)
+		(size 1 0.85)
+		(layers "F.Cu" "F.Paste" "F.Mask")
+		(solder_mask_margin 0.102)
+		(uuid "f25be405-da90-4a87-8020-187c9f9c502a")
+	)
+	(pad "3" smd rect
+		(at 0.85 -0.675)
+		(size 1 0.85)
+		(layers "F.Cu" "F.Paste" "F.Mask")
+		(solder_mask_margin 0.102)
+		(uuid "2e90dc37-b36d-4048-b152-14145a83a0cb")
+	)
+	(pad "4" smd rect
+		(at -0.85 -0.675)
+		(size 1 0.85)
+		(layers "F.Cu" "F.Paste" "F.Mask")
+		(solder_mask_margin 0.102)
+		(uuid "1e9817eb-2fce-4092-ac25-304fc74d01df")
+	)
+	(model "${KIPRJMOD}/hardware_interface.pretty/3D_Models/WE-SPXO_IQXO-791.step"
+		(offset
+			(xyz 0 0 0)
+		)
+		(scale
+			(xyz 1 1 1)
+		)
+		(rotate
+			(xyz 0 0 0)
+		)
+	)
+)
