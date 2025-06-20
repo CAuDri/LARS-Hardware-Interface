@@ -1,4 +1,0 @@
-## Ignore temporary KiCad files
-hardware_interface-backups/
-fp-info-cache
-*.kicad_prl
