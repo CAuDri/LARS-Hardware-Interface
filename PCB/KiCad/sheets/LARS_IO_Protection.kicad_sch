@@ -993,7 +993,7 @@
 		(uuid "0e248630-2cf7-45fa-88a1-1f5ace23b577")
 	)
 	(junction
-		(at 252.73 62.23)
+		(at 252.73 64.77)
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "178e37a1-c0d4-42c9-a9cf-ab11e26d0caa")
@@ -1005,7 +1005,7 @@
 		(uuid "25c675ff-4ac9-447d-9490-03063cebbd84")
 	)
 	(junction
-		(at 233.68 64.77)
+		(at 233.68 67.31)
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "28f24b8b-7da7-40a7-87f2-3515e853ff5d")
@@ -1101,7 +1101,7 @@
 		(uuid "5a67b622-1f14-4f4f-9197-d93ce2571edb")
 	)
 	(junction
-		(at 255.27 64.77)
+		(at 255.27 67.31)
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "62199218-8691-4fdd-9b5c-6551606683c4")
@@ -1131,7 +1131,7 @@
 		(uuid "82559df8-937e-48f3-9f20-27eaaa07ec22")
 	)
 	(junction
-		(at 231.14 62.23)
+		(at 231.14 64.77)
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "8bfc983b-bc81-4ef8-9a9b-5f383edc4dbe")
@@ -1267,12 +1267,8 @@
 		(uuid "7d65e854-225e-4496-bc1f-eaf61722b69f")
 	)
 	(no_connect
-		(at 93.98 121.92)
-		(uuid "9b0d3bd9-c96c-4151-83ea-009ddde414f7")
-	)
-	(no_connect
-		(at 214.63 67.31)
-		(uuid "f923f06b-adc6-42ef-a13f-5ee3a18c9a6e")
+		(at 214.63 62.23)
+		(uuid "a9732733-d260-4c30-bd8f-b07d9dfeef4d")
 	)
 	(wire
 		(pts
@@ -1316,23 +1312,23 @@
 	)
 	(wire
 		(pts
-			(xy 233.68 64.77) (xy 255.27 64.77)
+			(xy 111.76 44.45) (xy 111.76 46.99)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "03e933a1-7af1-4961-b648-42663d53ea1b")
+	)
+	(wire
+		(pts
+			(xy 233.68 67.31) (xy 255.27 67.31)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
 		(uuid "0412621f-6222-4f0f-af43-2246f8a27013")
-	)
-	(wire
-		(pts
-			(xy 255.27 59.69) (xy 255.27 64.77)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "05a724a8-e701-4681-90ed-cea72049283d")
 	)
 	(wire
 		(pts
@@ -1343,26 +1339,6 @@
 			(type default)
 		)
 		(uuid "064538d6-491d-469b-8cee-7c0c735893df")
-	)
-	(wire
-		(pts
-			(xy 109.22 44.45) (xy 109.22 46.99)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "079c54cd-53d9-4628-aaac-23846789b8f5")
-	)
-	(wire
-		(pts
-			(xy 220.98 102.87) (xy 220.98 100.33)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "0900f88a-cb53-47bd-964d-63b8ce9ddb0c")
 	)
 	(wire
 		(pts
@@ -1406,6 +1382,16 @@
 	)
 	(wire
 		(pts
+			(xy 93.98 121.92) (xy 115.57 121.92)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "0d9545f9-0f1e-466b-8da4-c2e56a744501")
+	)
+	(wire
+		(pts
 			(xy 93.98 62.23) (xy 106.68 62.23)
 		)
 		(stroke
@@ -1436,26 +1422,6 @@
 	)
 	(wire
 		(pts
-			(xy 162.56 46.99) (xy 162.56 44.45)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "13a45ca4-17f2-4cd9-91b2-6770908c33c7")
-	)
-	(wire
-		(pts
-			(xy 214.63 57.15) (xy 223.52 57.15)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "151a04dd-696c-4ad7-9b58-413de6dc1fbd")
-	)
-	(wire
-		(pts
 			(xy 118.11 29.21) (xy 118.11 31.75)
 		)
 		(stroke
@@ -1463,26 +1429,6 @@
 			(type default)
 		)
 		(uuid "1556a2b3-c66c-41db-b981-c55def987bee")
-	)
-	(wire
-		(pts
-			(xy 233.68 52.07) (xy 233.68 64.77)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "155f28e9-438d-481e-b2d3-a262222d8205")
-	)
-	(wire
-		(pts
-			(xy 111.76 44.45) (xy 111.76 46.99)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "16a67fba-29d3-4378-91ab-344b449bb589")
 	)
 	(wire
 		(pts
@@ -1516,7 +1462,7 @@
 	)
 	(wire
 		(pts
-			(xy 255.27 64.77) (xy 259.08 64.77)
+			(xy 255.27 67.31) (xy 259.08 67.31)
 		)
 		(stroke
 			(width 0)
@@ -1543,6 +1489,16 @@
 			(type default)
 		)
 		(uuid "1d8f05de-a926-4a19-bc66-5ed48cb567f5")
+	)
+	(wire
+		(pts
+			(xy 226.06 102.87) (xy 226.06 100.33)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "1de2462a-4817-4163-88b5-7c0fe37cc3a6")
 	)
 	(wire
 		(pts
@@ -1676,6 +1632,16 @@
 	)
 	(wire
 		(pts
+			(xy 223.52 46.99) (xy 223.52 44.45)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "25f0c981-2fe4-4a5e-96db-13c8cde487a0")
+	)
+	(wire
+		(pts
 			(xy 214.63 127) (xy 214.63 125.73)
 		)
 		(stroke
@@ -1743,16 +1709,6 @@
 			(type default)
 		)
 		(uuid "2c7109d1-5a6d-46e4-b6a9-3c2d33c8acad")
-	)
-	(wire
-		(pts
-			(xy 170.18 46.99) (xy 170.18 44.45)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "2dd81b6f-9e0a-484f-be01-36d2174f2651")
 	)
 	(wire
 		(pts
@@ -1886,13 +1842,13 @@
 	)
 	(wire
 		(pts
-			(xy 228.6 102.87) (xy 228.6 100.33)
+			(xy 220.98 100.33) (xy 220.98 102.87)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
-		(uuid "3be9ad98-2d78-4590-847b-5b23e318ac1c")
+		(uuid "3b69402a-029e-4c16-9768-e95ea145723e")
 	)
 	(wire
 		(pts
@@ -1906,6 +1862,16 @@
 	)
 	(wire
 		(pts
+			(xy 167.64 44.45) (xy 167.64 46.99)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "3fb03a87-b4c0-4bbe-b497-b34da7aa6940")
+	)
+	(wire
+		(pts
 			(xy 162.56 123.19) (xy 180.34 123.19)
 		)
 		(stroke
@@ -1913,6 +1879,16 @@
 			(type default)
 		)
 		(uuid "404b5051-20df-4a52-8da8-cd002328e375")
+	)
+	(wire
+		(pts
+			(xy 233.68 52.07) (xy 233.68 67.31)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "4342ca8c-ae62-4348-9648-fd8a69668dce")
 	)
 	(wire
 		(pts
@@ -1956,16 +1932,6 @@
 	)
 	(wire
 		(pts
-			(xy 106.68 44.45) (xy 106.68 46.99)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "46cd2314-ab46-4946-9599-1238e380bc55")
-	)
-	(wire
-		(pts
 			(xy 162.56 67.31) (xy 180.34 67.31)
 		)
 		(stroke
@@ -1973,6 +1939,16 @@
 			(type default)
 		)
 		(uuid "475a256e-5fe1-42db-968f-ebe6d68fa435")
+	)
+	(wire
+		(pts
+			(xy 172.72 46.99) (xy 172.72 44.45)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "482eeccb-75c6-4327-abd9-4cbfc80139cb")
 	)
 	(wire
 		(pts
@@ -2073,6 +2049,16 @@
 			(type default)
 		)
 		(uuid "4f570be8-952c-4485-a2ce-0ec5abf6690d")
+	)
+	(wire
+		(pts
+			(xy 170.18 44.45) (xy 170.18 46.99)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "50ffa153-d805-463c-93cc-115e761bfedb")
 	)
 	(wire
 		(pts
@@ -2206,6 +2192,16 @@
 	)
 	(wire
 		(pts
+			(xy 106.68 44.45) (xy 106.68 46.99)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "6269895e-2758-4bd8-afb6-bb72b583dff9")
+	)
+	(wire
+		(pts
 			(xy 101.6 99.06) (xy 101.6 101.6)
 		)
 		(stroke
@@ -2216,27 +2212,7 @@
 	)
 	(wire
 		(pts
-			(xy 172.72 44.45) (xy 172.72 46.99)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "6471a963-caed-480a-b675-8a4ba7d34625")
-	)
-	(wire
-		(pts
-			(xy 226.06 100.33) (xy 226.06 102.87)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "64d0e658-8e27-4d3d-b19b-dd8b8123f017")
-	)
-	(wire
-		(pts
-			(xy 214.63 64.77) (xy 233.68 64.77)
+			(xy 214.63 67.31) (xy 233.68 67.31)
 		)
 		(stroke
 			(width 0)
@@ -2306,6 +2282,16 @@
 	)
 	(wire
 		(pts
+			(xy 223.52 100.33) (xy 223.52 102.87)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "767ada0d-6fbb-4248-9c97-ec3c3e0b9939")
+	)
+	(wire
+		(pts
 			(xy 101.6 57.15) (xy 115.57 57.15)
 		)
 		(stroke
@@ -2356,13 +2342,13 @@
 	)
 	(wire
 		(pts
-			(xy 175.26 44.45) (xy 175.26 46.99)
+			(xy 255.27 59.69) (xy 255.27 67.31)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
-		(uuid "79a02644-6711-415c-9ee9-b52cefd84877")
+		(uuid "7be26559-e155-415a-89b2-e44b4ab7e30f")
 	)
 	(wire
 		(pts
@@ -2396,33 +2382,13 @@
 	)
 	(wire
 		(pts
-			(xy 165.1 46.99) (xy 165.1 44.45)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "7fe685af-d8df-445a-b410-49fa1c6c5b32")
-	)
-	(wire
-		(pts
-			(xy 231.14 62.23) (xy 252.73 62.23)
+			(xy 231.14 64.77) (xy 252.73 64.77)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
 		(uuid "807c4583-3d19-4505-ab8c-a6e9bbc11d99")
-	)
-	(wire
-		(pts
-			(xy 167.64 46.99) (xy 167.64 44.45)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "837730d6-8dc4-42b8-b599-707d9ce0eb57")
 	)
 	(wire
 		(pts
@@ -2606,7 +2572,7 @@
 	)
 	(wire
 		(pts
-			(xy 252.73 59.69) (xy 252.73 62.23)
+			(xy 252.73 59.69) (xy 252.73 64.77)
 		)
 		(stroke
 			(width 0)
@@ -2633,6 +2599,16 @@
 			(type default)
 		)
 		(uuid "9a6d5637-55cd-4399-9ce5-29dc288d46e0")
+	)
+	(wire
+		(pts
+			(xy 109.22 44.45) (xy 109.22 46.99)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "9bf16d58-6287-4665-9b34-486c58336c3d")
 	)
 	(wire
 		(pts
@@ -2686,13 +2662,23 @@
 	)
 	(wire
 		(pts
-			(xy 214.63 62.23) (xy 231.14 62.23)
+			(xy 214.63 64.77) (xy 231.14 64.77)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
 		(uuid "a1314224-eeca-463e-a2c6-a77f844fd650")
+	)
+	(wire
+		(pts
+			(xy 165.1 46.99) (xy 165.1 44.45)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "a2b22d7f-70d6-4db7-9cce-304f8439dc0d")
 	)
 	(wire
 		(pts
@@ -2716,7 +2702,7 @@
 	)
 	(wire
 		(pts
-			(xy 252.73 62.23) (xy 259.08 62.23)
+			(xy 252.73 64.77) (xy 259.08 64.77)
 		)
 		(stroke
 			(width 0)
@@ -2756,6 +2742,16 @@
 	)
 	(wire
 		(pts
+			(xy 162.56 46.99) (xy 162.56 44.45)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "a9c5b14f-3e5c-48fe-a948-f0a24a92cc1a")
+	)
+	(wire
+		(pts
 			(xy 233.68 123.19) (xy 255.27 123.19)
 		)
 		(stroke
@@ -2773,16 +2769,6 @@
 			(type default)
 		)
 		(uuid "aa7faa7c-291c-4aca-aa6c-8a6e07d1bc0e")
-	)
-	(wire
-		(pts
-			(xy 223.52 46.99) (xy 223.52 44.45)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "aa930e89-757c-46cf-a2c5-36de7cc5b5fa")
 	)
 	(wire
 		(pts
@@ -2876,7 +2862,7 @@
 	)
 	(wire
 		(pts
-			(xy 231.14 52.07) (xy 231.14 62.23)
+			(xy 231.14 52.07) (xy 231.14 64.77)
 		)
 		(stroke
 			(width 0)
@@ -2956,6 +2942,26 @@
 	)
 	(wire
 		(pts
+			(xy 214.63 57.15) (xy 223.52 57.15)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "b8e8ce2a-5621-41f2-9863-7a828e89bc87")
+	)
+	(wire
+		(pts
+			(xy 175.26 46.99) (xy 175.26 44.45)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "b9711de8-0e18-494f-88b8-55f2cafd2f02")
+	)
+	(wire
+		(pts
 			(xy 38.1 119.38) (xy 44.45 119.38)
 		)
 		(stroke
@@ -3023,6 +3029,16 @@
 			(type default)
 		)
 		(uuid "c2b05c40-3525-4f94-b43e-e7c4ac014515")
+	)
+	(wire
+		(pts
+			(xy 220.98 46.99) (xy 220.98 44.45)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "c3991e1b-d058-4459-b7ad-6f57309b9699")
 	)
 	(polyline
 		(pts
@@ -3246,16 +3262,6 @@
 	)
 	(wire
 		(pts
-			(xy 220.98 46.99) (xy 220.98 44.45)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "e30f0d96-9134-43af-bd22-28675f58f11d")
-	)
-	(wire
-		(pts
 			(xy 180.34 127) (xy 180.34 125.73)
 		)
 		(stroke
@@ -3346,16 +3352,6 @@
 	)
 	(wire
 		(pts
-			(xy 223.52 102.87) (xy 223.52 100.33)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "ec1d0f44-bc94-4a24-ae8a-c3d5960fc1fe")
-	)
-	(wire
-		(pts
 			(xy 252.73 50.8) (xy 252.73 54.61)
 		)
 		(stroke
@@ -3393,6 +3389,16 @@
 			(type default)
 		)
 		(uuid "f36360ed-6adc-4875-add7-0a2d0832f528")
+	)
+	(wire
+		(pts
+			(xy 228.6 102.87) (xy 228.6 100.33)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "f3cc4af8-555c-4b84-8238-79f77c1f87f8")
 	)
 	(wire
 		(pts
@@ -3484,9 +3490,9 @@
 		)
 		(uuid "ff6effd6-5e89-4b4b-a2ef-b4aba68aa3ac")
 	)
-	(global_label "UART3_RX"
-		(shape input)
-		(at 41.91 44.45 90)
+	(global_label "GPIO1"
+		(shape bidirectional)
+		(at 106.68 44.45 90)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -3494,9 +3500,75 @@
 			)
 			(justify left)
 		)
-		(uuid "0602f7da-cff0-4e43-94ea-e6b911f35f27")
+		(uuid "003ffd3a-5ace-4a97-a799-262733552a75")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 41.91 34.6114 90)
+			(at 106.68 36.6253 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
+	)
+	(global_label "I2C1_IO4"
+		(shape bidirectional)
+		(at 162.56 44.45 90)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.016 1.016)
+			)
+			(justify left)
+		)
+		(uuid "017779eb-abc7-428a-882c-f532510f667a")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 162.56 34.4482 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
+	)
+	(global_label "I2C1_IO3'"
+		(shape bidirectional)
+		(at 158.75 64.77 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.016 1.016)
+			)
+			(justify right)
+		)
+		(uuid "037388fe-c8ee-49c9-8f8f-7d76a6b284c4")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 148.2644 64.77 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+				(hide yes)
+			)
+		)
+	)
+	(global_label "GPIO1'"
+		(shape bidirectional)
+		(at 115.57 62.23 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.016 1.016)
+			)
+			(justify left)
+		)
+		(uuid "0b5ae438-41a0-4095-b9e9-b3ec720ca118")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 123.8785 62.23 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3594,28 +3666,6 @@
 			)
 		)
 	)
-	(global_label "GPIO2"
-		(shape bidirectional)
-		(at 109.22 44.45 90)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.016 1.016)
-			)
-			(justify left)
-		)
-		(uuid "1613f808-1caa-4655-b816-15b38e2234d7")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 109.22 36.6253 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-				(hide yes)
-			)
-		)
-	)
 	(global_label "I2C2_IO6'"
 		(shape bidirectional)
 		(at 158.75 118.11 180)
@@ -3660,9 +3710,9 @@
 			)
 		)
 	)
-	(global_label "SPI1_CS1"
-		(shape output)
-		(at 101.6 99.06 90)
+	(global_label "I2C1_IO8'"
+		(shape bidirectional)
+		(at 237.49 54.61 0)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -3670,9 +3720,53 @@
 			)
 			(justify left)
 		)
-		(uuid "259a0d71-5fdd-4cd9-8b15-5a7443836255")
+		(uuid "1c10a925-7056-4cad-a0dd-81e78cda1120")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 101.6 89.5118 90)
+			(at 247.9756 54.61 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
+	)
+	(global_label "I2C1_IO6'"
+		(shape bidirectional)
+		(at 158.75 54.61 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.016 1.016)
+			)
+			(justify right)
+		)
+		(uuid "1d9767c0-455e-43df-9a59-ac5517f826db")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 148.2644 54.61 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+				(hide yes)
+			)
+		)
+	)
+	(global_label "I2C2_IO1'"
+		(shape bidirectional)
+		(at 236.22 118.11 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.016 1.016)
+			)
+			(justify left)
+		)
+		(uuid "26391a4f-afec-4ffa-8f38-6a65e08fd467")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 246.7056 118.11 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3704,28 +3798,6 @@
 			)
 		)
 	)
-	(global_label "I2C1_IO1"
-		(shape bidirectional)
-		(at 220.98 44.45 90)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.016 1.016)
-			)
-			(justify left)
-		)
-		(uuid "2b675fee-0023-4421-85c1-a3271fa5d014")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 220.98 34.4482 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-				(hide yes)
-			)
-		)
-	)
 	(global_label "SPI1_MISO'"
 		(shape output)
 		(at 115.57 116.84 0)
@@ -3739,28 +3811,6 @@
 		(uuid "2d55bce1-19e3-4c80-950e-1ddf3191308b")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
 			(at 126.3277 116.84 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-				(hide yes)
-			)
-		)
-	)
-	(global_label "I2C2_IO3"
-		(shape bidirectional)
-		(at 226.06 100.33 90)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.016 1.016)
-			)
-			(justify left)
-		)
-		(uuid "31a66ecb-61e3-465d-8d4f-5c52b1cf8313")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 226.06 90.3282 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3792,50 +3842,6 @@
 			)
 		)
 	)
-	(global_label "I2C1_IO6"
-		(shape bidirectional)
-		(at 167.64 44.45 90)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.016 1.016)
-			)
-			(justify left)
-		)
-		(uuid "32b05c8f-455d-4a96-9329-cff13d3b80c8")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 167.64 34.4482 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-				(hide yes)
-			)
-		)
-	)
-	(global_label "UART3_TX"
-		(shape output)
-		(at 44.45 44.45 90)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.016 1.016)
-			)
-			(justify left)
-		)
-		(uuid "3396b97d-4496-4518-a3e5-bf78833821fb")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 44.45 34.8533 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-				(hide yes)
-			)
-		)
-	)
 	(global_label "TIM2_IO"
 		(shape bidirectional)
 		(at 41.91 99.06 90)
@@ -3858,9 +3864,9 @@
 			)
 		)
 	)
-	(global_label "I2C1_IO3'"
-		(shape bidirectional)
-		(at 158.75 54.61 180)
+	(global_label "UART1_RX'"
+		(shape output)
+		(at 38.1 54.61 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -3868,9 +3874,75 @@
 			)
 			(justify right)
 		)
-		(uuid "3b26c64c-ffbf-433e-b4dc-a1d0ae1166b0")
+		(uuid "38a7a29f-4c62-45e6-87ab-7d456e1f0774")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 148.2644 54.61 0)
+			(at 27.7776 54.61 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+				(hide yes)
+			)
+		)
+	)
+	(global_label "UART3_RX"
+		(shape input)
+		(at 44.45 44.45 90)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.016 1.016)
+			)
+			(justify left)
+		)
+		(uuid "38cfe164-e913-4e10-b4b4-6ad48bd46a91")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 44.45 34.6114 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
+	)
+	(global_label "I2C2_IO4"
+		(shape bidirectional)
+		(at 220.98 100.33 90)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.016 1.016)
+			)
+			(justify left)
+		)
+		(uuid "38dc27cf-68e8-49ed-996f-3b37a860b3b1")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 220.98 90.3282 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
+	)
+	(global_label "I2C1_IO1'"
+		(shape bidirectional)
+		(at 158.75 59.69 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.016 1.016)
+			)
+			(justify right)
+		)
+		(uuid "3a14f9eb-303a-42f6-85f4-c10ee5d0fdee")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 148.2644 59.69 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3902,6 +3974,28 @@
 			)
 		)
 	)
+	(global_label "UART1_TX'"
+		(shape input)
+		(at 38.1 57.15 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.016 1.016)
+			)
+			(justify right)
+		)
+		(uuid "428f40a1-89a8-45b4-b862-a0048f6eccc2")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 28.0195 57.15 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+				(hide yes)
+			)
+		)
+	)
 	(global_label "TIM2_CH2'"
 		(shape bidirectional)
 		(at 38.1 119.38 180)
@@ -3920,28 +4014,6 @@
 					(size 1.27 1.27)
 				)
 				(justify right)
-				(hide yes)
-			)
-		)
-	)
-	(global_label "SPI1_CS1'"
-		(shape input)
-		(at 115.57 111.76 0)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.016 1.016)
-			)
-			(justify left)
-		)
-		(uuid "44b764bf-cdae-4257-9cb3-3c16f1ed65f7")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 125.602 111.76 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
 				(hide yes)
 			)
 		)
@@ -4022,7 +4094,7 @@
 			)
 			(justify right)
 		)
-		(uuid "490048a2-07c4-456a-a4d7-2dc516736ab8")
+		(uuid "47a1f2b5-7ffb-45e2-b6b4-4f680234116a")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
 			(at 28.0195 67.31 0)
 			(effects
@@ -4056,6 +4128,28 @@
 			)
 		)
 	)
+	(global_label "UART3_TX"
+		(shape output)
+		(at 41.91 44.45 90)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.016 1.016)
+			)
+			(justify left)
+		)
+		(uuid "4d4c7736-429b-403f-9d1d-ff7fe9463e1b")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 41.91 34.8533 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
+	)
 	(global_label "UART1_IO'"
 		(shape bidirectional)
 		(at 115.57 54.61 0)
@@ -4078,9 +4172,9 @@
 			)
 		)
 	)
-	(global_label "GPIO1"
-		(shape bidirectional)
-		(at 111.76 44.45 90)
+	(global_label "SPI1_CS1"
+		(shape output)
+		(at 99.06 99.06 90)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -4088,9 +4182,9 @@
 			)
 			(justify left)
 		)
-		(uuid "5555f0cf-5c8c-4b9e-b805-eeafabd8d87f")
+		(uuid "4fe9b28d-d10f-49f0-a68b-afc1337847eb")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 111.76 36.6253 90)
+			(at 99.06 89.5118 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4100,9 +4194,9 @@
 			)
 		)
 	)
-	(global_label "GPIO3'"
+	(global_label "I2C1_IO7"
 		(shape bidirectional)
-		(at 115.57 62.23 0)
+		(at 223.52 44.45 90)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -4110,9 +4204,9 @@
 			)
 			(justify left)
 		)
-		(uuid "58bff7dc-7569-493b-a54e-628a069d05a0")
+		(uuid "595767aa-47a2-40e6-81c4-8145d8b497ff")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 123.8785 62.23 0)
+			(at 223.52 34.4482 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4144,6 +4238,28 @@
 			)
 		)
 	)
+	(global_label "I2C2_IO2'"
+		(shape bidirectional)
+		(at 236.22 115.57 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.016 1.016)
+			)
+			(justify left)
+		)
+		(uuid "5f699e96-d5ff-4dc2-aa17-9032c0501ff8")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 246.7056 115.57 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
+	)
 	(global_label "I2C2_IO7"
 		(shape bidirectional)
 		(at 162.56 100.33 90)
@@ -4157,6 +4273,28 @@
 		(uuid "61a5b9d0-fea2-49bf-acfe-c48db7386ebb")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
 			(at 162.56 90.3282 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
+	)
+	(global_label "I2C2_IO4'"
+		(shape bidirectional)
+		(at 236.22 110.49 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.016 1.016)
+			)
+			(justify left)
+		)
+		(uuid "65e15428-81c8-4ce2-be40-6f171ae14739")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 246.7056 110.49 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4210,9 +4348,9 @@
 			)
 		)
 	)
-	(global_label "I2C1_IO8"
+	(global_label "I2C1_IO5"
 		(shape bidirectional)
-		(at 162.56 44.45 90)
+		(at 172.72 44.45 90)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -4220,9 +4358,9 @@
 			)
 			(justify left)
 		)
-		(uuid "6bd25635-50ef-4524-bf7f-48931c58094d")
+		(uuid "6b9d6292-e729-4091-a760-809b7c45e429")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 162.56 34.4482 90)
+			(at 172.72 34.4482 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4232,9 +4370,9 @@
 			)
 		)
 	)
-	(global_label "I2C2_IO2'"
+	(global_label "GPIO3'"
 		(shape bidirectional)
-		(at 236.22 113.03 0)
+		(at 115.57 67.31 0)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -4242,9 +4380,9 @@
 			)
 			(justify left)
 		)
-		(uuid "6dfc7a9e-41d3-4e09-a904-8f41b5b2c7f9")
+		(uuid "72c2d1b1-743c-4dcc-9505-5d07a5fc5ec9")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 246.7056 113.03 0)
+			(at 123.8785 67.31 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4254,9 +4392,9 @@
 			)
 		)
 	)
-	(global_label "I2C2_IO4'"
-		(shape bidirectional)
-		(at 236.22 118.11 0)
+	(global_label "SPI1_CS2'"
+		(shape input)
+		(at 115.57 111.76 0)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -4264,53 +4402,9 @@
 			)
 			(justify left)
 		)
-		(uuid "77c68131-16c2-4b5c-b3fb-5d622ac18fb9")
+		(uuid "7b4caf8c-84f1-4bb8-a1a9-4161807f074b")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 246.7056 118.11 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-				(hide yes)
-			)
-		)
-	)
-	(global_label "I2C1_IO2"
-		(shape bidirectional)
-		(at 223.52 44.45 90)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.016 1.016)
-			)
-			(justify left)
-		)
-		(uuid "78ade71a-7522-4631-88ac-51cb997b54b9")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 223.52 34.4482 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-				(hide yes)
-			)
-		)
-	)
-	(global_label "SPI1_CS2"
-		(shape output)
-		(at 99.06 99.06 90)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.016 1.016)
-			)
-			(justify left)
-		)
-		(uuid "7aa04909-d6b6-4a7b-a1fd-baf09c5d5d56")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 99.06 89.5118 90)
+			(at 125.602 111.76 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4342,28 +4436,6 @@
 			)
 		)
 	)
-	(global_label "I2C2_IO1'"
-		(shape bidirectional)
-		(at 236.22 110.49 0)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.016 1.016)
-			)
-			(justify left)
-		)
-		(uuid "7e60500e-3e60-4539-8698-39e0f0163e53")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 246.7056 110.49 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-				(hide yes)
-			)
-		)
-	)
 	(global_label "TIM1_CH2'"
 		(shape bidirectional)
 		(at 38.1 109.22 180)
@@ -4386,28 +4458,6 @@
 			)
 		)
 	)
-	(global_label "I2C2_IO4"
-		(shape bidirectional)
-		(at 228.6 100.33 90)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.016 1.016)
-			)
-			(justify left)
-		)
-		(uuid "8068c6c4-f9b2-429a-b095-e30c3db16658")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 228.6 90.3282 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-				(hide yes)
-			)
-		)
-	)
 	(global_label "UART2_RX'"
 		(shape output)
 		(at 38.1 59.69 180)
@@ -4426,6 +4476,94 @@
 					(size 1.27 1.27)
 				)
 				(justify right)
+				(hide yes)
+			)
+		)
+	)
+	(global_label "I2C2_IO3"
+		(shape bidirectional)
+		(at 223.52 100.33 90)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.016 1.016)
+			)
+			(justify left)
+		)
+		(uuid "8377f474-ecb5-4095-8016-3ce2620c5156")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 223.52 90.3282 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
+	)
+	(global_label "UART1_TX"
+		(shape output)
+		(at 52.07 44.45 90)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.016 1.016)
+			)
+			(justify left)
+		)
+		(uuid "86c4380d-fa2e-4fff-b276-e57d4dc9e853")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 52.07 34.8533 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
+	)
+	(global_label "GPIO2"
+		(shape bidirectional)
+		(at 109.22 44.45 90)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.016 1.016)
+			)
+			(justify left)
+		)
+		(uuid "885dbfc0-990c-4824-a295-28e7fa40ce45")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 109.22 36.6253 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
+	)
+	(global_label "SPI1_CS2"
+		(shape output)
+		(at 101.6 99.06 90)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.016 1.016)
+			)
+			(justify left)
+		)
+		(uuid "8a0f2567-743c-4e14-8b56-395764398733")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 101.6 89.5118 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
 				(hide yes)
 			)
 		)
@@ -4474,28 +4612,6 @@
 			)
 		)
 	)
-	(global_label "I2C1_IO4'"
-		(shape bidirectional)
-		(at 158.75 57.15 180)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.016 1.016)
-			)
-			(justify right)
-		)
-		(uuid "9154b309-1bac-4c2e-93c2-b8ce6492b704")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 148.2644 57.15 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify right)
-				(hide yes)
-			)
-		)
-	)
 	(global_label "TIM2_CH1"
 		(shape bidirectional)
 		(at 46.99 99.06 90)
@@ -4540,24 +4656,46 @@
 			)
 		)
 	)
-	(global_label "I2C2_IO1"
+	(global_label "I2C1_IO2'"
 		(shape bidirectional)
-		(at 220.98 100.33 90)
+		(at 158.75 62.23 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
 				(size 1.016 1.016)
 			)
-			(justify left)
+			(justify right)
 		)
-		(uuid "9a90de00-ff82-418d-b58b-be88d8572cba")
+		(uuid "97f61ff7-f862-43ac-bbe4-255f8294a209")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 220.98 90.3282 90)
+			(at 148.2644 62.23 0)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
-				(justify left)
+				(justify right)
+				(hide yes)
+			)
+		)
+	)
+	(global_label "UART3_RX'"
+		(shape output)
+		(at 38.1 64.77 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.016 1.016)
+			)
+			(justify right)
+		)
+		(uuid "99be95d1-56ef-4074-940b-c6661b5555f5")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 27.7776 64.77 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
 				(hide yes)
 			)
 		)
@@ -4584,24 +4722,24 @@
 			)
 		)
 	)
-	(global_label "I2C1_IO6'"
+	(global_label "GPIO2'"
 		(shape bidirectional)
-		(at 158.75 62.23 180)
+		(at 115.57 64.77 0)
 		(fields_autoplaced yes)
 		(effects
 			(font
 				(size 1.016 1.016)
 			)
-			(justify right)
+			(justify left)
 		)
-		(uuid "9b7445bb-976a-4f1d-9a81-83729ca6913b")
+		(uuid "9b8bc99b-364a-4051-93d3-ecf8b87bce85")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 148.2644 62.23 0)
+			(at 123.8785 64.77 0)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
-				(justify right)
+				(justify left)
 				(hide yes)
 			)
 		)
@@ -4650,9 +4788,9 @@
 			)
 		)
 	)
-	(global_label "GPIO1'"
-		(shape bidirectional)
-		(at 115.57 67.31 0)
+	(global_label "UART1_RX"
+		(shape input)
+		(at 54.61 44.45 90)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -4660,9 +4798,9 @@
 			)
 			(justify left)
 		)
-		(uuid "a039350d-dbe5-492d-b35a-f87b6631a156")
+		(uuid "9f217eda-6c48-43ef-a326-c9f13e3c4f85")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 123.8785 67.31 0)
+			(at 54.61 34.6114 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4694,31 +4832,9 @@
 			)
 		)
 	)
-	(global_label "I2C1_IO5'"
+	(global_label "STM_NRST"
 		(shape bidirectional)
-		(at 158.75 59.69 180)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.016 1.016)
-			)
-			(justify right)
-		)
-		(uuid "a75e8981-cec9-4e5f-b333-dcc1efe87779")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 148.2644 59.69 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify right)
-				(hide yes)
-			)
-		)
-	)
-	(global_label "UART1_RX"
-		(shape input)
-		(at 52.07 44.45 90)
+		(at 115.57 121.92 0)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -4726,36 +4842,14 @@
 			)
 			(justify left)
 		)
-		(uuid "a8976c36-4a5c-4acc-8c21-0977f0bb514f")
+		(uuid "a7efb054-290d-40f6-bdca-9f8e8ffe2758")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 52.07 34.6114 90)
+			(at 126.3459 121.92 0)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
 				(justify left)
-				(hide yes)
-			)
-		)
-	)
-	(global_label "I2C1_IO7'"
-		(shape bidirectional)
-		(at 158.75 64.77 180)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.016 1.016)
-			)
-			(justify right)
-		)
-		(uuid "a96f31f1-419a-4b79-a0b1-d24d0c0539eb")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 148.2644 64.77 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify right)
 				(hide yes)
 			)
 		)
@@ -4782,9 +4876,9 @@
 			)
 		)
 	)
-	(global_label "I2C1_IO1'"
+	(global_label "I2C1_IO1"
 		(shape bidirectional)
-		(at 237.49 54.61 0)
+		(at 170.18 44.45 90)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -4792,53 +4886,9 @@
 			)
 			(justify left)
 		)
-		(uuid "aaffd01f-fc3c-4c36-9ddf-8efb23766e7c")
+		(uuid "ad2643b3-dc6d-4f8c-a57f-f4c2d99e4eed")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 247.9756 54.61 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-				(hide yes)
-			)
-		)
-	)
-	(global_label "UART1_TX'"
-		(shape input)
-		(at 38.1 54.61 180)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.016 1.016)
-			)
-			(justify right)
-		)
-		(uuid "ac1c569e-e721-422d-b337-c7318493aa1a")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 28.0195 54.61 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify right)
-				(hide yes)
-			)
-		)
-	)
-	(global_label "I2C1_IO3"
-		(shape bidirectional)
-		(at 175.26 44.45 90)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.016 1.016)
-			)
-			(justify left)
-		)
-		(uuid "adf0bca7-b52b-48ca-b5bb-d0bdb70156df")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 175.26 34.4482 90)
+			(at 170.18 34.4482 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4892,75 +4942,9 @@
 			)
 		)
 	)
-	(global_label "UART1_TX"
-		(shape output)
-		(at 54.61 44.45 90)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.016 1.016)
-			)
-			(justify left)
-		)
-		(uuid "b71ae8dd-6c92-499b-a1e5-7b01618367be")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 54.61 34.8533 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-				(hide yes)
-			)
-		)
-	)
-	(global_label "I2C1_IO5"
-		(shape bidirectional)
-		(at 170.18 44.45 90)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.016 1.016)
-			)
-			(justify left)
-		)
-		(uuid "b9d3182b-b440-4466-931d-e94880f0dbda")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 170.18 34.4482 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-				(hide yes)
-			)
-		)
-	)
-	(global_label "I2C1_IO7"
-		(shape bidirectional)
-		(at 165.1 44.45 90)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.016 1.016)
-			)
-			(justify left)
-		)
-		(uuid "ba6bddbd-6ca3-477d-9c8a-cf0efb17abb2")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 165.1 34.4482 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-				(hide yes)
-			)
-		)
-	)
 	(global_label "I2C1_SCL'"
 		(shape bidirectional)
-		(at 259.08 62.23 0)
+		(at 259.08 64.77 0)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -4970,7 +4954,7 @@
 		)
 		(uuid "be1bb63a-3d42-490f-868d-d3804d3a0ed5")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 269.8559 62.23 0)
+			(at 269.8559 64.77 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4993,50 +4977,6 @@
 		(uuid "be3138e7-c630-4ad6-97c1-e75adc64800c")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
 			(at 28.6304 121.92 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify right)
-				(hide yes)
-			)
-		)
-	)
-	(global_label "GPIO3"
-		(shape bidirectional)
-		(at 106.68 44.45 90)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.016 1.016)
-			)
-			(justify left)
-		)
-		(uuid "c2c9323b-c564-45f8-a7e4-0759d3ae8df1")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 106.68 36.6253 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-				(hide yes)
-			)
-		)
-	)
-	(global_label "UART3_RX'"
-		(shape output)
-		(at 38.1 64.77 180)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.016 1.016)
-			)
-			(justify right)
-		)
-		(uuid "c338bb3f-ce57-4f07-a7fa-1c519ad9af6b")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 27.7776 64.77 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5081,6 +5021,28 @@
 		(uuid "c7b9a563-ac0a-40de-8bae-7f35223af3cc")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
 			(at 104.14 88.6409 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
+	)
+	(global_label "I2C2_IO1"
+		(shape bidirectional)
+		(at 228.6 100.33 90)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.016 1.016)
+			)
+			(justify left)
+		)
+		(uuid "cc729bb0-a3fd-439c-b177-f0b62412e148")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 228.6 90.3282 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5156,9 +5118,9 @@
 			)
 		)
 	)
-	(global_label "I2C2_IO2"
+	(global_label "I2C1_IO3"
 		(shape bidirectional)
-		(at 223.52 100.33 90)
+		(at 165.1 44.45 90)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -5166,9 +5128,9 @@
 			)
 			(justify left)
 		)
-		(uuid "d6bacd44-fa22-4eb3-830f-2dba9d1ba3cb")
+		(uuid "d87cf2b2-cb6d-4557-986c-2f39bf900899")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 223.52 90.3282 90)
+			(at 165.1 34.4482 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5178,29 +5140,29 @@
 			)
 		)
 	)
-	(global_label "I2C1_IO4"
+	(global_label "I2C1_IO4'"
 		(shape bidirectional)
-		(at 172.72 44.45 90)
+		(at 158.75 67.31 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
 				(size 1.016 1.016)
 			)
-			(justify left)
+			(justify right)
 		)
-		(uuid "ddc6354e-e677-46ae-8f47-13143a2f0ab0")
+		(uuid "db0f9675-db0f-40c8-9b43-e04587e553bd")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 172.72 34.4482 90)
+			(at 148.2644 67.31 0)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
-				(justify left)
+				(justify right)
 				(hide yes)
 			)
 		)
 	)
-	(global_label "SPI1_CS2'"
+	(global_label "SPI1_CS1'"
 		(shape input)
 		(at 115.57 109.22 0)
 		(fields_autoplaced yes)
@@ -5210,9 +5172,53 @@
 			)
 			(justify left)
 		)
-		(uuid "dfd04d23-61cc-4fa0-ba25-77f5d33d5ea5")
+		(uuid "dbb59de9-5259-46d6-bd08-3d40216d68f6")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
 			(at 125.602 109.22 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
+	)
+	(global_label "I2C1_IO7'"
+		(shape bidirectional)
+		(at 237.49 57.15 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.016 1.016)
+			)
+			(justify left)
+		)
+		(uuid "dfdc07f5-e27b-4f4a-a081-66f8d69a412c")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 247.9756 57.15 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
+	)
+	(global_label "I2C1_IO8"
+		(shape bidirectional)
+		(at 220.98 44.45 90)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.016 1.016)
+			)
+			(justify left)
+		)
+		(uuid "e52396a1-c92b-4978-b321-c555c7b60480")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 220.98 34.4482 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5244,6 +5250,28 @@
 			)
 		)
 	)
+	(global_label "I2C2_IO2"
+		(shape bidirectional)
+		(at 226.06 100.33 90)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.016 1.016)
+			)
+			(justify left)
+		)
+		(uuid "e791179f-91b0-4106-a38c-23b41a40ca99")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 226.06 90.3282 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
+	)
 	(global_label "TIM1_CH1"
 		(shape bidirectional)
 		(at 52.07 99.06 90)
@@ -5266,53 +5294,9 @@
 			)
 		)
 	)
-	(global_label "UART1_RX'"
-		(shape output)
-		(at 38.1 57.15 180)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.016 1.016)
-			)
-			(justify right)
-		)
-		(uuid "e96d976c-2f62-43b7-a2c3-8b35399c560f")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 27.7776 57.15 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify right)
-				(hide yes)
-			)
-		)
-	)
-	(global_label "I2C1_IO8'"
-		(shape bidirectional)
-		(at 158.75 67.31 180)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.016 1.016)
-			)
-			(justify right)
-		)
-		(uuid "f04f76d3-a0a3-4d4d-84bc-e8ac6faf2de8")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 148.2644 67.31 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify right)
-				(hide yes)
-			)
-		)
-	)
 	(global_label "I2C2_IO3'"
 		(shape bidirectional)
-		(at 236.22 115.57 0)
+		(at 236.22 113.03 0)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -5320,9 +5304,9 @@
 			)
 			(justify left)
 		)
-		(uuid "f058b8ca-8cc2-427b-93d3-69e0758b5360")
+		(uuid "f31ac1bf-304b-4194-ad63-869023150e28")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 246.7056 115.57 0)
+			(at 246.7056 113.03 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5332,31 +5316,31 @@
 			)
 		)
 	)
-	(global_label "GPIO2'"
+	(global_label "I2C1_IO5'"
 		(shape bidirectional)
-		(at 115.57 64.77 0)
+		(at 158.75 57.15 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
 				(size 1.016 1.016)
 			)
-			(justify left)
+			(justify right)
 		)
-		(uuid "f2069c35-d0ad-47b1-9b34-8db20318fff3")
+		(uuid "f40a28f0-a786-4b3b-a870-8a294f54ee39")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 123.8785 64.77 0)
+			(at 148.2644 57.15 0)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
-				(justify left)
+				(justify right)
 				(hide yes)
 			)
 		)
 	)
 	(global_label "I2C1_SDA'"
 		(shape bidirectional)
-		(at 259.08 64.77 0)
+		(at 259.08 67.31 0)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -5366,7 +5350,7 @@
 		)
 		(uuid "f4513714-aaa9-4f7e-99ec-cec56a97adc7")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 269.9043 64.77 0)
+			(at 269.9043 67.31 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5398,6 +5382,72 @@
 			)
 		)
 	)
+	(global_label "I2C1_IO6"
+		(shape bidirectional)
+		(at 175.26 44.45 90)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.016 1.016)
+			)
+			(justify left)
+		)
+		(uuid "f7ed8eec-3f6e-4e60-a3ad-dc094eb5a769")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 175.26 34.4482 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
+	)
+	(global_label "I2C1_IO2"
+		(shape bidirectional)
+		(at 167.64 44.45 90)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.016 1.016)
+			)
+			(justify left)
+		)
+		(uuid "fa260651-e9bb-40f4-ae9b-ad55db9446e6")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 167.64 34.4482 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
+	)
+	(global_label "GPIO3"
+		(shape bidirectional)
+		(at 111.76 44.45 90)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.016 1.016)
+			)
+			(justify left)
+		)
+		(uuid "fa482a09-37b5-4a30-89e4-c82615011eb4")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 111.76 36.6253 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
+	)
 	(global_label "I2C2_IO8'"
 		(shape bidirectional)
 		(at 158.75 123.19 180)
@@ -5416,28 +5466,6 @@
 					(size 1.27 1.27)
 				)
 				(justify right)
-				(hide yes)
-			)
-		)
-	)
-	(global_label "I2C1_IO2'"
-		(shape bidirectional)
-		(at 237.49 57.15 0)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.016 1.016)
-			)
-			(justify left)
-		)
-		(uuid "fd1cbeb6-f873-4844-b0cd-3a922a118786")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 247.9756 57.15 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
 				(hide yes)
 			)
 		)
@@ -5599,7 +5627,8 @@
 	)
 	(symbol
 		(lib_id "LARS_Hardware_Interface:R_Small")
-		(at 226.06 105.41 180)
+		(at 223.52 105.41 0)
+		(mirror x)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -5607,7 +5636,7 @@
 		(dnp no)
 		(uuid "0b82bbb8-3572-4dfa-981f-68ab41ff6dcc")
 		(property "Reference" "R68"
-			(at 227.33 102.87 0)
+			(at 222.25 102.87 0)
 			(effects
 				(font
 					(size 0.762 0.762)
@@ -5615,7 +5644,7 @@
 			)
 		)
 		(property "Value" "220"
-			(at 226.06 105.41 90)
+			(at 223.52 105.41 90)
 			(effects
 				(font
 					(size 1.016 1.016)
@@ -5623,7 +5652,7 @@
 			)
 		)
 		(property "Footprint" "LARS_Hardware_Interface:R_0805_2012Metric"
-			(at 226.06 105.41 0)
+			(at 223.52 105.41 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5632,7 +5661,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 226.06 105.41 0)
+			(at 223.52 105.41 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5641,7 +5670,7 @@
 			)
 		)
 		(property "Description" "Resistor, small symbol"
-			(at 226.06 105.41 0)
+			(at 223.52 105.41 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5797,7 +5826,7 @@
 	)
 	(symbol
 		(lib_id "LARS_Hardware_Interface:R_Small")
-		(at 170.18 49.53 180)
+		(at 172.72 49.53 180)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -5805,7 +5834,7 @@
 		(dnp no)
 		(uuid "16d2d2f0-4130-4ed3-ab92-6da0021405b8")
 		(property "Reference" "R40"
-			(at 171.45 46.99 0)
+			(at 173.99 46.99 0)
 			(effects
 				(font
 					(size 0.762 0.762)
@@ -5813,7 +5842,7 @@
 			)
 		)
 		(property "Value" "220"
-			(at 170.18 49.53 90)
+			(at 172.72 49.53 90)
 			(effects
 				(font
 					(size 1.016 1.016)
@@ -5821,7 +5850,7 @@
 			)
 		)
 		(property "Footprint" "LARS_Hardware_Interface:R_0805_2012Metric"
-			(at 170.18 49.53 0)
+			(at 172.72 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5830,7 +5859,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 170.18 49.53 0)
+			(at 172.72 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5839,7 +5868,7 @@
 			)
 		)
 		(property "Description" "Resistor, small symbol"
-			(at 170.18 49.53 0)
+			(at 172.72 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5930,8 +5959,7 @@
 	)
 	(symbol
 		(lib_id "LARS_Hardware_Interface:R_Small")
-		(at 220.98 49.53 0)
-		(mirror x)
+		(at 170.18 49.53 180)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -5939,7 +5967,7 @@
 		(dnp no)
 		(uuid "197734b5-3b15-4762-adef-24085ad842de")
 		(property "Reference" "R43"
-			(at 222.25 46.99 0)
+			(at 168.91 46.99 0)
 			(effects
 				(font
 					(size 0.762 0.762)
@@ -5947,7 +5975,7 @@
 			)
 		)
 		(property "Value" "220"
-			(at 220.98 49.53 90)
+			(at 170.18 49.53 90)
 			(effects
 				(font
 					(size 1.016 1.016)
@@ -5955,7 +5983,7 @@
 			)
 		)
 		(property "Footprint" "LARS_Hardware_Interface:R_0805_2012Metric"
-			(at 220.98 49.53 0)
+			(at 170.18 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5964,7 +5992,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 220.98 49.53 0)
+			(at 170.18 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5973,7 +6001,7 @@
 			)
 		)
 		(property "Description" "Resistor, small symbol"
-			(at 220.98 49.53 0)
+			(at 170.18 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6132,7 +6160,8 @@
 	)
 	(symbol
 		(lib_id "LARS_Hardware_Interface:R_Small")
-		(at 228.6 105.41 180)
+		(at 220.98 105.41 0)
+		(mirror x)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -6140,7 +6169,7 @@
 		(dnp no)
 		(uuid "2183062b-239b-4fc7-8b20-da8d2939c576")
 		(property "Reference" "R69"
-			(at 229.87 102.87 0)
+			(at 219.71 102.87 0)
 			(effects
 				(font
 					(size 0.762 0.762)
@@ -6148,7 +6177,7 @@
 			)
 		)
 		(property "Value" "220"
-			(at 228.6 105.41 90)
+			(at 220.98 105.41 90)
 			(effects
 				(font
 					(size 1.016 1.016)
@@ -6156,7 +6185,7 @@
 			)
 		)
 		(property "Footprint" "LARS_Hardware_Interface:R_0805_2012Metric"
-			(at 228.6 105.41 0)
+			(at 220.98 105.41 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6165,7 +6194,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 228.6 105.41 0)
+			(at 220.98 105.41 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6174,7 +6203,7 @@
 			)
 		)
 		(property "Description" "Resistor, small symbol"
-			(at 228.6 105.41 0)
+			(at 220.98 105.41 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6333,8 +6362,7 @@
 	)
 	(symbol
 		(lib_id "LARS_Hardware_Interface:R_Small")
-		(at 165.1 49.53 0)
-		(mirror x)
+		(at 223.52 49.53 180)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -6342,7 +6370,7 @@
 		(dnp no)
 		(uuid "271cc930-5ab1-4c16-badd-c9f2f8b696e3")
 		(property "Reference" "R38"
-			(at 166.37 46.99 0)
+			(at 222.25 46.99 0)
 			(effects
 				(font
 					(size 0.762 0.762)
@@ -6350,7 +6378,7 @@
 			)
 		)
 		(property "Value" "220"
-			(at 165.1 49.53 90)
+			(at 223.52 49.53 90)
 			(effects
 				(font
 					(size 1.016 1.016)
@@ -6358,7 +6386,7 @@
 			)
 		)
 		(property "Footprint" "LARS_Hardware_Interface:R_0805_2012Metric"
-			(at 165.1 49.53 0)
+			(at 223.52 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6367,7 +6395,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 165.1 49.53 0)
+			(at 223.52 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6376,7 +6404,7 @@
 			)
 		)
 		(property "Description" "Resistor, small symbol"
-			(at 165.1 49.53 0)
+			(at 223.52 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6534,7 +6562,8 @@
 	)
 	(symbol
 		(lib_id "LARS_Hardware_Interface:R_Small")
-		(at 223.52 105.41 180)
+		(at 226.06 105.41 0)
+		(mirror x)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -6551,7 +6580,7 @@
 			)
 		)
 		(property "Value" "220"
-			(at 223.52 105.41 90)
+			(at 226.06 105.41 90)
 			(effects
 				(font
 					(size 1.016 1.016)
@@ -6559,7 +6588,7 @@
 			)
 		)
 		(property "Footprint" "LARS_Hardware_Interface:R_0805_2012Metric"
-			(at 223.52 105.41 0)
+			(at 226.06 105.41 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6568,7 +6597,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 223.52 105.41 0)
+			(at 226.06 105.41 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6577,7 +6606,7 @@
 			)
 		)
 		(property "Description" "Resistor, small symbol"
-			(at 223.52 105.41 0)
+			(at 226.06 105.41 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7140,7 +7169,8 @@
 	)
 	(symbol
 		(lib_id "LARS_Hardware_Interface:SN74S1051DR")
-		(at 198.12 60.96 0)
+		(at 196.85 60.96 0)
+		(mirror y)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -7148,7 +7178,7 @@
 		(dnp no)
 		(uuid "56ec8f8c-fa29-43ad-973a-8c3712d943f2")
 		(property "Reference" "U7"
-			(at 197.866 45.466 0)
+			(at 197.104 45.466 0)
 			(effects
 				(font
 					(size 1.524 1.524)
@@ -7156,7 +7186,7 @@
 			)
 		)
 		(property "Value" "SN74S1051DR"
-			(at 198.12 77.216 0)
+			(at 196.85 77.216 0)
 			(effects
 				(font
 					(size 1.524 1.524)
@@ -7164,7 +7194,7 @@
 			)
 		)
 		(property "Footprint" "LARS_Hardware_Interface:SN74S1051DR"
-			(at 180.34 52.07 0)
+			(at 214.63 52.07 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7174,7 +7204,7 @@
 			)
 		)
 		(property "Datasheet" "SN74S1051DR"
-			(at 180.34 52.07 0)
+			(at 214.63 52.07 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7184,7 +7214,7 @@
 			)
 		)
 		(property "Description" "12-Bit Schottky Array - Bus Termination"
-			(at 180.34 52.07 0)
+			(at 214.63 52.07 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7451,7 +7481,8 @@
 	)
 	(symbol
 		(lib_id "LARS_Hardware_Interface:R_Small")
-		(at 111.76 49.53 180)
+		(at 106.68 49.53 0)
+		(mirror x)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -7459,7 +7490,7 @@
 		(dnp no)
 		(uuid "5fa7f3e6-32f0-4dfd-b137-bc07b4c7c9ac")
 		(property "Reference" "R36"
-			(at 113.03 46.99 0)
+			(at 107.95 46.99 0)
 			(effects
 				(font
 					(size 0.762 0.762)
@@ -7467,7 +7498,7 @@
 			)
 		)
 		(property "Value" "220"
-			(at 111.76 49.53 90)
+			(at 106.68 49.53 90)
 			(effects
 				(font
 					(size 1.016 1.016)
@@ -7475,7 +7506,7 @@
 			)
 		)
 		(property "Footprint" "LARS_Hardware_Interface:R_0805_2012Metric"
-			(at 111.76 49.53 0)
+			(at 106.68 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7484,7 +7515,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 111.76 49.53 0)
+			(at 106.68 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7493,7 +7524,7 @@
 			)
 		)
 		(property "Description" "Resistor, small symbol"
-			(at 111.76 49.53 0)
+			(at 106.68 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8162,7 +8193,8 @@
 	)
 	(symbol
 		(lib_id "LARS_Hardware_Interface:R_Small")
-		(at 106.68 49.53 180)
+		(at 111.76 49.53 0)
+		(mirror x)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -8170,7 +8202,7 @@
 		(dnp no)
 		(uuid "741642f5-4199-46bc-a7b4-fc8d08d191f1")
 		(property "Reference" "R34"
-			(at 107.95 46.99 0)
+			(at 113.03 46.99 0)
 			(effects
 				(font
 					(size 0.762 0.762)
@@ -8178,7 +8210,7 @@
 			)
 		)
 		(property "Value" "220"
-			(at 106.68 49.53 90)
+			(at 111.76 49.53 90)
 			(effects
 				(font
 					(size 1.016 1.016)
@@ -8186,7 +8218,7 @@
 			)
 		)
 		(property "Footprint" "LARS_Hardware_Interface:R_0805_2012Metric"
-			(at 106.68 49.53 0)
+			(at 111.76 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8195,7 +8227,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 106.68 49.53 0)
+			(at 111.76 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8204,7 +8236,7 @@
 			)
 		)
 		(property "Description" "Resistor, small symbol"
-			(at 106.68 49.53 0)
+			(at 111.76 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9315,8 +9347,7 @@
 	)
 	(symbol
 		(lib_id "LARS_Hardware_Interface:R_Small")
-		(at 162.56 49.53 0)
-		(mirror x)
+		(at 220.98 49.53 180)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -9324,16 +9355,15 @@
 		(dnp no)
 		(uuid "a9d714bd-45de-4ac9-9cd3-d452bbcc644f")
 		(property "Reference" "R37"
-			(at 161.29 46.99 0)
+			(at 219.71 46.99 0)
 			(effects
 				(font
 					(size 0.762 0.762)
 				)
-				(hide yes)
 			)
 		)
 		(property "Value" "220"
-			(at 162.56 49.53 90)
+			(at 220.98 49.53 90)
 			(effects
 				(font
 					(size 1.016 1.016)
@@ -9341,7 +9371,7 @@
 			)
 		)
 		(property "Footprint" "LARS_Hardware_Interface:R_0805_2012Metric"
-			(at 162.56 49.53 0)
+			(at 220.98 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9350,7 +9380,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 162.56 49.53 0)
+			(at 220.98 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9359,7 +9389,7 @@
 			)
 		)
 		(property "Description" "Resistor, small symbol"
-			(at 162.56 49.53 0)
+			(at 220.98 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9786,7 +9816,8 @@
 	)
 	(symbol
 		(lib_id "LARS_Hardware_Interface:R_Small")
-		(at 172.72 49.53 180)
+		(at 162.56 49.53 0)
+		(mirror x)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -9794,7 +9825,7 @@
 		(dnp no)
 		(uuid "b4f90171-4226-412e-800d-7000bc548223")
 		(property "Reference" "R41"
-			(at 173.99 46.99 0)
+			(at 161.29 46.99 0)
 			(effects
 				(font
 					(size 0.762 0.762)
@@ -9802,7 +9833,7 @@
 			)
 		)
 		(property "Value" "220"
-			(at 172.72 49.53 90)
+			(at 162.56 49.53 90)
 			(effects
 				(font
 					(size 1.016 1.016)
@@ -9810,7 +9841,7 @@
 			)
 		)
 		(property "Footprint" "LARS_Hardware_Interface:R_0805_2012Metric"
-			(at 172.72 49.53 0)
+			(at 162.56 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9819,7 +9850,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 172.72 49.53 0)
+			(at 162.56 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9828,7 +9859,7 @@
 			)
 		)
 		(property "Description" "Resistor, small symbol"
-			(at 172.72 49.53 0)
+			(at 162.56 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9853,7 +9884,8 @@
 	)
 	(symbol
 		(lib_id "LARS_Hardware_Interface:R_Small")
-		(at 109.22 49.53 180)
+		(at 109.22 49.53 0)
+		(mirror x)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -10256,7 +10288,8 @@
 	)
 	(symbol
 		(lib_id "LARS_Hardware_Interface:R_Small")
-		(at 175.26 49.53 180)
+		(at 165.1 49.53 0)
+		(mirror x)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -10264,7 +10297,7 @@
 		(dnp no)
 		(uuid "c9af7eed-4fc4-449e-95f1-2fc45ead6c26")
 		(property "Reference" "R42"
-			(at 176.784 46.99 0)
+			(at 163.576 46.99 0)
 			(effects
 				(font
 					(size 0.762 0.762)
@@ -10272,7 +10305,7 @@
 			)
 		)
 		(property "Value" "220"
-			(at 175.26 49.53 90)
+			(at 165.1 49.53 90)
 			(effects
 				(font
 					(size 1.016 1.016)
@@ -10280,7 +10313,7 @@
 			)
 		)
 		(property "Footprint" "LARS_Hardware_Interface:R_0805_2012Metric"
-			(at 175.26 49.53 0)
+			(at 165.1 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10289,7 +10322,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 175.26 49.53 0)
+			(at 165.1 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10298,7 +10331,7 @@
 			)
 		)
 		(property "Description" "Resistor, small symbol"
-			(at 175.26 49.53 0)
+			(at 165.1 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10390,7 +10423,7 @@
 	)
 	(symbol
 		(lib_id "LARS_Hardware_Interface:R_Small")
-		(at 167.64 49.53 180)
+		(at 175.26 49.53 180)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -10398,7 +10431,7 @@
 		(dnp no)
 		(uuid "ca94945a-dbb1-4626-a754-635397862ec5")
 		(property "Reference" "R39"
-			(at 168.91 46.99 0)
+			(at 176.53 46.99 0)
 			(effects
 				(font
 					(size 0.762 0.762)
@@ -10406,7 +10439,7 @@
 			)
 		)
 		(property "Value" "220"
-			(at 167.64 49.53 90)
+			(at 175.26 49.53 90)
 			(effects
 				(font
 					(size 1.016 1.016)
@@ -10414,7 +10447,7 @@
 			)
 		)
 		(property "Footprint" "LARS_Hardware_Interface:R_0805_2012Metric"
-			(at 167.64 49.53 0)
+			(at 175.26 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10423,7 +10456,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 167.64 49.53 0)
+			(at 175.26 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10432,7 +10465,7 @@
 			)
 		)
 		(property "Description" "Resistor, small symbol"
-			(at 167.64 49.53 0)
+			(at 175.26 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11126,8 +11159,7 @@
 	)
 	(symbol
 		(lib_id "LARS_Hardware_Interface:R_Small")
-		(at 223.52 49.53 0)
-		(mirror x)
+		(at 167.64 49.53 180)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -11135,7 +11167,7 @@
 		(dnp no)
 		(uuid "e06de93d-8d23-42fd-bfbf-6200e69c71a1")
 		(property "Reference" "R44"
-			(at 224.79 46.99 0)
+			(at 166.37 46.99 0)
 			(effects
 				(font
 					(size 0.762 0.762)
@@ -11143,7 +11175,7 @@
 			)
 		)
 		(property "Value" "220"
-			(at 223.52 49.53 90)
+			(at 167.64 49.53 90)
 			(effects
 				(font
 					(size 1.016 1.016)
@@ -11151,7 +11183,7 @@
 			)
 		)
 		(property "Footprint" "LARS_Hardware_Interface:R_0805_2012Metric"
-			(at 223.52 49.53 0)
+			(at 167.64 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11160,7 +11192,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 223.52 49.53 0)
+			(at 167.64 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11169,7 +11201,7 @@
 			)
 		)
 		(property "Description" "Resistor, small symbol"
-			(at 223.52 49.53 0)
+			(at 167.64 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11261,7 +11293,8 @@
 	)
 	(symbol
 		(lib_id "LARS_Hardware_Interface:R_Small")
-		(at 220.98 105.41 180)
+		(at 228.6 105.41 0)
+		(mirror x)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -11269,7 +11302,7 @@
 		(dnp no)
 		(uuid "fdd67171-9b70-4cba-a6b7-1d5a1993f7f5")
 		(property "Reference" "R66"
-			(at 222.25 102.87 0)
+			(at 227.33 102.87 0)
 			(effects
 				(font
 					(size 0.762 0.762)
@@ -11277,7 +11310,7 @@
 			)
 		)
 		(property "Value" "220"
-			(at 220.98 105.41 90)
+			(at 228.6 105.41 90)
 			(effects
 				(font
 					(size 1.016 1.016)
@@ -11285,7 +11318,7 @@
 			)
 		)
 		(property "Footprint" "LARS_Hardware_Interface:R_0805_2012Metric"
-			(at 220.98 105.41 0)
+			(at 228.6 105.41 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11294,7 +11327,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 220.98 105.41 0)
+			(at 228.6 105.41 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11303,7 +11336,7 @@
 			)
 		)
 		(property "Description" "Resistor, small symbol"
-			(at 220.98 105.41 0)
+			(at 228.6 105.41 0)
 			(effects
 				(font
 					(size 1.27 1.27)

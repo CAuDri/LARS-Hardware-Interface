@@ -201,8 +201,8 @@
         0.0,
         0.2,
         0.3,
-        0.35,
         0.5,
+        1.0,
         1.4,
         2.0
       ],
@@ -238,6 +238,10 @@
           "drill": 0.0
         },
         {
+          "diameter": 0.8,
+          "drill": 0.5
+        },
+        {
           "diameter": 1.2,
           "drill": 0.8
         }
@@ -261,7 +265,7 @@
     "layer_presets": [
       {
         "activeLayer": -2,
-        "flipBoard": false,
+        "flipBoard": true,
         "layers": [
           2,
           7,
@@ -653,11 +657,17 @@
         "wire_width": 6
       },
       {
+        "name": "Analog",
+        "pcb_color": "rgb(221, 133, 0)",
+        "priority": 0,
+        "schematic_color": "rgba(0, 0, 0, 0.000)"
+      },
+      {
         "diff_pair_gap": 0.38,
         "diff_pair_width": 0.22,
         "name": "CAN 120 Ohm",
-        "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 0,
+        "pcb_color": "rgb(0, 0, 194)",
+        "priority": 1,
         "schematic_color": "rgba(0, 0, 0, 0.000)"
       },
       {
@@ -665,8 +675,8 @@
         "diff_pair_gap": 0.3,
         "diff_pair_width": 0.35,
         "name": "USB 90 Ohm",
-        "pcb_color": "rgb(0, 0, 194)",
-        "priority": 1,
+        "pcb_color": "rgb(0, 132, 0)",
+        "priority": 2,
         "schematic_color": "rgba(0, 0, 0, 0.000)"
       }
     ],
@@ -678,11 +688,27 @@
     "netclass_patterns": [
       {
         "netclass": "CAN 120 Ohm",
-        "pattern": "CAN*"
+        "pattern": "CAN*_N"
       },
       {
         "netclass": "USB 90 Ohm",
         "pattern": "*USB*_D*"
+      },
+      {
+        "netclass": "Analog",
+        "pattern": "/Analog/*"
+      },
+      {
+        "netclass": "Analog",
+        "pattern": "ANALOG*"
+      },
+      {
+        "netclass": "Analog",
+        "pattern": "SERVO*ADC*"
+      },
+      {
+        "netclass": "CAN 120 Ohm",
+        "pattern": "CAN*_P"
       }
     ]
   },

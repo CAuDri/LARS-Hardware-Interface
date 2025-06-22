@@ -5705,7 +5705,7 @@
 	)
 	(wire
 		(pts
-			(xy 132.08 40.64) (xy 142.24 40.64)
+			(xy 132.08 41.91) (xy 140.97 41.91)
 		)
 		(stroke
 			(width 0)
@@ -6052,6 +6052,16 @@
 			(type default)
 		)
 		(uuid "83269e28-f404-40c7-9f58-bf22b8000838")
+	)
+	(wire
+		(pts
+			(xy 140.97 40.64) (xy 142.24 40.64)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "84c810ad-3491-44eb-b03e-02fda20661b7")
 	)
 	(wire
 		(pts
@@ -6425,7 +6435,7 @@
 	)
 	(wire
 		(pts
-			(xy 68.58 52.07) (xy 78.74 52.07)
+			(xy 68.58 52.07) (xy 72.39 52.07)
 		)
 		(stroke
 			(width 0)
@@ -6555,7 +6565,7 @@
 	)
 	(wire
 		(pts
-			(xy 132.08 38.1) (xy 142.24 38.1)
+			(xy 140.97 38.1) (xy 142.24 38.1)
 		)
 		(stroke
 			(width 0)
@@ -6905,6 +6915,16 @@
 	)
 	(wire
 		(pts
+			(xy 140.97 41.91) (xy 140.97 40.64)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "d40f9360-f616-41bc-ada0-4ab48de7cfcb")
+	)
+	(wire
+		(pts
 			(xy 69.85 179.07) (xy 69.85 177.8)
 		)
 		(stroke
@@ -7234,7 +7254,7 @@
 		(uuid "ff56c1e5-e69a-4273-ae4c-c40d7db52620")
 	)
 	(label "STM_BOOT0"
-		(at 132.08 40.64 0)
+		(at 132.08 41.91 0)
 		(effects
 			(font
 				(size 1.016 1.016)
@@ -7262,26 +7282,6 @@
 			(justify left bottom)
 		)
 		(uuid "1cbbddae-e2e6-4318-87b2-e156e8f413bc")
-	)
-	(label "STM_NRST"
-		(at 78.74 52.07 180)
-		(effects
-			(font
-				(size 1.016 1.016)
-			)
-			(justify right bottom)
-		)
-		(uuid "1e455e8d-8573-471b-a994-12385dc0f3f0")
-	)
-	(label "STM_NRST"
-		(at 132.08 38.1 0)
-		(effects
-			(font
-				(size 1.016 1.016)
-			)
-			(justify left bottom)
-		)
-		(uuid "6ef1de7a-25d6-45e7-a73b-c0a4b56606c2")
 	)
 	(label "STM_OSC_IN"
 		(at 180.34 124.46 0)
@@ -7390,6 +7390,50 @@
 		(uuid "a41a1303-4ad6-49aa-a843-1866f4bb620d")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
 			(at 146.6598 177.8 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
+	)
+	(global_label "STM_NRST"
+		(shape input)
+		(at 140.97 38.1 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.016 1.016)
+			)
+			(justify right)
+		)
+		(uuid "eb6ee449-0e2e-43cc-8549-2d612f310387")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 131.0831 38.1 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+				(hide yes)
+			)
+		)
+	)
+	(global_label "STM_NRST"
+		(shape output)
+		(at 72.39 52.07 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.016 1.016)
+			)
+			(justify left)
+		)
+		(uuid "fdf0a730-f9aa-4110-809a-c11e1aced987")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 82.2769 52.07 0)
 			(effects
 				(font
 					(size 1.27 1.27)

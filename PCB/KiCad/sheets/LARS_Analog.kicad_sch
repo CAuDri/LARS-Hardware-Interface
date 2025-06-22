@@ -1419,7 +1419,7 @@
 	)
 	(wire
 		(pts
-			(xy 217.17 76.2) (xy 217.17 72.39)
+			(xy 217.17 125.73) (xy 217.17 121.92)
 		)
 		(stroke
 			(width 0)
@@ -1439,7 +1439,7 @@
 	)
 	(wire
 		(pts
-			(xy 228.6 64.77) (xy 228.6 83.82)
+			(xy 228.6 64.77) (xy 228.6 73.66)
 		)
 		(stroke
 			(width 0)
@@ -1499,7 +1499,7 @@
 	)
 	(wire
 		(pts
-			(xy 207.01 127) (xy 228.6 127)
+			(xy 207.01 134.62) (xy 228.6 134.62)
 		)
 		(stroke
 			(width 0)
@@ -1649,7 +1649,7 @@
 	)
 	(wire
 		(pts
-			(xy 217.17 49.53) (xy 217.17 57.15)
+			(xy 217.17 99.06) (xy 217.17 106.68)
 		)
 		(stroke
 			(width 0)
@@ -1659,7 +1659,7 @@
 	)
 	(wire
 		(pts
-			(xy 207.01 83.82) (xy 228.6 83.82)
+			(xy 207.01 73.66) (xy 228.6 73.66)
 		)
 		(stroke
 			(width 0)
@@ -1839,7 +1839,7 @@
 	)
 	(wire
 		(pts
-			(xy 207.01 67.31) (xy 207.01 83.82)
+			(xy 207.01 67.31) (xy 207.01 73.66)
 		)
 		(stroke
 			(width 0)
@@ -1859,7 +1859,7 @@
 	)
 	(wire
 		(pts
-			(xy 228.6 114.3) (xy 228.6 127)
+			(xy 228.6 114.3) (xy 228.6 134.62)
 		)
 		(stroke
 			(width 0)
@@ -2029,7 +2029,7 @@
 	)
 	(wire
 		(pts
-			(xy 207.01 116.84) (xy 207.01 127)
+			(xy 207.01 116.84) (xy 207.01 134.62)
 		)
 		(stroke
 			(width 0)
@@ -2492,6 +2492,94 @@
 				(path "/ffedf44c-a51a-4124-b6d3-e3f1f256e9ac/81c78436-b6ce-4659-8432-73b82eb5e261"
 					(reference "R13")
 					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "LARS_Hardware_Interface:OPA2834IDGKR")
+		(at 207.01 62.23 0)
+		(unit 2)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "15dd2b6c-4f60-489f-9b52-fa1e04a8d477")
+		(property "Reference" "U5"
+			(at 215.9 54.61 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "OPA2834IDGKR"
+			(at 215.9 57.15 0)
+			(effects
+				(font
+					(size 1.016 1.016)
+				)
+			)
+		)
+		(property "Footprint" "LARS_Hardware_Interface:OPA2834IDGKR"
+			(at 207.01 62.23 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+					(italic yes)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "OPA2834IDGKR"
+			(at 207.01 62.23 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+					(italic yes)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Operational Amplifier, Dual, Rail-to-Rail, 5V, 50MHz"
+			(at 207.01 62.23 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "2"
+			(uuid "5427a904-6e49-4803-8609-9aabf0c69349")
+		)
+		(pin "5"
+			(uuid "f9997b4b-9f0f-4395-9135-9de7b810fbd4")
+		)
+		(pin "8"
+			(uuid "cd5d3042-c0da-4bc7-b2a2-53acda76ee80")
+		)
+		(pin "1"
+			(uuid "af3aa459-4d9f-4fc6-a7bb-82820977d33d")
+		)
+		(pin "3"
+			(uuid "391eb6d1-435a-41e7-840b-d88262d2be4d")
+		)
+		(pin "4"
+			(uuid "4af84452-3231-4af0-9a7d-2f47bd473e34")
+		)
+		(pin "6"
+			(uuid "9f6678a2-9311-45f4-9850-0ed6f6a40efa")
+		)
+		(pin "7"
+			(uuid "09f3e6b0-9de3-42c0-908d-880e4feca7f5")
+		)
+		(instances
+			(project "hardware_interface"
+				(path "/ffedf44c-a51a-4124-b6d3-e3f1f256e9ac/81c78436-b6ce-4659-8432-73b82eb5e261"
+					(reference "U5")
+					(unit 2)
 				)
 			)
 		)
@@ -3159,94 +3247,6 @@
 				(path "/ffedf44c-a51a-4124-b6d3-e3f1f256e9ac/81c78436-b6ce-4659-8432-73b82eb5e261"
 					(reference "#PWR059")
 					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "LARS_Hardware_Interface:OPA2834IDGKR")
-		(at 207.01 111.76 0)
-		(unit 2)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "56c7710b-70fc-4c1a-85b9-92a1e6750433")
-		(property "Reference" "U5"
-			(at 215.9 104.14 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "OPA2834IDGKR"
-			(at 215.9 106.68 0)
-			(effects
-				(font
-					(size 1.016 1.016)
-				)
-			)
-		)
-		(property "Footprint" "LARS_Hardware_Interface:OPA2834IDGKR"
-			(at 207.01 111.76 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-					(italic yes)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "OPA2834IDGKR"
-			(at 207.01 111.76 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-					(italic yes)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Operational Amplifier, Dual, Rail-to-Rail, 5V, 50MHz"
-			(at 207.01 111.76 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "2"
-			(uuid "5427a904-6e49-4803-8609-9aabf0c69349")
-		)
-		(pin "5"
-			(uuid "13e61b50-d26a-4c4e-aae8-0dfb2a7d197a")
-		)
-		(pin "8"
-			(uuid "cd5d3042-c0da-4bc7-b2a2-53acda76ee80")
-		)
-		(pin "1"
-			(uuid "af3aa459-4d9f-4fc6-a7bb-82820977d33d")
-		)
-		(pin "3"
-			(uuid "391eb6d1-435a-41e7-840b-d88262d2be4d")
-		)
-		(pin "4"
-			(uuid "4af84452-3231-4af0-9a7d-2f47bd473e34")
-		)
-		(pin "6"
-			(uuid "e0b69f9a-7401-4d23-aaaf-78cbe6107600")
-		)
-		(pin "7"
-			(uuid "1d0034e4-4245-47fc-8939-b042e30610ea")
-		)
-		(instances
-			(project "hardware_interface"
-				(path "/ffedf44c-a51a-4124-b6d3-e3f1f256e9ac/81c78436-b6ce-4659-8432-73b82eb5e261"
-					(reference "U5")
-					(unit 2)
 				)
 			)
 		)
@@ -4320,7 +4320,7 @@
 	)
 	(symbol
 		(lib_id "power:+3.3V")
-		(at 217.17 49.53 0)
+		(at 217.17 99.06 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -4329,7 +4329,7 @@
 		(fields_autoplaced yes)
 		(uuid "915138e7-7626-4aa5-9ee4-d83bf9e9328a")
 		(property "Reference" "#PWR050"
-			(at 217.17 53.34 0)
+			(at 217.17 102.87 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4338,7 +4338,7 @@
 			)
 		)
 		(property "Value" "+3V3"
-			(at 217.17 44.45 0)
+			(at 217.17 93.98 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4346,7 +4346,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 217.17 49.53 0)
+			(at 217.17 99.06 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4355,7 +4355,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 217.17 49.53 0)
+			(at 217.17 99.06 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4364,7 +4364,7 @@
 			)
 		)
 		(property "Description" "Power symbol creates a global label with name \"+3.3V\""
-			(at 217.17 49.53 0)
+			(at 217.17 99.06 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4854,93 +4854,6 @@
 		)
 	)
 	(symbol
-		(lib_id "LARS_Hardware_Interface:OPA2834IDGKR")
-		(at 207.01 62.23 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "abd24fac-d66e-464a-8715-93d8069f5d2a")
-		(property "Reference" "U5"
-			(at 224.536 57.658 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "OPA2834IDGKR"
-			(at 224.536 60.198 0)
-			(effects
-				(font
-					(size 1.016 1.016)
-				)
-			)
-		)
-		(property "Footprint" "LARS_Hardware_Interface:OPA2834IDGKR"
-			(at 207.01 62.23 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-					(italic yes)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "OPA2834IDGKR"
-			(at 207.01 62.23 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-					(italic yes)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Operational Amplifier, Dual, Rail-to-Rail, 5V, 50MHz"
-			(at 207.01 62.23 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "2"
-			(uuid "58a144ec-9587-4a23-9aef-4d78fef9664a")
-		)
-		(pin "5"
-			(uuid "5b376d6e-3c08-46de-90fd-a93a59ab8a0b")
-		)
-		(pin "8"
-			(uuid "64ed8ed5-9c9b-4aed-a078-43ec3e7b2fe8")
-		)
-		(pin "1"
-			(uuid "4d9dde9a-2e41-49a7-b74a-98218b00e064")
-		)
-		(pin "3"
-			(uuid "c8ac0229-0daa-4b86-944b-1828bc8cd696")
-		)
-		(pin "4"
-			(uuid "76cdee12-b538-4d31-9e9e-1503b8cbdd74")
-		)
-		(pin "6"
-			(uuid "7a9d6d7b-9aca-4508-8a45-70bc964a3661")
-		)
-		(pin "7"
-			(uuid "d6e25651-daad-4a4b-9540-2c36eb3f172c")
-		)
-		(instances
-			(project "hardware_interface"
-				(path "/ffedf44c-a51a-4124-b6d3-e3f1f256e9ac/81c78436-b6ce-4659-8432-73b82eb5e261"
-					(reference "U5")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
 		(lib_id "LARS_Hardware_Interface:R")
 		(at 53.34 69.85 0)
 		(unit 1)
@@ -5009,7 +4922,7 @@
 	)
 	(symbol
 		(lib_id "power:GND")
-		(at 217.17 76.2 0)
+		(at 217.17 125.73 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -5018,7 +4931,7 @@
 		(fields_autoplaced yes)
 		(uuid "b8de9436-b4f2-488c-a7ad-18ca458087d2")
 		(property "Reference" "#PWR056"
-			(at 217.17 82.55 0)
+			(at 217.17 132.08 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5027,7 +4940,7 @@
 			)
 		)
 		(property "Value" "GND"
-			(at 217.17 81.28 0)
+			(at 217.17 130.81 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5035,7 +4948,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 217.17 76.2 0)
+			(at 217.17 125.73 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5044,7 +4957,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 217.17 76.2 0)
+			(at 217.17 125.73 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5053,7 +4966,7 @@
 			)
 		)
 		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
-			(at 217.17 76.2 0)
+			(at 217.17 125.73 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5134,6 +5047,93 @@
 			(project "hardware_interface"
 				(path "/ffedf44c-a51a-4124-b6d3-e3f1f256e9ac/81c78436-b6ce-4659-8432-73b82eb5e261"
 					(reference "#PWR060")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "LARS_Hardware_Interface:OPA2834IDGKR")
+		(at 207.01 111.76 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "cc4bf57a-02ad-4e71-8374-1af20cb05349")
+		(property "Reference" "U5"
+			(at 224.536 107.188 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "OPA2834IDGKR"
+			(at 224.536 109.728 0)
+			(effects
+				(font
+					(size 1.016 1.016)
+				)
+			)
+		)
+		(property "Footprint" "LARS_Hardware_Interface:OPA2834IDGKR"
+			(at 207.01 111.76 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+					(italic yes)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "OPA2834IDGKR"
+			(at 207.01 111.76 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+					(italic yes)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Operational Amplifier, Dual, Rail-to-Rail, 5V, 50MHz"
+			(at 207.01 111.76 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "2"
+			(uuid "221b9ee3-a9e5-40ac-98c7-ec0e3c3b69c4")
+		)
+		(pin "5"
+			(uuid "5b376d6e-3c08-46de-90fd-a93a59ab8a0b")
+		)
+		(pin "8"
+			(uuid "926a0816-5fd8-494b-bbcf-02e4492e8f72")
+		)
+		(pin "1"
+			(uuid "ea28f0a0-c854-44b7-9e0f-17997b9bab1b")
+		)
+		(pin "3"
+			(uuid "3a92b238-814b-4a4f-bdbb-cb4ccc2bea0b")
+		)
+		(pin "4"
+			(uuid "7bd3f9f1-3361-4d16-bc05-172e919a5143")
+		)
+		(pin "6"
+			(uuid "7a9d6d7b-9aca-4508-8a45-70bc964a3661")
+		)
+		(pin "7"
+			(uuid "d6e25651-daad-4a4b-9540-2c36eb3f172c")
+		)
+		(instances
+			(project "hardware_interface"
+				(path "/ffedf44c-a51a-4124-b6d3-e3f1f256e9ac/81c78436-b6ce-4659-8432-73b82eb5e261"
+					(reference "U5")
 					(unit 1)
 				)
 			)

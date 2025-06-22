@@ -1,7 +1,7 @@
 (footprint "BAT54SFILM"
-	(version 20240108)
+	(version 20241229)
 	(generator "pcbnew")
-	(generator_version "8.0")
+	(generator_version "9.0")
 	(layer "F.Cu")
 	(tags "BAT54SFILM ")
 	(property "Reference" "REF**"
@@ -24,18 +24,6 @@
 		(effects
 			(font
 				(size 1 1)
-				(thickness 0.15)
-			)
-		)
-	)
-	(property "Footprint" ""
-		(at 0 0 0)
-		(layer "F.Fab")
-		(hide yes)
-		(uuid "849ce942-c69e-459b-a9be-5315526d042a")
-		(effects
-			(font
-				(size 1.27 1.27)
 				(thickness 0.15)
 			)
 		)
@@ -116,13 +104,13 @@
 		(uuid "63e7d0d4-48e4-46a3-aee5-efe22e5ff045")
 	)
 	(fp_circle
-		(center -2 1.5)
-		(end -1.873 1.5)
+		(center -1.4 2.2)
+		(end -1.273 2.2)
 		(stroke
 			(width 0.1524)
 			(type solid)
 		)
-		(fill none)
+		(fill no)
 		(layer "F.SilkS")
 		(uuid "b5c27e12-7160-4876-8203-0d774cbca26a")
 	)
@@ -413,7 +401,7 @@
 			(width 0.0254)
 			(type solid)
 		)
-		(fill none)
+		(fill no)
 		(layer "F.Fab")
 		(uuid "3eec3928-95ba-42f8-b87f-96a3521c1465")
 	)
@@ -432,21 +420,22 @@
 	(pad "1" smd rect
 		(at -0.950001 1.0668)
 		(size 0.5588 1.3208)
-		(layers "F.Cu" "F.Paste" "F.Mask")
+		(layers "F.Cu" "F.Mask" "F.Paste")
 		(uuid "5b3bb52a-fd51-421f-a51e-744f92cd6bd2")
 	)
 	(pad "2" smd rect
 		(at 0.950001 1.0668)
 		(size 0.5588 1.3208)
-		(layers "F.Cu" "F.Paste" "F.Mask")
+		(layers "F.Cu" "F.Mask" "F.Paste")
 		(uuid "29a8821e-be71-4c3a-af14-b1f29223f5cc")
 	)
 	(pad "3" smd rect
 		(at 0 -1.0668)
 		(size 0.5588 1.3208)
-		(layers "F.Cu" "F.Paste" "F.Mask")
+		(layers "F.Cu" "F.Mask" "F.Paste")
 		(uuid "fc239c43-fc2c-4d10-8964-7eb6120e31ef")
 	)
+	(embedded_fonts no)
 	(model "${KIPRJMOD}/hardware_interface.pretty/3D_Models/BAT54SFILM.step"
 		(offset
 			(xyz 0 0 0)

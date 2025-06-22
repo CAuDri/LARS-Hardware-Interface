@@ -4607,7 +4607,7 @@
 				(hide yes)
 			)
 		)
-		(property "Value" "+5V"
+		(property "Value" "+5V_OUT"
 			(at 99.06 114.3 0)
 			(effects
 				(font
@@ -5366,7 +5366,7 @@
 				(hide yes)
 			)
 		)
-		(property "Value" "+5V"
+		(property "Value" "+5V_OUT"
 			(at 45.72 114.3 0)
 			(effects
 				(font
