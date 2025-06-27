@@ -2337,10 +2337,10 @@
 	)
 	(text "CAN Transceiver"
 		(exclude_from_sim no)
-		(at 173.736 25.654 0)
+		(at 174.752 26.67 0)
 		(effects
 			(font
-				(size 2.032 2.032)
+				(size 3.048 3.048)
 				(thickness 0.4064)
 				(bold yes)
 			)
@@ -2359,10 +2359,10 @@
 	)
 	(text "USB2 for Debugging and Power Supply"
 		(exclude_from_sim no)
-		(at 56.134 110.998 0)
+		(at 60.198 112.014 0)
 		(effects
 			(font
-				(size 2.032 2.032)
+				(size 3.048 3.048)
 				(thickness 0.4064)
 				(bold yes)
 			)
@@ -2371,10 +2371,10 @@
 	)
 	(text "USB1 for Host Connection"
 		(exclude_from_sim no)
-		(at 46.482 25.908 0)
+		(at 49.022 26.67 0)
 		(effects
 			(font
-				(size 2.032 2.032)
+				(size 3.048 3.048)
 				(thickness 0.4064)
 				(bold yes)
 			)
@@ -3634,7 +3634,7 @@
 			)
 		)
 		(property "Value" "5k1"
-			(at 55.88 173.228 90)
+			(at 55.88 172.974 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4241,7 +4241,7 @@
 			)
 		)
 		(property "Value" "1k"
-			(at 124.46 148.59 90)
+			(at 124.46 148.336 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4759,7 +4759,7 @@
 			)
 		)
 		(property "Value" "5k1"
-			(at 63.5 77.978 90)
+			(at 63.5 77.724 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5161,7 +5161,7 @@
 			)
 		)
 		(property "Value" "1k"
-			(at 123.19 53.34 90)
+			(at 123.19 53.086 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5498,7 +5498,7 @@
 			)
 		)
 		(property "Value" "5k1"
-			(at 63.5 173.228 90)
+			(at 63.5 172.974 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6270,7 +6270,7 @@
 			)
 		)
 		(property "Value" "5k1"
-			(at 55.88 77.978 90)
+			(at 55.88 77.724 90)
 			(effects
 				(font
 					(size 1.27 1.27)

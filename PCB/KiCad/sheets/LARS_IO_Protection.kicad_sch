@@ -946,10 +946,10 @@
 	)
 	(text "IO + I2C Protection"
 		(exclude_from_sim no)
-		(at 162.56 25.654 0)
+		(at 164.592 26.67 0)
 		(effects
 			(font
-				(size 2.032 2.032)
+				(size 3.048 3.048)
 				(thickness 0.4064)
 				(bold yes)
 			)
@@ -958,10 +958,10 @@
 	)
 	(text "IO Protection"
 		(exclude_from_sim no)
-		(at 35.56 25.4 0)
+		(at 37.338 26.67 0)
 		(effects
 			(font
-				(size 2.032 2.032)
+				(size 3.048 3.048)
 				(thickness 0.4064)
 				(bold yes)
 			)

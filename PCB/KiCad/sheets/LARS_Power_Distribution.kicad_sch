@@ -2592,10 +2592,10 @@
 	)
 	(text "5V Power\n"
 		(exclude_from_sim no)
-		(at 32.512 25.654 0)
+		(at 33.782 26.924 0)
 		(effects
 			(font
-				(size 2.032 2.032)
+				(size 3.048 3.048)
 				(thickness 0.4064)
 				(bold yes)
 			)
@@ -2604,20 +2604,20 @@
 	)
 	(text "5V Onboard Power, always on\n\nMax 2A"
 		(exclude_from_sim no)
-		(at 174.244 36.576 0)
+		(at 174.244 37.592 0)
 		(effects
 			(font
-				(size 1.27 1.27)
+				(size 1.524 1.524)
 			)
 		)
 		(uuid "44612891-ff65-48b2-a1e6-094b3508fd62")
 	)
-	(text "Power Multiplexer (2 In, 1 Out)\n- Reverse voltage/current\n- Max 5.3V, 4A continuous"
+	(text "Power Multiplexer (2 In -> 1 Out)\n- Reverse voltage/current\n- Max 5.3V, 4A continuous"
 		(exclude_from_sim no)
-		(at 109.982 45.72 0)
+		(at 110.744 43.434 0)
 		(effects
 			(font
-				(size 1.27 1.27)
+				(size 1.524 1.524)
 			)
 			(justify left)
 		)
@@ -2635,10 +2635,10 @@
 	)
 	(text "3.3V Power\n"
 		(exclude_from_sim no)
-		(at 34.036 121.666 0)
+		(at 35.56 120.65 0)
 		(effects
 			(font
-				(size 2.032 2.032)
+				(size 3.048 3.048)
 				(thickness 0.4064)
 				(bold yes)
 			)
@@ -2670,7 +2670,7 @@
 		(at 197.612 56.896 0)
 		(effects
 			(font
-				(size 1.27 1.27)
+				(size 1.524 1.524)
 			)
 			(justify left)
 		)
@@ -2678,10 +2678,10 @@
 	)
 	(text "Servos and other high-power components\nCannot be powered over USB\n\nMax 5A"
 		(exclude_from_sim no)
-		(at 71.374 36.83 0)
+		(at 70.866 36.068 0)
 		(effects
 			(font
-				(size 1.27 1.27)
+				(size 1.524 1.524)
 			)
 		)
 		(uuid "d8a334dd-95de-472f-bc0e-e96aef214234")
@@ -4366,7 +4366,7 @@
 			)
 		)
 		(property "Value" "470"
-			(at 46.736 60.96 90)
+			(at 46.99 60.96 90)
 			(effects
 				(font
 					(size 1.016 1.016)
@@ -4627,7 +4627,7 @@
 		(dnp no)
 		(uuid "5c4cb34e-0bf8-42d5-b35c-2d9ff783123b")
 		(property "Reference" "R7"
-			(at 92.71 59.436 90)
+			(at 92.964 59.436 90)
 			(effects
 				(font
 					(size 1.016 1.016)
@@ -7248,7 +7248,7 @@
 			)
 		)
 		(property "Value" "1k"
-			(at 99.06 65.786 90)
+			(at 99.06 65.532 90)
 			(effects
 				(font
 					(size 1.016 1.016)
