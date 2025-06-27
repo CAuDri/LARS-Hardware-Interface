@@ -5963,7 +5963,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "1u"
+		(property "Value" "2u2"
 			(at 98.298 148.082 0)
 			(effects
 				(font
