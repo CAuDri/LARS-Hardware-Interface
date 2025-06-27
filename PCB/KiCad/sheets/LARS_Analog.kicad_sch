@@ -1280,7 +1280,7 @@
 	)
 	(text "Servos Analog\n"
 		(exclude_from_sim no)
-		(at 175.514 26.67 0)
+		(at 178.054 26.67 0)
 		(effects
 			(font
 				(size 3.048 3.048)
@@ -1292,7 +1292,7 @@
 	)
 	(text "Low-Pass Cut-Off Frequency; ~1.5 kHz"
 		(exclude_from_sim no)
-		(at 180.34 33.02 0)
+		(at 182.88 33.02 0)
 		(effects
 			(font
 				(size 1.524 1.524)
@@ -1302,7 +1302,7 @@
 	)
 	(text "External Analog Inputs\n"
 		(exclude_from_sim no)
-		(at 45.72 26.416 0)
+		(at 48.26 26.416 0)
 		(effects
 			(font
 				(size 3.048 3.048)
@@ -1314,7 +1314,7 @@
 	)
 	(text "Analog Inputs will be buffered and clamped between 0V and 3.3V.\nAn additional resistor can be soldered to the input to form a voltage-divider.\n\nThe output capacitor can be chosen depending on the desired cut-off frequency.\nIt is given by:  f = 1 / (2pi * R * C)\n"
 		(exclude_from_sim no)
-		(at 25.4 37.338 0)
+		(at 27.94 37.338 0)
 		(effects
 			(font
 				(size 1.524 1.524)

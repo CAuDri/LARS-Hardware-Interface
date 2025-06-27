@@ -1,7 +1,7 @@
 (footprint "LD1117AS33TR"
-	(version 20240108)
+	(version 20241229)
 	(generator "pcbnew")
-	(generator_version "8.0")
+	(generator_version "9.0")
 	(layer "F.Cu")
 	(tags "LD1117AS33TR ")
 	(property "Reference" "REF**"
@@ -24,18 +24,6 @@
 		(effects
 			(font
 				(size 1 1)
-				(thickness 0.15)
-			)
-		)
-	)
-	(property "Footprint" ""
-		(at 0 0 0)
-		(layer "F.Fab")
-		(hide yes)
-		(uuid "bb866d69-1378-4e9d-8d83-8ca83fe80cc4")
-		(effects
-			(font
-				(size 1.27 1.27)
 				(thickness 0.15)
 			)
 		)
@@ -73,21 +61,21 @@
 			(width 0)
 			(type solid)
 		)
-		(fill solid)
+		(fill yes)
 		(layer "F.Cu")
 		(uuid "5deeadd7-e1c3-488b-874b-4a2a35b97841")
 	)
 	(fp_poly
 		(pts
-			(xy 1.6002 -4.0005) (xy -1.6002 -4.0005) (xy -1.6002 -2.4003) (xy 1.6002 -2.4003)
+			(xy 1.6256 -4.1061) (xy -1.6256 -4.1061) (xy -1.6256 -2.2947) (xy 1.6256 -2.2947)
 		)
 		(stroke
 			(width 0)
 			(type solid)
 		)
-		(fill solid)
-		(layer "F.Paste")
-		(uuid "73a79035-5eb5-44a4-ac19-dc9a09054533")
+		(fill yes)
+		(layer "F.Mask")
+		(uuid "3b4ca503-6ff6-47bf-8a2b-92038816285a")
 	)
 	(fp_line
 		(start -3.4798 -1.9812)
@@ -136,21 +124,21 @@
 			(width 0.1524)
 			(type solid)
 		)
-		(fill none)
+		(fill no)
 		(layer "F.SilkS")
 		(uuid "78b21123-9b55-4810-b72e-a2a02f0fe4c4")
 	)
 	(fp_poly
 		(pts
-			(xy 1.6256 -4.3561) (xy -1.6256 -4.3561) (xy -1.6256 -2.0447) (xy 1.6256 -2.0447)
+			(xy 1.6002 -4.0005) (xy -1.6002 -4.0005) (xy -1.6002 -2.4003) (xy 1.6002 -2.4003)
 		)
 		(stroke
 			(width 0)
 			(type solid)
 		)
-		(fill solid)
-		(layer "F.Mask")
-		(uuid "3b4ca503-6ff6-47bf-8a2b-92038816285a")
+		(fill yes)
+		(layer "F.Paste")
+		(uuid "73a79035-5eb5-44a4-ac19-dc9a09054533")
 	)
 	(fp_line
 		(start -3.6068 -2.1082)
@@ -479,7 +467,7 @@
 			(width 0.0254)
 			(type solid)
 		)
-		(fill none)
+		(fill no)
 		(layer "F.Fab")
 		(uuid "badf7c40-3462-4ccb-affa-5ec2ca5b0c9f")
 	)
@@ -498,21 +486,22 @@
 	(pad "1" smd rect
 		(at -2.3 3.2004)
 		(size 0.9144 1.6002)
-		(layers "F.Cu" "F.Paste" "F.Mask")
+		(layers "F.Cu" "F.Mask" "F.Paste")
 		(uuid "419bde24-234b-4d4a-ab79-460be063c0c5")
 	)
 	(pad "2" smd rect
 		(at 0 3.2004)
 		(size 0.9144 1.6002)
-		(layers "F.Cu" "F.Paste" "F.Mask")
+		(layers "F.Cu" "F.Mask" "F.Paste")
 		(uuid "d016d6d8-aec2-4993-aea0-643c5228396a")
 	)
 	(pad "3" smd rect
 		(at 2.3 3.2004)
 		(size 0.9144 1.6002)
-		(layers "F.Cu" "F.Paste" "F.Mask")
+		(layers "F.Cu" "F.Mask" "F.Paste")
 		(uuid "03c97740-672e-4edf-8434-46ecb204a307")
 	)
+	(embedded_fonts no)
 	(model "${KIPRJMOD}/hardware_interface.pretty/3D_Models/LD1117AS33TR.STEP"
 		(offset
 			(xyz 0 0 0)

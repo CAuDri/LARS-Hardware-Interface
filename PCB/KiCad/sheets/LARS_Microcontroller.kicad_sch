@@ -4622,7 +4622,7 @@
 	)
 	(text "Reset + Boot Header"
 		(exclude_from_sim no)
-		(at 44.196 26.67 0)
+		(at 46.736 26.67 0)
 		(effects
 			(font
 				(size 3.048 3.048)
@@ -4634,7 +4634,7 @@
 	)
 	(text "SWD Debug Interface"
 		(exclude_from_sim no)
-		(at 142.748 157.988 0)
+		(at 145.288 157.988 0)
 		(effects
 			(font
 				(size 3.048 3.048)
@@ -4646,7 +4646,7 @@
 	)
 	(text "STM32 I/O"
 		(exclude_from_sim no)
-		(at 132.334 26.924 0)
+		(at 134.874 26.924 0)
 		(effects
 			(font
 				(size 3.048 3.048)
@@ -4658,7 +4658,7 @@
 	)
 	(text "STM32 Power"
 		(exclude_from_sim no)
-		(at 37.846 98.044 0)
+		(at 40.386 98.044 0)
 		(effects
 			(font
 				(size 3.048 3.048)

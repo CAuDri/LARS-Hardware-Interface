@@ -946,7 +946,7 @@
 	)
 	(text "IO + I2C Protection"
 		(exclude_from_sim no)
-		(at 164.592 26.67 0)
+		(at 167.132 26.67 0)
 		(effects
 			(font
 				(size 3.048 3.048)

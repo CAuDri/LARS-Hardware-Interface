@@ -2337,7 +2337,7 @@
 	)
 	(text "CAN Transceiver"
 		(exclude_from_sim no)
-		(at 174.752 26.67 0)
+		(at 177.292 26.67 0)
 		(effects
 			(font
 				(size 3.048 3.048)
@@ -2347,19 +2347,19 @@
 		)
 		(uuid "3b923d10-4638-4e53-aec4-ea3279d1794c")
 	)
-	(text "5V, 3A Max, without Power Negotiation or Source Current Adaption"
+	(text "5V, 3A Max, without Power Negotiation"
 		(exclude_from_sim no)
-		(at 107.696 123.19 0)
+		(at 109.22 122.936 0)
 		(effects
 			(font
-				(size 0.762 0.762)
+				(size 1.016 1.016)
 			)
 		)
 		(uuid "ad9bec8e-22dd-48b0-977f-db4ab0b67ef0")
 	)
 	(text "USB2 for Debugging and Power Supply"
 		(exclude_from_sim no)
-		(at 60.198 112.014 0)
+		(at 62.738 112.014 0)
 		(effects
 			(font
 				(size 3.048 3.048)
@@ -2371,7 +2371,7 @@
 	)
 	(text "USB1 for Host Connection"
 		(exclude_from_sim no)
-		(at 49.022 26.67 0)
+		(at 51.562 26.67 0)
 		(effects
 			(font
 				(size 3.048 3.048)

@@ -1818,7 +1818,7 @@
 	)
 	(text "WS2812 Onboard LEDs + Connector"
 		(exclude_from_sim no)
-		(at 58.166 93.98 0)
+		(at 60.706 93.98 0)
 		(effects
 			(font
 				(size 3.048 3.048)
@@ -1830,7 +1830,7 @@
 	)
 	(text "Power Indicators"
 		(exclude_from_sim no)
-		(at 115.316 26.416 0)
+		(at 117.856 26.416 0)
 		(effects
 			(font
 				(size 3.048 3.048)
@@ -1842,7 +1842,7 @@
 	)
 	(text "User Button"
 		(exclude_from_sim no)
-		(at 203.962 26.67 0)
+		(at 206.502 26.67 0)
 		(effects
 			(font
 				(size 3.048 3.048)
@@ -1854,7 +1854,7 @@
 	)
 	(text "Debug LEDs"
 		(exclude_from_sim no)
-		(at 36.068 26.67 0)
+		(at 38.608 26.67 0)
 		(effects
 			(font
 				(size 3.048 3.048)
@@ -1876,7 +1876,7 @@
 	)
 	(text "Neat little hack, using two onboard WS2812 as level shifters.\nExternal LEDs powered by 5V require a CMOS high-level >0.7*5V.\nThis will shift 3.3V input signals to 4.3V.\n "
 		(exclude_from_sim no)
-		(at 25.4 104.394 0)
+		(at 27.94 104.394 0)
 		(effects
 			(font
 				(size 1.524 1.524)
