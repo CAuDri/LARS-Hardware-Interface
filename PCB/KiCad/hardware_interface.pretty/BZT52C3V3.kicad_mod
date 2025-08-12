@@ -1,7 +1,7 @@
 (footprint "BZT52C3V3"
-	(version 20240108)
+	(version 20241229)
 	(generator "pcbnew")
-	(generator_version "8.0")
+	(generator_version "9.0")
 	(layer "F.Cu")
 	(tags "BZT52C3V3-7-F ")
 	(property "Reference" "REF**"
@@ -24,18 +24,6 @@
 		(effects
 			(font
 				(size 1 1)
-				(thickness 0.15)
-			)
-		)
-	)
-	(property "Footprint" ""
-		(at 0 0 0)
-		(layer "F.Fab")
-		(hide yes)
-		(uuid "f815fc0e-10cb-4b10-9985-d25d9e653ebc")
-		(effects
-			(font
-				(size 1.27 1.27)
 				(thickness 0.15)
 			)
 		)
@@ -345,27 +333,17 @@
 		(layer "F.Fab")
 		(uuid "db414700-02bd-48cc-bf28-a5d19e8c8a46")
 	)
-	(fp_text user "*"
-		(at -2.6616 0 0)
+	(fp_text user "K"
+		(at -2.25 -0.75 180)
 		(unlocked yes)
 		(layer "F.SilkS")
-		(uuid "833f0681-2d00-4bb6-aa88-c3552bf5dc2e")
+		(uuid "fe16b968-6de5-4244-82fb-7e98c57cc595")
 		(effects
 			(font
 				(size 1 1)
-				(thickness 0.15)
+				(thickness 0.1)
 			)
-		)
-	)
-	(fp_text user "*"
-		(at -2.6616 0 0)
-		(layer "F.SilkS")
-		(uuid "ca05f58b-d457-4796-b712-3fb3e9149e0c")
-		(effects
-			(font
-				(size 1 1)
-				(thickness 0.15)
-			)
+			(justify left bottom)
 		)
 	)
 	(fp_text user "${REFERENCE}"
@@ -406,15 +384,16 @@
 	(pad "1" smd rect
 		(at -1.725 0)
 		(size 1.1112 0.6008)
-		(layers "F.Cu" "F.Paste" "F.Mask")
+		(layers "F.Cu" "F.Mask" "F.Paste")
 		(uuid "ff3460f4-977e-4fe4-b0e6-f139a233521c")
 	)
 	(pad "2" smd rect
 		(at 1.725 0)
 		(size 1.1112 0.6008)
-		(layers "F.Cu" "F.Paste" "F.Mask")
+		(layers "F.Cu" "F.Mask" "F.Paste")
 		(uuid "50712413-3ea4-406e-8c2e-a1bdbae7429b")
 	)
+	(embedded_fonts no)
 	(model "${KIPRJMOD}/hardware_interface.pretty/3D_Models/BZT52C3V3.stp"
 		(offset
 			(xyz -2 -0.3 -0.1)

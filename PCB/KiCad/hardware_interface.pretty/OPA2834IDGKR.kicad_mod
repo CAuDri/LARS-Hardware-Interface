@@ -1,7 +1,7 @@
 (footprint "OPA2834IDGKR"
-	(version 20240108)
+	(version 20241229)
 	(generator "pcbnew")
-	(generator_version "8.0")
+	(generator_version "9.0")
 	(layer "F.Cu")
 	(tags "OPA2834IDGKR ")
 	(property "Reference" "REF**"
@@ -24,18 +24,6 @@
 		(effects
 			(font
 				(size 1 1)
-				(thickness 0.15)
-			)
-		)
-	)
-	(property "Footprint" ""
-		(at 0 0 0)
-		(layer "F.Fab")
-		(hide yes)
-		(uuid "505ebb35-6764-4485-8f8c-6a3605e38d93")
-		(effects
-			(font
-				(size 1.27 1.27)
 				(thickness 0.15)
 			)
 		)
@@ -85,17 +73,6 @@
 		(layer "F.SilkS")
 		(uuid "cb4b2d89-200f-4ec3-9ff3-040c84ea6b52")
 	)
-	(fp_circle
-		(center -3.85411 -0.974999)
-		(end -3.729109 -0.974999)
-		(stroke
-			(width 0.25)
-			(type solid)
-		)
-		(fill none)
-		(layer "F.SilkS")
-		(uuid "7bd981c4-2578-4a12-9586-1db91cf1e5ae")
-	)
 	(fp_line
 		(start -1.5 -1.5)
 		(end 1.5 -1.5)
@@ -136,6 +113,19 @@
 		(layer "F.Fab")
 		(uuid "0b0c1233-3380-4240-bd34-d1ac1e0aac68")
 	)
+	(fp_text user "*"
+		(at -4 -0.25 0)
+		(unlocked yes)
+		(layer "F.SilkS")
+		(uuid "3911a6f4-dfd6-4005-9573-d8f39c00f403")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.1)
+			)
+			(justify left bottom)
+		)
+	)
 	(fp_text user "${REFERENCE}"
 		(at 0 0 0)
 		(unlocked yes)
@@ -151,51 +141,52 @@
 	(pad "1" smd rect
 		(at -2.150857 -0.974999)
 		(size 1.856504 0.497985)
-		(layers "F.Cu" "F.Paste" "F.Mask")
+		(layers "F.Cu" "F.Mask" "F.Paste")
 		(uuid "cfa0002f-315f-4a08-a816-2527ea62d962")
 	)
 	(pad "2" smd rect
 		(at -2.150857 -0.325001)
 		(size 1.856504 0.497985)
-		(layers "F.Cu" "F.Paste" "F.Mask")
+		(layers "F.Cu" "F.Mask" "F.Paste")
 		(uuid "edee0244-0f03-4504-8cae-9b048fded93a")
 	)
 	(pad "3" smd rect
 		(at -2.150857 0.325001)
 		(size 1.856504 0.497985)
-		(layers "F.Cu" "F.Paste" "F.Mask")
+		(layers "F.Cu" "F.Mask" "F.Paste")
 		(uuid "d1305908-c708-43f8-9132-2636fffa2e1b")
 	)
 	(pad "4" smd rect
 		(at -2.150857 0.974999)
 		(size 1.856504 0.497985)
-		(layers "F.Cu" "F.Paste" "F.Mask")
+		(layers "F.Cu" "F.Mask" "F.Paste")
 		(uuid "f6670320-d883-40a1-9157-7d8a232871d7")
 	)
 	(pad "5" smd rect
 		(at 2.150857 0.974999)
 		(size 1.856504 0.497985)
-		(layers "F.Cu" "F.Paste" "F.Mask")
+		(layers "F.Cu" "F.Mask" "F.Paste")
 		(uuid "eeb2cd1c-1851-42d7-80cc-2f7b73fd0cf8")
 	)
 	(pad "6" smd rect
 		(at 2.150857 0.325001)
 		(size 1.856504 0.497985)
-		(layers "F.Cu" "F.Paste" "F.Mask")
+		(layers "F.Cu" "F.Mask" "F.Paste")
 		(uuid "75b4d265-92a6-4f5c-9ccf-b2ac559cd64c")
 	)
 	(pad "7" smd rect
 		(at 2.150857 -0.325001)
 		(size 1.856504 0.497985)
-		(layers "F.Cu" "F.Paste" "F.Mask")
+		(layers "F.Cu" "F.Mask" "F.Paste")
 		(uuid "2fcb6ed0-00b6-497e-8ebf-d80fdbf940cf")
 	)
 	(pad "8" smd rect
 		(at 2.150857 -0.974999)
 		(size 1.856504 0.497985)
-		(layers "F.Cu" "F.Paste" "F.Mask")
+		(layers "F.Cu" "F.Mask" "F.Paste")
 		(uuid "2fd6b6d2-e48e-4d66-b0f1-d33b0613dc47")
 	)
+	(embedded_fonts no)
 	(model "${KIPRJMOD}/hardware_interface.pretty/3D_Models/OPA2834IDGKR.STEP"
 		(offset
 			(xyz 0 0 0)

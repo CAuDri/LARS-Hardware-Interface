@@ -1,7 +1,7 @@
 (footprint "MIC2039AYM6-TR"
-	(version 20240108)
+	(version 20241229)
 	(generator "pcbnew")
-	(generator_version "8.0")
+	(generator_version "9.0")
 	(layer "F.Cu")
 	(tags "MIC2039AYM6-TR ")
 	(property "Reference" "REF**"
@@ -24,18 +24,6 @@
 		(effects
 			(font
 				(size 1 1)
-				(thickness 0.15)
-			)
-		)
-	)
-	(property "Footprint" ""
-		(at 0 0 0)
-		(layer "F.Fab")
-		(hide yes)
-		(uuid "972c9834-bbaf-463f-9d7e-0fa4a4ae3565")
-		(effects
-			(font
-				(size 1.27 1.27)
 				(thickness 0.15)
 			)
 		)
@@ -497,18 +485,7 @@
 		(uuid "def6cd06-e136-468b-b19c-bc5befb564c2")
 	)
 	(fp_text user "*"
-		(at -1.61925 -2.6518 0)
-		(layer "F.SilkS")
-		(uuid "4b23796b-f273-4613-97e2-0aec1c154ebd")
-		(effects
-			(font
-				(size 1 1)
-				(thickness 0.15)
-			)
-		)
-	)
-	(fp_text user "*"
-		(at -1.61925 -2.6518 0)
+		(at -2.25 -0.75 0)
 		(unlocked yes)
 		(layer "F.SilkS")
 		(uuid "aa0d06f2-cd58-4096-a28c-4b82f1f41c68")
@@ -557,39 +534,40 @@
 	(pad "1" smd rect
 		(at -1.36525 -0.950001)
 		(size 0.9779 0.5588)
-		(layers "F.Cu" "F.Paste" "F.Mask")
+		(layers "F.Cu" "F.Mask" "F.Paste")
 		(uuid "0bba612e-e1e5-4252-b666-c0ec7c7029dd")
 	)
 	(pad "2" smd rect
 		(at -1.36525 0)
 		(size 0.9779 0.5588)
-		(layers "F.Cu" "F.Paste" "F.Mask")
+		(layers "F.Cu" "F.Mask" "F.Paste")
 		(uuid "2f1000e3-bf0a-4ca1-a3b8-6b80f7ae9d85")
 	)
 	(pad "3" smd rect
 		(at -1.36525 0.950001)
 		(size 0.9779 0.5588)
-		(layers "F.Cu" "F.Paste" "F.Mask")
+		(layers "F.Cu" "F.Mask" "F.Paste")
 		(uuid "fdb5b8fd-7efc-43ea-8a80-d2a7c42d304a")
 	)
 	(pad "4" smd rect
 		(at 1.36525 0.950001)
 		(size 0.9779 0.5588)
-		(layers "F.Cu" "F.Paste" "F.Mask")
+		(layers "F.Cu" "F.Mask" "F.Paste")
 		(uuid "a87edd72-71de-4117-b9bd-430e1e24b253")
 	)
 	(pad "5" smd rect
 		(at 1.36525 0)
 		(size 0.9779 0.5588)
-		(layers "F.Cu" "F.Paste" "F.Mask")
+		(layers "F.Cu" "F.Mask" "F.Paste")
 		(uuid "aa6116cf-d506-47c2-ad09-b7809524fa58")
 	)
 	(pad "6" smd rect
 		(at 1.36525 -0.950001)
 		(size 0.9779 0.5588)
-		(layers "F.Cu" "F.Paste" "F.Mask")
+		(layers "F.Cu" "F.Mask" "F.Paste")
 		(uuid "6cdfc48c-0031-473a-8d02-796cf97bc7cc")
 	)
+	(embedded_fonts no)
 	(model "${KIPRJMOD}/hardware_interface.pretty/3D_Models/MIC2039AYM6-TR.STEP"
 		(offset
 			(xyz 0 0 0)

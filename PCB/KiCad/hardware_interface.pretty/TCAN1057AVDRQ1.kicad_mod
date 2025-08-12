@@ -1,8 +1,9 @@
 (footprint "TCAN1057AVDRQ1"
-	(version 20240108)
+	(version 20241229)
 	(generator "pcbnew")
-	(generator_version "8.0")
+	(generator_version "9.0")
 	(layer "F.Cu")
+	(descr "CAN Transceiver")
 	(tags "TCAN1057AVDRQ1 ")
 	(property "Reference" "REF**"
 		(at 0 0 0)
@@ -24,18 +25,6 @@
 		(effects
 			(font
 				(size 1 1)
-				(thickness 0.15)
-			)
-		)
-	)
-	(property "Footprint" ""
-		(at 0 0 0)
-		(layer "F.Fab")
-		(hide yes)
-		(uuid "e0204459-9fc3-4f37-b00f-9761c37e8da7")
-		(effects
-			(font
-				(size 1.27 1.27)
 				(thickness 0.15)
 			)
 		)
@@ -577,21 +566,10 @@
 		(uuid "8f47ea20-ada1-4834-92de-3889877537cf")
 	)
 	(fp_text user "*"
-		(at -2.97815 -3.6068 0)
+		(at -4 -1.75 0)
 		(unlocked yes)
 		(layer "F.SilkS")
 		(uuid "80e3a431-a6bb-414b-8d03-7fe9ddbc9963")
-		(effects
-			(font
-				(size 1 1)
-				(thickness 0.15)
-			)
-		)
-	)
-	(fp_text user "*"
-		(at -2.97815 -3.6068 0)
-		(layer "F.SilkS")
-		(uuid "fcad7a35-bde2-4c61-8fe4-d45630c2998f")
 		(effects
 			(font
 				(size 1 1)
@@ -637,51 +615,52 @@
 	(pad "1" smd rect
 		(at -2.72415 -1.905)
 		(size 1.4605 0.5588)
-		(layers "F.Cu" "F.Paste" "F.Mask")
+		(layers "F.Cu" "F.Mask" "F.Paste")
 		(uuid "18054085-ce66-40cd-88f0-166c4dd02c1e")
 	)
 	(pad "2" smd rect
 		(at -2.72415 -0.635)
 		(size 1.4605 0.5588)
-		(layers "F.Cu" "F.Paste" "F.Mask")
+		(layers "F.Cu" "F.Mask" "F.Paste")
 		(uuid "4ecf2e79-cde1-4dea-b181-a70cde6656f0")
 	)
 	(pad "3" smd rect
 		(at -2.72415 0.635)
 		(size 1.4605 0.5588)
-		(layers "F.Cu" "F.Paste" "F.Mask")
+		(layers "F.Cu" "F.Mask" "F.Paste")
 		(uuid "a223cad6-7a9f-4560-8b30-a360458974fd")
 	)
 	(pad "4" smd rect
 		(at -2.72415 1.905)
 		(size 1.4605 0.5588)
-		(layers "F.Cu" "F.Paste" "F.Mask")
+		(layers "F.Cu" "F.Mask" "F.Paste")
 		(uuid "84a4603e-4029-4223-a3c7-6dc3bbd32f7b")
 	)
 	(pad "5" smd rect
 		(at 2.72415 1.905)
 		(size 1.4605 0.5588)
-		(layers "F.Cu" "F.Paste" "F.Mask")
+		(layers "F.Cu" "F.Mask" "F.Paste")
 		(uuid "b9d5fff2-d643-44dc-9867-943e3fc39b0e")
 	)
 	(pad "6" smd rect
 		(at 2.72415 0.635)
 		(size 1.4605 0.5588)
-		(layers "F.Cu" "F.Paste" "F.Mask")
+		(layers "F.Cu" "F.Mask" "F.Paste")
 		(uuid "eddf9cfc-579d-4648-b435-e0ef6faa3350")
 	)
 	(pad "7" smd rect
 		(at 2.72415 -0.635)
 		(size 1.4605 0.5588)
-		(layers "F.Cu" "F.Paste" "F.Mask")
+		(layers "F.Cu" "F.Mask" "F.Paste")
 		(uuid "4aeae781-36a9-49f6-94b5-d17688dcdbb2")
 	)
 	(pad "8" smd rect
 		(at 2.72415 -1.905)
 		(size 1.4605 0.5588)
-		(layers "F.Cu" "F.Paste" "F.Mask")
+		(layers "F.Cu" "F.Mask" "F.Paste")
 		(uuid "192fda5c-cc35-4326-9c26-d6e8965116e3")
 	)
+	(embedded_fonts no)
 	(model "${KIPRJMOD}/hardware_interface.pretty/3D_Models/TCAN1057AVDRQ1.STEP"
 		(offset
 			(xyz 0 0 0)

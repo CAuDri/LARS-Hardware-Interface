@@ -1,7 +1,7 @@
 (footprint "BZT52B3V3"
-	(version 20240108)
+	(version 20241229)
 	(generator "pcbnew")
-	(generator_version "8.0")
+	(generator_version "9.0")
 	(layer "F.Cu")
 	(descr "Diotec SOD-123F")
 	(tags "SOD-123F SMD")
@@ -23,18 +23,6 @@
 		(effects
 			(font
 				(size 1 1)
-				(thickness 0.15)
-			)
-		)
-	)
-	(property "Footprint" ""
-		(at 0 0 0)
-		(layer "F.Fab")
-		(hide yes)
-		(uuid "41b9ee50-d38b-450e-8489-bb61b1a3ca0e")
-		(effects
-			(font
-				(size 1.27 1.27)
 				(thickness 0.15)
 			)
 		)
@@ -174,6 +162,19 @@
 		(layer "F.Fab")
 		(uuid "a8c8cbfc-8f6f-41dd-8f1d-9da1802a65c7")
 	)
+	(fp_text user "K"
+		(at -0.75 -0.75 180)
+		(unlocked yes)
+		(layer "F.SilkS")
+		(uuid "89300f3c-37c3-44a7-9fc8-10a29fd7968f")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.1)
+			)
+			(justify left bottom)
+		)
+	)
 	(fp_text user "${REFERENCE}"
 		(at 1.473 -1.905 0)
 		(layer "F.Fab")
@@ -188,17 +189,18 @@
 	(pad "1" smd roundrect
 		(at 0 0)
 		(size 0.9 0.8)
-		(layers "F.Cu" "F.Paste" "F.Mask")
+		(layers "F.Cu" "F.Mask" "F.Paste")
 		(roundrect_rratio 0.2272727273)
 		(uuid "39ef6fae-fcfb-4721-a7cc-ca08b34feeb9")
 	)
 	(pad "2" smd roundrect
 		(at 3.2 0 180)
 		(size 0.9 0.8)
-		(layers "F.Cu" "F.Paste" "F.Mask")
+		(layers "F.Cu" "F.Mask" "F.Paste")
 		(roundrect_rratio 0.2272727273)
 		(uuid "fb677e25-6d1a-4648-bfea-582b73cee7ba")
 	)
+	(embedded_fonts no)
 	(model "${KICAD6_3DMODEL_DIR}/Diode_SMD.3dshapes/D_SOD-123F.wrl"
 		(hide yes)
 		(offset

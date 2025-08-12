@@ -1,7 +1,7 @@
 (footprint "860020372006"
-	(version 20240108)
+	(version 20241229)
 	(generator "pcbnew")
-	(generator_version "8.0")
+	(generator_version "9.0")
 	(layer "F.Cu")
 	(descr "Aluminium Electrolytic Capacitors - Radial Leaded WCAP-ATG5 100uF 16V 20% Radial")
 	(property "Reference" "REF**"
@@ -23,18 +23,6 @@
 			(font
 				(size 0.48 0.48)
 				(thickness 0.12)
-			)
-		)
-	)
-	(property "Footprint" ""
-		(at 0 0 0)
-		(layer "F.Fab")
-		(hide yes)
-		(uuid "bcaf540d-8763-43da-ac1a-188babec33f8")
-		(effects
-			(font
-				(size 1.27 1.27)
-				(thickness 0.15)
 			)
 		)
 	)
@@ -70,7 +58,7 @@
 			(width 0.2)
 			(type solid)
 		)
-		(fill none)
+		(fill no)
 		(layer "F.SilkS")
 		(uuid "a63478c6-bd44-4f7f-b4a8-be3b57e05f2f")
 	)
@@ -101,7 +89,7 @@
 			(width 0.1)
 			(type solid)
 		)
-		(fill solid)
+		(fill yes)
 		(layer "F.CrtYd")
 		(uuid "d2441d42-04d7-4c43-94ca-4e7501c80d05")
 	)
@@ -112,7 +100,7 @@
 			(width 0.1)
 			(type solid)
 		)
-		(fill none)
+		(fill no)
 		(layer "F.Fab")
 		(uuid "dbc061d2-1a0a-41b0-a5eb-f98c5de6bf69")
 	)
@@ -156,7 +144,8 @@
 		(solder_mask_margin 0.102)
 		(uuid "76756cd9-d237-441f-8354-22df864d6671")
 	)
-	(model "${KIPRJMOD}/hardware_interface.pretty/3D_Models/860020372006.stp"
+	(embedded_fonts no)
+	(model "${KIPRJMOD}/hardware_interface.pretty/3D_Models/860020372006.step"
 		(offset
 			(xyz 0 0 0)
 		)

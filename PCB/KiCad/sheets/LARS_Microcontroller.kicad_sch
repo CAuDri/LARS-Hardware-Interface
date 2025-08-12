@@ -294,6 +294,158 @@
 			)
 			(embedded_fonts no)
 		)
+		(symbol "LARS_Hardware_Interface:D_TVS"
+			(pin_numbers
+				(hide yes)
+			)
+			(pin_names
+				(offset 1.016)
+				(hide yes)
+			)
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(property "Reference" "D"
+				(at 0 2.54 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Value" "D_TVS"
+				(at 0 -2.54 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Footprint" ""
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Datasheet" "~"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Description" "Unidirectional TVS diode, filled shape"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "ki_keywords" "diode"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "ki_fp_filters" "TO-???* *_Diode_* *SingleDiode* D_*"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(symbol "D_TVS_0_1"
+				(polyline
+					(pts
+						(xy -1.27 -1.27) (xy -1.27 1.27) (xy -0.762 1.27)
+					)
+					(stroke
+						(width 0.254)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 1.27 0) (xy -1.27 0)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 1.27 -1.27) (xy 1.27 1.27) (xy -1.27 0) (xy 1.27 -1.27)
+					)
+					(stroke
+						(width 0.254)
+						(type default)
+					)
+					(fill
+						(type outline)
+					)
+				)
+			)
+			(symbol "D_TVS_1_1"
+				(pin passive line
+					(at -3.81 0 0)
+					(length 2.54)
+					(name "K"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at 3.81 0 180)
+					(length 2.54)
+					(name "A"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+			(embedded_fonts no)
+		)
 		(symbol "LARS_Hardware_Interface:Pin Header 1x4"
 			(pin_names
 				(offset 1.016)
@@ -4716,6 +4868,12 @@
 		(uuid "189bb1a4-c565-4232-af9a-3d2caf33ad36")
 	)
 	(junction
+		(at 46.99 52.07)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "213cbf5e-ecbd-4807-8041-c2b0480944a7")
+	)
+	(junction
 		(at 63.5 171.45)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -4732,6 +4890,12 @@
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "382f5fb3-b7b9-4342-a5ad-f4c346543577")
+	)
+	(junction
+		(at 55.88 52.07)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "3aa95fe8-44b7-43b0-a0f5-0b9b968c9d49")
 	)
 	(junction
 		(at 88.9 179.07)
@@ -4864,12 +5028,6 @@
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "d6408069-dbc3-48ab-80dd-8cb16d6ad529")
-	)
-	(junction
-		(at 54.61 52.07)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "e09368fa-3b8b-4a3a-95f3-b0dab27018f2")
 	)
 	(junction
 		(at 57.15 179.07)
@@ -5285,13 +5443,23 @@
 	)
 	(wire
 		(pts
-			(xy 41.91 54.61) (xy 36.83 54.61)
+			(xy 39.37 54.61) (xy 34.29 54.61)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
 		(uuid "32099e58-e9f8-4728-9c8e-791721f69f58")
+	)
+	(wire
+		(pts
+			(xy 55.88 66.04) (xy 55.88 63.5)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "321118ed-6f3b-41e5-a4c0-8bd01ec3ab0c")
 	)
 	(wire
 		(pts
@@ -5665,16 +5833,6 @@
 	)
 	(wire
 		(pts
-			(xy 59.69 52.07) (xy 54.61 52.07)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "5a10ca17-392c-46d9-bf2a-7ac42a1a8a47")
-	)
-	(wire
-		(pts
 			(xy 140.97 124.46) (xy 142.24 124.46)
 		)
 		(stroke
@@ -5852,6 +6010,16 @@
 			(type default)
 		)
 		(uuid "6bc105a2-5b6c-4d20-bcde-91bddc065771")
+	)
+	(wire
+		(pts
+			(xy 55.88 52.07) (xy 59.69 52.07)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "6c057400-fb6f-49e0-8f6d-023809388850")
 	)
 	(wire
 		(pts
@@ -6085,7 +6253,7 @@
 	)
 	(wire
 		(pts
-			(xy 36.83 52.07) (xy 54.61 52.07)
+			(xy 34.29 52.07) (xy 46.99 52.07)
 		)
 		(stroke
 			(width 0)
@@ -6102,6 +6270,16 @@
 			(type default)
 		)
 		(uuid "87c27f3f-3773-49d7-99c7-8634507533d1")
+	)
+	(wire
+		(pts
+			(xy 55.88 55.88) (xy 55.88 52.07)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "87dd1be3-320f-4c91-bb3b-8bfce0968cd0")
 	)
 	(wire
 		(pts
@@ -6385,7 +6563,7 @@
 	)
 	(wire
 		(pts
-			(xy 36.83 49.53) (xy 85.09 49.53)
+			(xy 34.29 49.53) (xy 85.09 49.53)
 		)
 		(stroke
 			(width 0)
@@ -6535,13 +6713,23 @@
 	)
 	(wire
 		(pts
-			(xy 54.61 64.77) (xy 54.61 66.04)
+			(xy 46.99 64.77) (xy 46.99 66.04)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
 		(uuid "ae42f9fb-c445-4bbd-9152-32d29746cd83")
+	)
+	(wire
+		(pts
+			(xy 46.99 52.07) (xy 55.88 52.07)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "aea58f06-d600-4343-aa79-5497816349d0")
 	)
 	(wire
 		(pts
@@ -6795,7 +6983,7 @@
 	)
 	(wire
 		(pts
-			(xy 41.91 46.99) (xy 36.83 46.99)
+			(xy 39.37 46.99) (xy 34.29 46.99)
 		)
 		(stroke
 			(width 0)
@@ -6885,7 +7073,7 @@
 	)
 	(wire
 		(pts
-			(xy 41.91 66.04) (xy 41.91 54.61)
+			(xy 39.37 66.04) (xy 39.37 54.61)
 		)
 		(stroke
 			(width 0)
@@ -6965,7 +7153,7 @@
 	)
 	(wire
 		(pts
-			(xy 54.61 52.07) (xy 54.61 54.61)
+			(xy 46.99 52.07) (xy 46.99 54.61)
 		)
 		(stroke
 			(width 0)
@@ -7245,7 +7433,7 @@
 	)
 	(wire
 		(pts
-			(xy 41.91 39.37) (xy 41.91 46.99)
+			(xy 39.37 39.37) (xy 39.37 46.99)
 		)
 		(stroke
 			(width 0)
@@ -7274,7 +7462,7 @@
 		(uuid "1a3c63bd-61ff-46a6-bcc6-b915c2463b78")
 	)
 	(label "RESET"
-		(at 39.37 52.07 0)
+		(at 36.83 52.07 0)
 		(effects
 			(font
 				(size 1.016 1.016)
@@ -7314,7 +7502,7 @@
 		(uuid "90e466e5-0fd7-497b-b8e2-8079ec8198ab")
 	)
 	(label "BOOT0"
-		(at 39.37 49.53 0)
+		(at 36.83 49.53 0)
 		(effects
 			(font
 				(size 1.016 1.016)
@@ -8890,7 +9078,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "08796a45-3c17-455f-b6b6-fc6ccb1041c5")
-		(property "Reference" "#PWR07"
+		(property "Reference" "#PWR09"
 			(at 68.58 114.3 0)
 			(effects
 				(font
@@ -8940,7 +9128,7 @@
 		(instances
 			(project "hardware_interface"
 				(path "/ffedf44c-a51a-4124-b6d3-e3f1f256e9ac/d0ecd209-6b26-4886-a684-1b9476b3b7da"
-					(reference "#PWR07")
+					(reference "#PWR09")
 					(unit 1)
 				)
 			)
@@ -9092,7 +9280,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "156d84ec-60f5-487a-9ac3-bf03ce7f8a9e")
-		(property "Reference" "#PWR017"
+		(property "Reference" "#PWR019"
 			(at 76.2 157.48 0)
 			(effects
 				(font
@@ -9142,7 +9330,7 @@
 		(instances
 			(project "hardware_interface"
 				(path "/ffedf44c-a51a-4124-b6d3-e3f1f256e9ac/d0ecd209-6b26-4886-a684-1b9476b3b7da"
-					(reference "#PWR017")
+					(reference "#PWR019")
 					(unit 1)
 				)
 			)
@@ -9227,7 +9415,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "20d2e12b-956b-4bf1-bfc9-e6aa2c93a281")
-		(property "Reference" "#PWR09"
+		(property "Reference" "#PWR011"
 			(at 92.71 114.3 0)
 			(effects
 				(font
@@ -9277,7 +9465,7 @@
 		(instances
 			(project "hardware_interface"
 				(path "/ffedf44c-a51a-4124-b6d3-e3f1f256e9ac/d0ecd209-6b26-4886-a684-1b9476b3b7da"
-					(reference "#PWR09")
+					(reference "#PWR011")
 					(unit 1)
 				)
 			)
@@ -9285,7 +9473,7 @@
 	)
 	(symbol
 		(lib_id "LARS_Hardware_Interface:Pin Header 1x4")
-		(at 31.75 49.53 0)
+		(at 29.21 49.53 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -9293,7 +9481,7 @@
 		(dnp no)
 		(uuid "240aa1d7-6618-4643-881f-8f75ee9aaace")
 		(property "Reference" "J1"
-			(at 33.274 44.45 0)
+			(at 30.734 44.45 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9302,7 +9490,7 @@
 			)
 		)
 		(property "Value" "Reset Header"
-			(at 39.116 57.404 0)
+			(at 36.576 57.404 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9311,7 +9499,7 @@
 			)
 		)
 		(property "Footprint" "LARS_Hardware_Interface:PinHeader_1x04_P2.54mm_Vertical"
-			(at 31.75 49.53 0)
+			(at 29.21 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9320,7 +9508,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 31.75 49.53 0)
+			(at 29.21 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9329,7 +9517,7 @@
 			)
 		)
 		(property "Description" "Pin Header with 2.54mm pitch for Dupont Connectors"
-			(at 31.75 49.53 0)
+			(at 29.21 49.53 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9368,7 +9556,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "241b8f1b-e041-4527-ab27-94fd1b93b892")
-		(property "Reference" "#PWR05"
+		(property "Reference" "#PWR07"
 			(at 68.58 72.39 0)
 			(effects
 				(font
@@ -9418,7 +9606,7 @@
 		(instances
 			(project "hardware_interface"
 				(path "/ffedf44c-a51a-4124-b6d3-e3f1f256e9ac/d0ecd209-6b26-4886-a684-1b9476b3b7da"
-					(reference "#PWR05")
+					(reference "#PWR07")
 					(unit 1)
 				)
 			)
@@ -9503,7 +9691,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "30f08b2f-4db5-46ae-8d41-7302e94da6f4")
-		(property "Reference" "#PWR010"
+		(property "Reference" "#PWR012"
 			(at 227.33 123.19 0)
 			(effects
 				(font
@@ -9553,7 +9741,7 @@
 		(instances
 			(project "hardware_interface"
 				(path "/ffedf44c-a51a-4124-b6d3-e3f1f256e9ac/d0ecd209-6b26-4886-a684-1b9476b3b7da"
-					(reference "#PWR010")
+					(reference "#PWR012")
 					(unit 1)
 				)
 			)
@@ -9637,7 +9825,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "34f62eee-c99b-45d1-8945-8e6f3bc2cc03")
-		(property "Reference" "#PWR014"
+		(property "Reference" "#PWR016"
 			(at 92.71 144.78 0)
 			(effects
 				(font
@@ -9687,7 +9875,7 @@
 		(instances
 			(project "hardware_interface"
 				(path "/ffedf44c-a51a-4124-b6d3-e3f1f256e9ac/d0ecd209-6b26-4886-a684-1b9476b3b7da"
-					(reference "#PWR014")
+					(reference "#PWR016")
 					(unit 1)
 				)
 			)
@@ -9764,7 +9952,7 @@
 	)
 	(symbol
 		(lib_id "power:+3.3V")
-		(at 41.91 39.37 0)
+		(at 39.37 39.37 0)
 		(mirror y)
 		(unit 1)
 		(exclude_from_sim no)
@@ -9772,8 +9960,8 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "456768a9-87d5-452c-ab3e-1cee4d2b3592")
-		(property "Reference" "#PWR01"
-			(at 41.91 43.18 0)
+		(property "Reference" "#PWR02"
+			(at 39.37 43.18 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9782,7 +9970,7 @@
 			)
 		)
 		(property "Value" "+3V3"
-			(at 46.99 37.084 0)
+			(at 44.45 37.084 0)
 			(effects
 				(font
 					(size 1.016 1.016)
@@ -9791,7 +9979,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 41.91 39.37 0)
+			(at 39.37 39.37 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9800,7 +9988,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 41.91 39.37 0)
+			(at 39.37 39.37 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9809,7 +9997,7 @@
 			)
 		)
 		(property "Description" "Power symbol creates a global label with name \"+3.3V\""
-			(at 41.91 39.37 0)
+			(at 39.37 39.37 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9823,7 +10011,7 @@
 		(instances
 			(project "hardware_interface"
 				(path "/ffedf44c-a51a-4124-b6d3-e3f1f256e9ac/d0ecd209-6b26-4886-a684-1b9476b3b7da"
-					(reference "#PWR01")
+					(reference "#PWR02")
 					(unit 1)
 				)
 			)
@@ -10507,7 +10695,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "5af1dc36-f974-4904-82fa-446da6aa60f0")
-		(property "Reference" "#PWR019"
+		(property "Reference" "#PWR021"
 			(at 142.24 170.18 0)
 			(effects
 				(font
@@ -10557,7 +10745,7 @@
 		(instances
 			(project "hardware_interface"
 				(path "/ffedf44c-a51a-4124-b6d3-e3f1f256e9ac/d0ecd209-6b26-4886-a684-1b9476b3b7da"
-					(reference "#PWR019")
+					(reference "#PWR021")
 					(unit 1)
 				)
 			)
@@ -11055,6 +11243,75 @@
 		)
 	)
 	(symbol
+		(lib_id "LARS_Hardware_Interface:D_TVS")
+		(at 55.88 59.69 270)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "8395dbac-78fd-4cf5-8e2d-47d5ab6522a1")
+		(property "Reference" "D1"
+			(at 57.912 58.42 90)
+			(effects
+				(font
+					(size 1 1)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "TVS"
+			(at 57.912 60.706 90)
+			(effects
+				(font
+					(size 1 1)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "LARS_Hardware_Interface:STS321050U182"
+			(at 55.88 59.69 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 55.88 59.69 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Unidirectional TVS diode, filled shape"
+			(at 55.88 59.69 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "4d33d757-7f8c-4a40-a341-79b4be72686a")
+		)
+		(pin "2"
+			(uuid "82f1a137-9d7f-4319-9a11-7c9d95d0e209")
+		)
+		(instances
+			(project "hardware_interface"
+				(path "/ffedf44c-a51a-4124-b6d3-e3f1f256e9ac/d0ecd209-6b26-4886-a684-1b9476b3b7da"
+					(reference "D1")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "LARS_Hardware_Interface:C_Small")
 		(at 76.2 175.26 0)
 		(unit 1)
@@ -11133,7 +11390,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "9939e888-f550-4e6b-9428-aa8a5e75725f")
-		(property "Reference" "#PWR020"
+		(property "Reference" "#PWR022"
 			(at 25.4 173.99 0)
 			(effects
 				(font
@@ -11183,7 +11440,7 @@
 		(instances
 			(project "hardware_interface"
 				(path "/ffedf44c-a51a-4124-b6d3-e3f1f256e9ac/d0ecd209-6b26-4886-a684-1b9476b3b7da"
-					(reference "#PWR020")
+					(reference "#PWR022")
 					(unit 1)
 				)
 			)
@@ -11199,7 +11456,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "9ccfceb1-c08e-43ab-a4bf-69a45409e4db")
-		(property "Reference" "#PWR012"
+		(property "Reference" "#PWR014"
 			(at 201.93 138.43 0)
 			(effects
 				(font
@@ -11249,7 +11506,7 @@
 		(instances
 			(project "hardware_interface"
 				(path "/ffedf44c-a51a-4124-b6d3-e3f1f256e9ac/d0ecd209-6b26-4886-a684-1b9476b3b7da"
-					(reference "#PWR012")
+					(reference "#PWR014")
 					(unit 1)
 				)
 			)
@@ -11265,7 +11522,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "9e7540ed-4703-4419-b3a2-ec84a647f96a")
-		(property "Reference" "#PWR013"
+		(property "Reference" "#PWR015"
 			(at 227.33 138.43 0)
 			(effects
 				(font
@@ -11315,7 +11572,7 @@
 		(instances
 			(project "hardware_interface"
 				(path "/ffedf44c-a51a-4124-b6d3-e3f1f256e9ac/d0ecd209-6b26-4886-a684-1b9476b3b7da"
-					(reference "#PWR013")
+					(reference "#PWR015")
 					(unit 1)
 				)
 			)
@@ -11461,7 +11718,7 @@
 	)
 	(symbol
 		(lib_id "power:GND")
-		(at 41.91 66.04 0)
+		(at 39.37 66.04 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -11469,8 +11726,8 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "aa9135bb-4ace-42a4-96f7-013ed736f9fa")
-		(property "Reference" "#PWR03"
-			(at 41.91 72.39 0)
+		(property "Reference" "#PWR04"
+			(at 39.37 72.39 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11479,7 +11736,7 @@
 			)
 		)
 		(property "Value" "GND"
-			(at 41.91 71.12 0)
+			(at 39.37 71.12 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11487,7 +11744,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 41.91 66.04 0)
+			(at 39.37 66.04 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11496,7 +11753,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 41.91 66.04 0)
+			(at 39.37 66.04 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11505,7 +11762,7 @@
 			)
 		)
 		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
-			(at 41.91 66.04 0)
+			(at 39.37 66.04 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11519,7 +11776,7 @@
 		(instances
 			(project "hardware_interface"
 				(path "/ffedf44c-a51a-4124-b6d3-e3f1f256e9ac/d0ecd209-6b26-4886-a684-1b9476b3b7da"
-					(reference "#PWR03")
+					(reference "#PWR04")
 					(unit 1)
 				)
 			)
@@ -11535,7 +11792,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "abb1e6f8-59f2-4e93-9f9e-58d6e247ffc4")
-		(property "Reference" "#PWR015"
+		(property "Reference" "#PWR017"
 			(at 60.96 157.48 0)
 			(effects
 				(font
@@ -11585,7 +11842,7 @@
 		(instances
 			(project "hardware_interface"
 				(path "/ffedf44c-a51a-4124-b6d3-e3f1f256e9ac/d0ecd209-6b26-4886-a684-1b9476b3b7da"
-					(reference "#PWR015")
+					(reference "#PWR017")
 					(unit 1)
 				)
 			)
@@ -12116,7 +12373,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "b2a79712-f271-430c-8d4f-cf56d85e71b6")
-		(property "Reference" "#PWR022"
+		(property "Reference" "#PWR024"
 			(at 142.24 189.23 0)
 			(effects
 				(font
@@ -12167,7 +12424,7 @@
 		(instances
 			(project "hardware_interface"
 				(path "/ffedf44c-a51a-4124-b6d3-e3f1f256e9ac/d0ecd209-6b26-4886-a684-1b9476b3b7da"
-					(reference "#PWR022")
+					(reference "#PWR024")
 					(unit 1)
 				)
 			)
@@ -12690,7 +12947,7 @@
 	)
 	(symbol
 		(lib_id "LARS_Hardware_Interface:SW_Push")
-		(at 54.61 59.69 90)
+		(at 46.99 59.69 90)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -12698,7 +12955,7 @@
 		(dnp no)
 		(uuid "b8ae9f2c-b81c-4c54-9058-a7b2081919fe")
 		(property "Reference" "SW1"
-			(at 57.15 58.4199 90)
+			(at 48.514 58.42 90)
 			(effects
 				(font
 					(size 1.016 1.016)
@@ -12707,7 +12964,7 @@
 			)
 		)
 		(property "Value" "Reset"
-			(at 57.15 60.9599 90)
+			(at 48.514 60.96 90)
 			(effects
 				(font
 					(size 1.016 1.016)
@@ -12716,7 +12973,7 @@
 			)
 		)
 		(property "Footprint" "LARS_Hardware_Interface:430182043816"
-			(at 49.53 59.69 0)
+			(at 41.91 59.69 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -12725,7 +12982,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 49.53 59.69 0)
+			(at 41.91 59.69 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -12734,7 +12991,7 @@
 			)
 		)
 		(property "Description" "Push button switch, generic, two pins"
-			(at 54.61 59.69 0)
+			(at 46.99 59.69 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -12836,7 +13093,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "bfd044e2-0abd-4b34-8a1b-a2b336323634")
-		(property "Reference" "#PWR016"
+		(property "Reference" "#PWR018"
 			(at 68.58 157.48 0)
 			(effects
 				(font
@@ -12886,7 +13143,7 @@
 		(instances
 			(project "hardware_interface"
 				(path "/ffedf44c-a51a-4124-b6d3-e3f1f256e9ac/d0ecd209-6b26-4886-a684-1b9476b3b7da"
-					(reference "#PWR016")
+					(reference "#PWR018")
 					(unit 1)
 				)
 			)
@@ -12902,7 +13159,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "c2845ca9-f2e0-498f-bb65-3aa2e4492b14")
-		(property "Reference" "#PWR08"
+		(property "Reference" "#PWR010"
 			(at 76.2 114.3 0)
 			(effects
 				(font
@@ -12952,7 +13209,7 @@
 		(instances
 			(project "hardware_interface"
 				(path "/ffedf44c-a51a-4124-b6d3-e3f1f256e9ac/d0ecd209-6b26-4886-a684-1b9476b3b7da"
-					(reference "#PWR08")
+					(reference "#PWR010")
 					(unit 1)
 				)
 			)
@@ -12960,7 +13217,7 @@
 	)
 	(symbol
 		(lib_id "power:GND")
-		(at 54.61 66.04 0)
+		(at 46.99 66.04 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -12968,8 +13225,8 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "c2cebfff-6e01-4500-981d-07e12582f726")
-		(property "Reference" "#PWR04"
-			(at 54.61 72.39 0)
+		(property "Reference" "#PWR05"
+			(at 46.99 72.39 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -12978,7 +13235,7 @@
 			)
 		)
 		(property "Value" "GND"
-			(at 54.61 71.12 0)
+			(at 46.99 71.12 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -12986,7 +13243,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 54.61 66.04 0)
+			(at 46.99 66.04 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -12995,7 +13252,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 54.61 66.04 0)
+			(at 46.99 66.04 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -13004,7 +13261,7 @@
 			)
 		)
 		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
-			(at 54.61 66.04 0)
+			(at 46.99 66.04 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -13018,7 +13275,7 @@
 		(instances
 			(project "hardware_interface"
 				(path "/ffedf44c-a51a-4124-b6d3-e3f1f256e9ac/d0ecd209-6b26-4886-a684-1b9476b3b7da"
-					(reference "#PWR04")
+					(reference "#PWR05")
 					(unit 1)
 				)
 			)
@@ -13034,7 +13291,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "c7039d6e-d8fa-47cc-906b-c1eadcfb7a8e")
-		(property "Reference" "#PWR021"
+		(property "Reference" "#PWR023"
 			(at 25.4 186.69 0)
 			(effects
 				(font
@@ -13084,7 +13341,7 @@
 		(instances
 			(project "hardware_interface"
 				(path "/ffedf44c-a51a-4124-b6d3-e3f1f256e9ac/d0ecd209-6b26-4886-a684-1b9476b3b7da"
-					(reference "#PWR021")
+					(reference "#PWR023")
 					(unit 1)
 				)
 			)
@@ -13100,7 +13357,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "cd3208e2-aac2-4090-b2d7-b66c3241ad71")
-		(property "Reference" "#PWR011"
+		(property "Reference" "#PWR013"
 			(at 92.71 132.08 0)
 			(effects
 				(font
@@ -13150,7 +13407,73 @@
 		(instances
 			(project "hardware_interface"
 				(path "/ffedf44c-a51a-4124-b6d3-e3f1f256e9ac/d0ecd209-6b26-4886-a684-1b9476b3b7da"
-					(reference "#PWR011")
+					(reference "#PWR013")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:GND")
+		(at 55.88 66.04 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "d10f1870-e067-4e3d-9d15-99d89a1551e0")
+		(property "Reference" "#PWR06"
+			(at 55.88 72.39 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "GND"
+			(at 55.88 71.12 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 55.88 66.04 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 55.88 66.04 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
+			(at 55.88 66.04 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "3243782f-35de-420d-a538-6e2fcdac883a")
+		)
+		(instances
+			(project "hardware_interface"
+				(path "/ffedf44c-a51a-4124-b6d3-e3f1f256e9ac/d0ecd209-6b26-4886-a684-1b9476b3b7da"
+					(reference "#PWR06")
 					(unit 1)
 				)
 			)
@@ -13165,7 +13488,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "d7cb82e7-f111-45db-ba96-85672395d67e")
-		(property "Reference" "#PWR06"
+		(property "Reference" "#PWR08"
 			(at 85.09 72.39 0)
 			(effects
 				(font
@@ -13215,7 +13538,7 @@
 		(instances
 			(project "hardware_interface"
 				(path "/ffedf44c-a51a-4124-b6d3-e3f1f256e9ac/d0ecd209-6b26-4886-a684-1b9476b3b7da"
-					(reference "#PWR06")
+					(reference "#PWR08")
 					(unit 1)
 				)
 			)
@@ -13572,7 +13895,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "faa9318e-af5d-4600-aa8c-a50c8205a0dd")
-		(property "Reference" "#PWR018"
+		(property "Reference" "#PWR020"
 			(at 92.71 157.48 0)
 			(effects
 				(font
@@ -13622,7 +13945,7 @@
 		(instances
 			(project "hardware_interface"
 				(path "/ffedf44c-a51a-4124-b6d3-e3f1f256e9ac/d0ecd209-6b26-4886-a684-1b9476b3b7da"
-					(reference "#PWR018")
+					(reference "#PWR020")
 					(unit 1)
 				)
 			)
@@ -13638,7 +13961,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "fb4c72fa-e7b0-40cf-b244-9177e88ba865")
-		(property "Reference" "#PWR02"
+		(property "Reference" "#PWR03"
 			(at 68.58 43.18 0)
 			(effects
 				(font
@@ -13689,7 +14012,7 @@
 		(instances
 			(project "hardware_interface"
 				(path "/ffedf44c-a51a-4124-b6d3-e3f1f256e9ac/d0ecd209-6b26-4886-a684-1b9476b3b7da"
-					(reference "#PWR02")
+					(reference "#PWR03")
 					(unit 1)
 				)
 			)
