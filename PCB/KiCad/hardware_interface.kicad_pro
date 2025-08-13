@@ -658,25 +658,41 @@
       },
       {
         "name": "Analog",
-        "pcb_color": "rgb(221, 133, 0)",
+        "pcb_color": "rgba(0, 0, 0, 0.000)",
+        "priority": 4,
+        "schematic_color": "rgba(0, 0, 0, 0.000)"
+      },
+      {
+        "diff_pair_gap": 0.5,
+        "diff_pair_width": 0.15,
+        "name": "CAN 100 Ohm JLC",
+        "pcb_color": "rgba(0, 0, 0, 0.000)",
         "priority": 0,
         "schematic_color": "rgba(0, 0, 0, 0.000)"
       },
       {
         "diff_pair_gap": 0.38,
         "diff_pair_width": 0.22,
-        "name": "CAN 120 Ohm",
+        "name": "CAN 120 Ohm BetaLayout",
         "pcb_color": "rgb(0, 0, 194)",
-        "priority": 1,
+        "priority": 2,
         "schematic_color": "rgba(0, 0, 0, 0.000)"
       },
       {
         "clearance": 0.125,
         "diff_pair_gap": 0.3,
         "diff_pair_width": 0.35,
-        "name": "USB 90 Ohm",
+        "name": "USB 90 Ohm BetaLayout",
         "pcb_color": "rgb(0, 132, 0)",
-        "priority": 2,
+        "priority": 3,
+        "schematic_color": "rgba(0, 0, 0, 0.000)"
+      },
+      {
+        "diff_pair_gap": 0.4,
+        "diff_pair_width": 0.18,
+        "name": "USB 90 Ohm JLC",
+        "pcb_color": "rgb(221, 133, 0)",
+        "priority": 1,
         "schematic_color": "rgba(0, 0, 0, 0.000)"
       }
     ],
@@ -687,11 +703,11 @@
     "netclass_assignments": null,
     "netclass_patterns": [
       {
-        "netclass": "CAN 120 Ohm",
+        "netclass": "CAN 100 Ohm JLC",
         "pattern": "CAN*_N"
       },
       {
-        "netclass": "USB 90 Ohm",
+        "netclass": "USB 90 Ohm JLC",
         "pattern": "*USB*_D*"
       },
       {
@@ -707,7 +723,7 @@
         "pattern": "SERVO*ADC*"
       },
       {
-        "netclass": "CAN 120 Ohm",
+        "netclass": "CAN 100 Ohm JLC",
         "pattern": "CAN*_P"
       }
     ]
