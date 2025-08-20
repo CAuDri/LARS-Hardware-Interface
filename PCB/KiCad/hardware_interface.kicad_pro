@@ -736,7 +736,7 @@
       "plot": "../images/",
       "pos_files": "../manufacturing_files/",
       "specctra_dsn": "",
-      "step": "",
+      "step": "../images/hardware_interface.step",
       "svg": "",
       "vrml": ""
     },
