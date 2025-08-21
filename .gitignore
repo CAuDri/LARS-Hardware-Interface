@@ -8,3 +8,19 @@ fp-info-cache
 *auto_saved_files*
 *autosave*
 fabrication-toolkit-options.json
+
+## Ignore build artefacts
+build/
+firmware/libraries/microros/firmware/
+**/microros/lib/
+
+## Ignore ROS2 workspace files
+build/
+install/
+log/
+*.pyc
+__pycache__/
+
+## Ignore CubeMX project files
+.mxproject
+.project
