@@ -3,7 +3,7 @@
 This repository contains the schematic, PCB design files and a basic firmware stack for the Hardware Interface of the [Lightweight Autonomous Racing System (LARS)](https://github.com/CAuDri/LARS). 
 
 <p align="center">
-  <img width="600" src="https://github.com/CAuDri/LARS-Hardware-Interface/blob/main/PCB/images/hardware_interface_3D_render.png?raw=true">
+  <img width="600" src="https://github.com/CAuDri/LARS-Hardware-Interface/blob/main/PCB/export/hardware_interface_3D_render.png?raw=true">
 </p>
 
 The board is based on a STM32F4 microcontroller and is designed to interface with various sensors and actuators on the vehicle. The communication with the host PC is done via USB, using [micro-ROS](https://micro.ros.org/) and the underlying [micro-XRCE DDS](https://micro-xrce-dds.docs.eprosima.com/en/latest/).
