@@ -36,6 +36,9 @@ BASE_DIR=$(git rev-parse --show-toplevel 2>/dev/null)
 TOOLCHAIN_FILE="${BASE_DIR}/firmware/toolchain/toolchain.cmake"
 OPENOCD_CFG="${BASE_DIR}/firmware/toolchain/openocd.cfg"
 
+# Start address for the firmware in flash memory (currently used for all devices in DFU mode)
+FIRMWARE_START_ADDR=0x08000000
+
 # Initialize device-specific variables
 _init_vars() {
     DEVICE_NAME=$1
@@ -55,7 +58,7 @@ _clean_build_artifacts() {
 }
 
 _clean_microros_lib() {
-    local MICROROS_LIB_DIR="${DEVICE_DIR}/microros/lib"
+    local MICROROS_LIB_DIR="${DEVICE_DIR}/microros_lib"
     echo "Cleaning micro-ROS library for ${DEVICE_NAME}"
     rm -rf "${MICROROS_LIB_DIR}"
 }
@@ -97,8 +100,8 @@ _show_clean_help() {
 # The micro-ROS library will be copied to the microros/lib directory in the device folder
 _build_microros() {
     echo "Building micro-ROS library for ${DEVICE_NAME}"
-    pushd "${BASE_DIR}/firmware/libraries/microros" >/dev/null
-    bash microros_generate_lib.sh "${DEVICE_NAME}"
+    pushd "${BASE_DIR}/firmware/libraries/microros/static_library" >/dev/null
+    bash generate_lib.sh "${DEVICE_NAME}"
     if [ $? -ne 0 ]; then
         echo "Failed to build micro-ROS library for ${DEVICE_NAME}"
         popd >/dev/null
@@ -171,7 +174,7 @@ build() {
     fi
 
     # Build microros library if it doesn't exist
-    if [ ! -d "${DEVICE_DIR}/microros/lib" ]; then
+    if [ ! -d "${DEVICE_DIR}/microros_lib" ]; then
         echo
         _build_microros "$1"
         if [ $? -ne 0 ]; then
@@ -184,7 +187,8 @@ build() {
     pushd "${BUILD_DIR}" >/dev/null || return 1
 
     # --- THIS IS THE ACTUAL BUILD STEP ---
-    cmake -DCMAKE_TOOLCHAIN_FILE="${TOOLCHAIN_FILE}" ..
+    # cmake -DCMAKE_TOOLCHAIN_FILE="${TOOLCHAIN_FILE}" ..
+    cmake ..
     cmake --build . -- -j$(nproc)
 
     if [ $? -ne 0 ]; then
@@ -268,6 +272,21 @@ flash() {
 
     # Flash the device
     echo "Flashing device: ${DEVICE_NAME}"
+
+    # Check if a device is connected in DFU mode (/dev/bootloader symlink) and flash via USB
+    if [ -e /dev/bootloader ]; then
+        echo -e "Device detected in DFU mode, flashing via USB...\n"
+        sudo dfu-util -a 0 -s ${FIRMWARE_START_ADDR}:leave -D ${BUILD_DIR}/${DEVICE_NAME}.bin
+        if [ $? -eq 0 ]; then
+            echo -e "\n${COLOR_GREEN}Firmware has been successfully flashed to the ${DEVICE_NAME}!${COLOR_RESET}\n"
+        else
+            echo -e "\n${COLOR_RED}Firmware could not be flashed to the ${DEVICE_NAME}!\nCheck the error log for more information.${COLOR_RESET}\n"
+            return 1
+        fi
+        return 0
+    fi
+
+    # Launch OpenOCD and look for a SWD target otherwise
     sudo openocd -f "${OPENOCD_CFG}" -c "program ${BUILD_DIR}/${DEVICE_NAME}.elf verify reset exit"
 
     if [ $? -eq 0 ]; then
