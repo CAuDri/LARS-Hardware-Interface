@@ -22,7 +22,8 @@
             "executable": "${workspaceFolder}/firmware/devices/${input:selectedDevice}/build/${input:selectedDevice}.elf",
             "configFiles": [
                 "${workspaceFolder}/firmware/toolchain/openocd.cfg"
-            ]
+            ],
+            "showDevDebugOutput": "raw"
         }
     ]
 }
