@@ -1,0 +1,15 @@
+/**
+ * @file debug_config.h
+ *
+ * @brief CAuDri - Debug configuration file for the Hardware Interface
+ *
+ * This file is used to set up all debug-related configuration parameters for the application.
+ */
+
+#pragma once
+
+/* ------ Logger Configuration ------ */
+
+#define DEBUG_LOG_LEVEL LOG_LEVEL_DEBUG        // Set the log level
+#define DEBUG_LOG_OUTPUT LOG_OUTPUT_UART       // Set the log output
+#define DEBUG_LOG_TIMESTAMP LOG_TIMESTAMP_SYS  // Set the log timestamp
