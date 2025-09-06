@@ -66,6 +66,9 @@ RUN echo "source /opt/ros/$ROS_DISTRO/setup.bash" >> /home/$USERNAME/.bashrc \
     && echo "source /uros_ws/install/micro_ros_setup/share/micro_ros_setup/local_setup.bash" >> /home/$USERNAME/.bashrc \
     && echo "export LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:/uros_ws/install/micro_ros_msgs/lib:/uros_ws/install/micro_ros_agent/lib" >> /home/$USERNAME/.bashrc
 
+# Source the build script in the user's .bashrc
+RUN echo "source /hardware_interface/firmware/build.sh" >> /home/$USERNAME/.bashrc
+
 # Fix windows line endings and file system monitoring
 RUN git config --global core.autocrlf input \
     # Disable file system monitoring due to unusual warnings in WSL based containers

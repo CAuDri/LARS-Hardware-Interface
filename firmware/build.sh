@@ -33,7 +33,6 @@ COLOR_RESET='\033[0m'
 
 # Global Variables
 BASE_DIR=$(git rev-parse --show-toplevel 2>/dev/null)
-TOOLCHAIN_FILE="${BASE_DIR}/firmware/toolchain/toolchain.cmake"
 OPENOCD_CFG="${BASE_DIR}/firmware/toolchain/openocd.cfg"
 
 # Start address for the firmware in flash memory (currently used for all devices in DFU mode)
@@ -44,6 +43,7 @@ _init_vars() {
     DEVICE_NAME=$1
     DEVICE_DIR="${BASE_DIR}/firmware/devices/${DEVICE_NAME}"
     BUILD_DIR="${DEVICE_DIR}/build"
+    TOOLCHAIN_FILE="${DEVICE_DIR}/board/cmake/gcc-arm-none-eabi.cmake"
 }
 
 _list_devices() {
@@ -187,7 +187,7 @@ build() {
     pushd "${BUILD_DIR}" >/dev/null || return 1
 
     # --- THIS IS THE ACTUAL BUILD STEP ---
-    # cmake -DCMAKE_TOOLCHAIN_FILE="${TOOLCHAIN_FILE}" ..
+    cmake -DCMAKE_TOOLCHAIN_FILE="${TOOLCHAIN_FILE}" ..
     cmake ..
     cmake --build . -- -j$(nproc)
 
