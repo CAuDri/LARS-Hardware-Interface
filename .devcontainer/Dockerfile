@@ -18,7 +18,6 @@ RUN apt-get update && apt-get install -y \
     git \
     curl \
     udev \
-    rsync \
     dos2unix \
     # Build tools
     build-essential \
@@ -60,14 +59,14 @@ WORKDIR /home/$USERNAME
 RUN mkdir -p /hardware_interface \
     && chown -R $USERNAME:$USERNAME /hardware_interface
 
+# Source the build script when starting a new terminal session
+RUN echo "source /hardware_interface/firmware/build.sh" >> /home/$USERNAME/.bashrc
+
 # Source ROS2 and micro-ROS packages and set library paths
 RUN echo "source /opt/ros/$ROS_DISTRO/setup.bash" >> /home/$USERNAME/.bashrc \
     && echo "source /uros_ws/install/local_setup.bash" >> /home/$USERNAME/.bashrc \
     && echo "source /uros_ws/install/micro_ros_setup/share/micro_ros_setup/local_setup.bash" >> /home/$USERNAME/.bashrc \
     && echo "export LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:/uros_ws/install/micro_ros_msgs/lib:/uros_ws/install/micro_ros_agent/lib" >> /home/$USERNAME/.bashrc
-
-# Source the build script in the user's .bashrc
-RUN echo "source /hardware_interface/firmware/build.sh" >> /home/$USERNAME/.bashrc
 
 # Fix windows line endings and file system monitoring
 RUN git config --global core.autocrlf input \
