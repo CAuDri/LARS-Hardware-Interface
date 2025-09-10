@@ -24,6 +24,8 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 
+#include "logger.h"
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -131,11 +133,6 @@ int main(void)
   SystemClock_Config();
 
   /* USER CODE BEGIN SysInit */
-
-  // CAuDri - Initialize the trace recorder for debugging with Tracealyzer
-  #if DEBUG_USE_TRACERECORDER
-    xTraceInitialize();
-  #endif
   
   /* USER CODE END SysInit */
 
@@ -155,6 +152,11 @@ int main(void)
   MX_TIM4_Init();
   MX_TIM8_Init();
   /* USER CODE BEGIN 2 */
+
+  // CAuDri - Initialize the trace recorder for debugging with Tracealyzer
+  #ifdef DEBUG_USE_TRACE_RECORDER
+    xTraceInitialize();
+  #endif
 
   /* USER CODE END 2 */
 
@@ -182,6 +184,10 @@ int main(void)
   defaultTaskHandle = osThreadNew(StartDefaultTask, NULL, &defaultTask_attributes);
 
   /* USER CODE BEGIN RTOS_THREADS */
+
+  // CAuDri - Initialize the logging interface and start the logger thread
+  logger_init();
+
   /* add threads, ... */
   /* USER CODE END RTOS_THREADS */
 

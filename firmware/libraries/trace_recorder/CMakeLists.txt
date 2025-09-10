@@ -32,8 +32,8 @@ endif()
 
 # Core TraceRecorder sources
 set(TRC_SRC
-  "${CMAKE_CURRENT_LIST_DIR}/kernelports/FreeRTOS/trcKernelPort.c"
-  #   "${CMAKE_CURRENT_LIST_DIR}/hardwareports/ARM_Cortex_M/trcHardwarePort.c"
+  ${CMAKE_CURRENT_LIST_DIR}/kernelports/FreeRTOS/trcKernelPort.c
+  #   ${CMAKE_CURRENT_LIST_DIR}/hardwareports/ARM_Cortex_M/trcHardwarePort.c
 
   trcAssert.c
   trcCounter.c
