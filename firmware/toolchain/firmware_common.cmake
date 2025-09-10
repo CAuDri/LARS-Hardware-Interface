@@ -3,7 +3,7 @@
 
 enable_language(C CXX ASM)
 
-set(CMAKE_C_STANDARD 11)
+set(CMAKE_C_STANDARD 99)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_C_EXTENSIONS ON)
 
@@ -24,10 +24,9 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 get_filename_component(FIRMWARE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../.." ABSOLUTE)
 set(LIB_DIR "${FIRMWARE_DIR}/libraries")
 
-# # Enable Thumb instructions for Cortex-M MCUs
-# set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS} -mthumb")
-# set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mthumb")
-# set(CMAKE_ASM_FLAGS "${CMAKE_ASM_FLAGS} -mthumb")
+target_link_options(${PROJECT_NAME} PRIVATE
+  --specs=nosys.specs -u _printf_float
+)
 
 # Post-build artifacts (hex/bin/size)
 if(NOT CMAKE_OBJCOPY)
