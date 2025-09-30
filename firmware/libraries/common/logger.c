@@ -21,7 +21,7 @@
 
 // Nr of messages that can be stored in the log message queue
 // If this number is too low, log messages might be dropped on high system load
-#define LOG_MESSAGE_QUEUE_SIZE 16
+#define LOG_MESSAGE_QUEUE_SIZE 48
 
 // Buffer size for the log message arguments (32-bit words)
 // When increasing this value, the call to logger_parse_arguments() needs to be adjusted manually
@@ -119,11 +119,11 @@ bool logger_init(void) {
     if (DEBUG_LOG_OUTPUT == LOG_OUTPUT_UART) {
         huart = (UART_HandleTypeDef*)&DEBUG_LOG_HANDLE;
 
-        HAL_StatusTypeDef dma_status =
+        HAL_StatusTypeDef status =
             HAL_UART_RegisterCallback(huart, HAL_UART_TX_COMPLETE_CB_ID, logger_uart_tx_complete);
 
-        if (dma_status != HAL_OK) {
-            LogInline("Logger: DMA callback registration failed");
+        if (status != HAL_OK) {
+            LogInline("Logger: UART callback registration failed");
             return false;
         }
     } else if (DEBUG_LOG_OUTPUT == LOG_OUTPUT_USB_CDC) {
@@ -221,7 +221,7 @@ void logger_log_message(uint32_t log_level, const char* message, ...) {
     osStatus_t status = osMessageQueuePut(logger_queue, &msg, 0, 0);
 
     if (status != osOK) {
-        LogInline("Logger: Log Queue full, dropping message");
+        LogInline("Logger: Log Queue full, dropping message, status: %d", status);
         return;
     }
 }
