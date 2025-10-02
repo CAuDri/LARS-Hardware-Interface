@@ -1,0 +1,15 @@
+## Settings for line endings in the repository
+
+# Set the default behavior, in case people don't have core.autocrlf configured properly.
+* text=auto eol=lf
+
+# Declare files that will always have LF line endings on checkout.
+*.c text eol=lf
+*.h text eol=lf
+*.cpp text eol=lf
+*.hpp text eol=lf
+*.sh text eol=lf
+
+# Declare files that are binary and should not be modified by Git.
+*.png binary
+*.jpg binary
