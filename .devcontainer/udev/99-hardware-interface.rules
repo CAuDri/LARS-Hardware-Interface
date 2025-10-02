@@ -13,3 +13,6 @@ ATTRS{idVendor}=="0483", ATTRS{idProduct}=="374b", MODE="660", GROUP="plugdev", 
 
 # CMSIS-DAP devices (e.g. Picoprobe)
 ATTRS{product}=="*CMSIS-DAP*", MODE="660", GROUP="plugdev", TAG+="uaccess"
+
+# STM32 DFU Bootloader -> /dev/bootloader
+ATTRS{idVendor}=="0483", MODE="660", GROUP="plugdev", TAG+="uaccess", SYMLINK+="bootloader"
