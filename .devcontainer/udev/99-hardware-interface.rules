@@ -10,3 +10,6 @@ ATTRS{idVendor}=="0483", ATTRS{idProduct}=="3748", MODE="660", GROUP="plugdev", 
 
 # STLink v2.1 -> /dev/stlink
 ATTRS{idVendor}=="0483", ATTRS{idProduct}=="374b", MODE="660", GROUP="plugdev", TAG+="uaccess", SYMLINK+="stlink"
+
+# CMSIS-DAP devices (e.g. Picoprobe)
+ATTRS{product}=="*CMSIS-DAP*", MODE="660", GROUP="plugdev", TAG+="uaccess"
