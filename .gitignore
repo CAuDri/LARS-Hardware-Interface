@@ -25,4 +25,5 @@ __pycache__/
 .mxproject
 .project
 **/board/CMakePresets.json
+**/board/CMakeLists.txt
 starm-clang.cmake
