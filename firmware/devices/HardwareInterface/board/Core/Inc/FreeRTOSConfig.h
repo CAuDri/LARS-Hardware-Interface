@@ -168,6 +168,14 @@ standard names. */
 
 /* USER CODE BEGIN Defines */
 /* Section where parameter definitions can be added (for instance, to override default ones in FreeRTOS.h) */
+
+// CAuDri - Include Trace Recorder library
+// This needs to be done at the very end of FreeRTOSConfig.h so the library can hook into the correct defines
+// It may not be included when building the micro-ROS library
+#ifndef MICRO_ROS_BUILD
+  #include "trcRecorder.h"
+#endif
+
 /* USER CODE END Defines */
 
 #endif /* FREERTOS_CONFIG_H */

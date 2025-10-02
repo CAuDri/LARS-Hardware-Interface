@@ -18,24 +18,27 @@ add_subdirectory("board/cmake/stm32cubemx" "${CMAKE_BINARY_DIR}/stm32cubemx")
 
 # ---------------- Device specific includes ----------------
 
-# --- Application sources ---
+### Application sources
 target_sources(${PROJECT_NAME} PRIVATE
     main.cpp
 
     # Common source files
-    # "${LIB_DIR}/common/logger.c"
+    ${LIB_DIR}/common/logger.c
 
     # FreeRTOS source files
-    "board/Middlewares/Third_Party/FreeRTOS/Source/portable/MemMang/heap_4.c"
+    board/Middlewares/Third_Party/FreeRTOS/Source/portable/MemMang/heap_4.c
 )
 
-# --- Application includes ---
+### Application includes
 target_include_directories(${PROJECT_NAME} PRIVATE
-    "config"
-    "${LIB_DIR}/common/include"
+    config/
+    microros_lib/inc
+
+    ${LIB_DIR}/common/include
 )
 
 # ---------------- TraceRecorder Library ----------------
+
 # If you need a specific stream port, set it before the add_subdirectory, e.g.:
 set(TRC_STREAMPORT "STM32_USB_CDC")
 set(BOARD_DIR "${CMAKE_CURRENT_LIST_DIR}/board")
@@ -46,6 +49,11 @@ target_sources(${PROJECT_NAME} PRIVATE $<TARGET_OBJECTS:TraceRecorder>)
 target_compile_definitions(${PROJECT_NAME} PRIVATE ENABLE_TRACERECORDER=1)
 
 # ---------------- Linking ----------------
+
+# Ensure the CubeMX/FreeRTOS target compiles with TraceRecorder usage
+target_link_libraries(stm32cubemx INTERFACE TraceRecorder)
+
+# Link the application with the necessary libraries
 target_link_libraries(${PROJECT_NAME}
     ${TOOLCHAIN_LINK_LIBRARIES}
     ${CMAKE_SOURCE_DIR}/microros_lib/libmicroros.a
