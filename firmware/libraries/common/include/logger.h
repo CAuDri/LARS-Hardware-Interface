@@ -97,6 +97,25 @@
     #define DEBUG_LOG_TIMESTAMP LOG_TIMESTAMP_SYS
 #endif
 
+// Default log handle
+extern UART_HandleTypeDef huart3;
+#ifndef DEBUG_LOG_HANDLE
+    #if DEBUG_LOG_OUTPUT == LOG_OUTPUT_UART || DEBUG_LOG_OUTPUT == LOG_OUTPUT_UART_INLINE
+        #define DEBUG_LOG_HANDLE huart3
+    #elif DEBUG_LOG_OUTPUT == LOG_OUTPUT_USB_CDC
+        extern USBD_HandleTypeDef hUsbDeviceFS;
+        #define DEBUG_LOG_HANDLE hUsbDeviceFS
+    #endif
+#else
+    #if DEBUG_LOG_OUTPUT == LOG_OUTPUT_UART || DEBUG_LOG_OUTPUT == LOG_OUTPUT_UART_INLINE
+        #define LOG_PRINTF_HANDLE DEBUG_LOG_HANDLE
+    #endif
+#endif
+
+#ifndef LOG_PRINTF_HANDLE
+    #define LOG_PRINTF_HANDLE huart3
+#endif
+
 #if DEBUG_LOG_TIMESTAMP == LOG_TIMESTAMP_ROS
     #define TIMESTAMP _TIMESTAMP_ROS
 #elif DEBUG_LOG_TIMESTAMP == LOG_TIMESTAMP_SYS
@@ -105,31 +124,13 @@
     #define TIMESTAMP 
 #endif
 
-/**
- * @brief Configuration struct for the logger thread
- * 
- * Only used when using the LOG_OUTPUT_UART option.
- * 
- * @param huart:               UART handle for the logger thread.
- * @param hdma:                DMA handle for the UART transmission.
- * @param logger_queue_size:   Number of log messages that can be stored in the log message queue. 
- *                             If this number is exceeded, the log message will be discarded and a warning message will be printed.
- * @param logger_thread_priority:   Priority of the logger thread. The logger thread should have a lower priority than the application threads.
- * @param logger_stack_size:   Stack size of the logger thread. 
- */
-typedef struct {
-    UART_HandleTypeDef* huart;
-    DMA_HandleTypeDef* hdma;
-    uint32_t logger_queue_size;
-    osPriority_t logger_thread_priority;
-    uint32_t logger_stack_size;
-} LoggerConfig;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-extern bool logger_init(const LoggerConfig* config);
+extern bool logger_init(void);
+extern void logger_trace_init(void);
 extern void logger_log_message(uint32_t log_level, const char* message, ...)
     __attribute__((format(printf, 2, 3)));
 extern void logger_clear_terminal(void);
@@ -205,6 +206,35 @@ extern void logger_clear_terminal(void);
     #define _LOG_SUCCESS(message, ...) do { _LOG(LOG_COLOR_GREEN);  TIMESTAMP; _LOG("[INFO]  "); _LOG(message, __VA_ARGS__); _LOG(LOG_COLOR_RESET "\n"); } while(0)
     #define _LOG_CLEAR()               do { _LOG(CLEAR_SCREEN LOG_COLOR_RESET); } while(0)
     #define _LOG_INLINE(message, ...)  do { _LOG_ERROR(message, __VA_ARGS__); } while(0)
+
+/**
+ * @brief Implementation of the log output using USB CDC.
+ * 
+ * Same as the UART implementation, but using USB CDC instead.
+ */
+#elif DEBUG_LOG_OUTPUT == LOG_OUTPUT_USB_CDC
+    // If no USB handle is defined, use the default USB FS device if not in use
+    #ifndef DEBUG_LOG_HANDLE
+        #define DEBUG_LOG_HANDLE hUsbDeviceFS
+        #ifdef __cplusplus
+        extern "C" {
+        #endif
+        extern USBD_HandleTypeDef hUsbDeviceFS;
+        #ifdef __cplusplus
+        }
+        #endif
+    #endif
+
+    #define _LOG_ERROR(message, ...)   do { logger_log_message(LOG_LEVEL_ERROR,   message __VA_OPT__(,) __VA_ARGS__); } while(0)
+    #define _LOG_WARNING(message, ...) do { logger_log_message(LOG_LEVEL_WARNING, message __VA_OPT__(,) __VA_ARGS__); } while(0)
+    #define _LOG_INFO(message, ...)    do { logger_log_message(LOG_LEVEL_INFO,    message __VA_OPT__(,) __VA_ARGS__); } while(0)
+    #define _LOG_DEBUG(message, ...)   do { logger_log_message(LOG_LEVEL_DEBUG,   message __VA_OPT__(,) __VA_ARGS__); } while(0)
+
+    #define _LOG_SUCCESS(message, ...) do { logger_log_message(LOG_LEVEL_SUCCESS, message __VA_OPT__(,) __VA_ARGS__); } while(0)
+    #define _LOG_CLEAR()               do { logger_clear_terminal(); } while(0)
+    #define _LOG_INLINE(message, ...)  do { printf(LOG_COLOR_RED); printf("[%08ld]",  HAL_GetTick()); \
+                                            printf(message __VA_OPT__(,) __VA_ARGS__); printf("%s\n", LOG_COLOR_RESET); } while(0)
+
 
 /**
  * @brief Implementation of the log output using Percepio Tracealyzer.
