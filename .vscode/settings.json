@@ -1,0 +1,42 @@
+{
+    "actionButtons": {
+        "defaultColor": "#FFFFFF",
+        "loadNpmCommands": false,
+        "reloadButton": null,
+        "commands": [
+            {
+                "name": "$(debug-disconnect) Connect micro-ROS Agent",
+                "tooltip": "Select a connected serial device and start the micro-ROS agent",
+                "color": "orange",
+                "useVsCodeApi": true,
+                "command": "workbench.action.tasks.runTask",
+                "args": [
+                    "Connect micro-ROS Agent"
+                ],
+            },
+            {
+                "name": "$(debug-alt) Start Debugger",
+                "tooltip": "Start a debugging session with a connected device",
+                "color": "lightgreen",
+                "useVsCodeApi": true,
+                "command": "workbench.action.debug.start"
+            },
+            {
+                "name": "$(console) Open Serial Monitor",
+                "tooltip": "Open the serial monitor to communicate with a serial device",
+                "color": "lightgrey",
+                "useVsCodeApi": true,
+                "command": "workbench.view.extension.vscode-serial-monitor-tools"
+            },
+            // {
+            //     "name": "$(preview) Launch RViz",
+            //     "tooltip": "Launch RViz with the project's debug configuration",
+            //     "color": "#68c2f2",
+            //     "useVsCodeApi": false,
+            //     // "command": "ros2 run rviz2 rviz2 -d .devcontainer/tools/rviz/debug_config.rviz -s .devcontainer/tools/rviz/kitcar.png",
+            //     "command": "if [ ! -d .devcontainer/tools/miss_magic_visualizer/ros_ws/install ]; then pushd .devcontainer/tools/miss_magic_visualizer/ros_ws && echo 'Building miss magic visualizer...' && colcon build && popd; fi && source .devcontainer/tools/miss_magic_visualizer/ros_ws/install/setup.bash && ros2 launch miss_magic_visualizer main.launch.py",
+            //     "singleInstance": true
+            // }
+        ]
+    }
+}
