@@ -35,6 +35,8 @@
     // On Windows systems, this will significantly impact file system performance
     "workspaceMount": "source=${localWorkspaceFolderBasename},target=/hardware_interface,type=volume",
     "workspaceFolder": "/hardware_interface",
+    // Mounting the /dev directory will allow the devcontainer to access all host devices (e.g. serial ports)
+    // Comment out the following line if you encounter issues with other devices on your host system
     "mounts": [
         "source=/dev,target=/dev,type=bind"
     ],

@@ -1,0 +1,12 @@
+# CAuDri - udev rules for granting USB device access to users in the dev container.
+# For all known devices and debuggers, access is given to users in the 'plugdev' group and a symlink will be created in the /dev directory.
+# You can add additional rules for your own devices below.
+
+# STLink v1 -> /dev/stlink
+ATTRS{idVendor}=="0483", ATTRS{idProduct}=="3744", MODE="660", GROUP="plugdev", TAG+="uaccess", SYMLINK+="stlink"
+
+# STLink v2 -> /dev/stlink
+ATTRS{idVendor}=="0483", ATTRS{idProduct}=="3748", MODE="660", GROUP="plugdev", TAG+="uaccess", SYMLINK+="stlink"
+
+# STLink v2.1 -> /dev/stlink
+ATTRS{idVendor}=="0483", ATTRS{idProduct}=="374b", MODE="660", GROUP="plugdev", TAG+="uaccess", SYMLINK+="stlink"
