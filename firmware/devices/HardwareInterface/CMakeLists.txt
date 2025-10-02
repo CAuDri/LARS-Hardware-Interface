@@ -22,11 +22,14 @@ add_subdirectory("board/cmake/stm32cubemx" "${CMAKE_BINARY_DIR}/stm32cubemx")
 target_sources(${PROJECT_NAME} PRIVATE
     main.cpp
 
+    # FreeRTOS source files
+    board/Middlewares/Third_Party/FreeRTOS/Source/portable/MemMang/heap_4.c
+
     # Common source files
     ${LIB_DIR}/common/logger.c
 
-    # FreeRTOS source files
-    board/Middlewares/Third_Party/FreeRTOS/Source/portable/MemMang/heap_4.c
+    # Drivers
+    ${LIB_DIR}/drivers/rc_receiver.cpp
 )
 
 ### Application includes
@@ -35,6 +38,8 @@ target_include_directories(${PROJECT_NAME} PRIVATE
     microros_lib/inc
 
     ${LIB_DIR}/common/include
+    ${LIB_DIR}/drivers/include
+    ${LIB_DIR}/drivers/interfaces
 )
 
 # ---------------- TraceRecorder Library ----------------
