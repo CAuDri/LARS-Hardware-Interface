@@ -21,6 +21,8 @@ log/
 *.pyc
 __pycache__/
 
-## Ignore CubeMX project files
+## Ignore unused CubeMX files
 .mxproject
 .project
+**/board/CMakePresets.json
+starm-clang.cmake
