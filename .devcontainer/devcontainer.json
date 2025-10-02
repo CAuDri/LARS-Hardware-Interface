@@ -1,0 +1,48 @@
+// CAuDri - Devcontainer configuration for VS Code
+//
+// It will be used in conjunction with the Dockerfile to set up the development environment.
+// On a Linux host machine, you can use a "bind" mount to share the local repository with the container.
+// On Windows systems, a Docker volume will be used insted (see below).
+{
+    "name": "LARS Hardware Interface",
+    "build": {
+        "dockerfile": "Dockerfile",
+        "args": {
+            "USERNAME": "caudri"
+        }
+    },
+    "customizations": {
+        "vscode": {
+            "settings": {
+                "terminal.integrated.defaultProfile.linux": "bash",
+                "remote.containers.copyLocalExtensions": false,
+                "cortex-debug.gdbPath": "/usr/bin/gdb-multiarch"
+            },
+            "extensions": [
+                "ms-vscode.cpptools",
+                "twxs.cmake",
+                "marus25.cortex-debug",
+                "mcu-debug.debug-tracker-vscode",
+                "seunlanlege.action-buttons",
+                "ms-vscode.vscode-serial-monitor",
+                "xaver.clang-format",
+                "mhutchie.git-graph",
+                "GitHub.copilot"
+            ]
+        }
+    },
+    // For a Ubuntu/Linux host, replace "type=volume" with "type=bind" to mount the local folder directly into the container
+    // On Windows systems, this will significantly impact file system performance
+    "workspaceMount": "source=${localWorkspaceFolderBasename},target=/hardware_interface,type=volume",
+    "workspaceFolder": "/hardware_interface",
+    "mounts": [
+        "source=/dev,target=/dev,type=bind"
+    ],
+    "runArgs": [
+        "--privileged",
+        "--hostname=hardware-interface-dev"
+    ],
+    // When a volume mount is used, the repository will be cloned into the container
+    // Local changes will not be reflected in the container repository!!
+    "postCreateCommand": "if [ ! -d /hardware_interface/.git ]; then git clone --recurse-submodules https://github.com/CAuDri/LARS-Hardware-Interface.git /hardware_interface; else echo 'Repository has already been cloned'; fi"
+}
