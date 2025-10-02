@@ -11,8 +11,8 @@ fabrication-toolkit-options.json
 
 ## Ignore build artefacts
 build/
-firmware/libraries/microros/firmware/
-**/microros/lib/
+**/static_library/firmware/
+**/microros_lib/
 
 ## Ignore ROS2 workspace files
 build/
