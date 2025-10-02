@@ -18,12 +18,15 @@ RUN apt-get update && apt-get install -y \
     git \
     curl \
     udev \
+    rsync \
+    dos2unix \
     # Build tools
     build-essential \
     cmake \
     gcc-arm-none-eabi \
     gdb-multiarch \
     openocd \
+    dfu-util \
     clang-format 
 # && apt-get clean && rm -rf /var/lib/apt/lists/*
 
