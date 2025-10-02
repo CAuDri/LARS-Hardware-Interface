@@ -1,0 +1,10 @@
+BasedOnStyle: Google
+PenaltyExcessCharacter: 1
+IndentWidth: 4
+ColumnLimit: 100
+BinPackArguments: false
+BinPackParameters: false
+AllowShortIfStatementsOnASingleLine: false
+MaxEmptyLinesToKeep: 3
+KeepEmptyLinesAtTheStartOfBlocks: true
+IndentPPDirectives: BeforeHash
