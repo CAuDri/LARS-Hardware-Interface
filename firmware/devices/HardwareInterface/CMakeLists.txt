@@ -1,77 +1,54 @@
+# CAuDri - Top-level CMake Configuration for the Hardware Interface
+#
+# Will be used by the build script (build and flash commands) by default.
+# If you need to run CMake manually, configure like:
+#   cmake -S . -B build -DCMAKE_TOOLCHAIN_FILE=board/cmake/gcc-arm-none-eabi.cmake -DCMAKE_BUILD_TYPE=Release
+
 cmake_minimum_required(VERSION 3.22)
 
-#
-# This file is generated only once,
-# and is not re-generated if converter is called multiple times.
-#
-# User is free to modify the file as much as necessary
-#
+project(HardwareInterface LANGUAGES C CXX ASM)
 
-# Setup compiler settings
-set(CMAKE_C_STANDARD 11)
-set(CMAKE_C_STANDARD_REQUIRED ON)
-set(CMAKE_C_EXTENSIONS ON)
+add_executable(${PROJECT_NAME})
 
-include(board/cmake/gcc-arm-none-eabi.cmake)
+# Include the common CMake configuration for all devices
+include("../../toolchain/firmware_common.cmake")
 
+# Include the CubeMX-generated CMake configuration
+add_subdirectory("board/cmake/stm32cubemx" "${CMAKE_BINARY_DIR}/stm32cubemx")
 
-# Define the build type
-if(NOT CMAKE_BUILD_TYPE)
-    set(CMAKE_BUILD_TYPE "Debug")
-endif()
+# ---------------- Device specific includes ----------------
 
-# Set the project name
-set(CMAKE_PROJECT_NAME HardwareInterface)
+# --- Application sources ---
+target_sources(${PROJECT_NAME} PRIVATE
+    main.cpp
 
-# Enable compile command to ease indexing with e.g. clangd
-set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
+    # Common source files
+    # "${LIB_DIR}/common/logger.c"
 
-# Core project settings
-project(${CMAKE_PROJECT_NAME})
-message("Build type: " ${CMAKE_BUILD_TYPE})
-
-# Enable CMake support for ASM and C languages
-enable_language(C ASM)
-
-# Create an executable object type
-add_executable(${CMAKE_PROJECT_NAME})
-
-# Add STM32CubeMX generated sources
-add_subdirectory(board/cmake/stm32cubemx)
-
-# Link directories setup
-target_link_directories(${CMAKE_PROJECT_NAME} PRIVATE
-    # Add user defined library search paths
+    # FreeRTOS source files
+    "board/Middlewares/Third_Party/FreeRTOS/Source/portable/MemMang/heap_4.c"
 )
 
-# Add sources to executable
-target_sources(${CMAKE_PROJECT_NAME} PRIVATE
-    # Add user sources here
-    board/Middlewares/Third_Party/FreeRTOS/Source/portable/MemMang/heap_4.c
+# --- Application includes ---
+target_include_directories(${PROJECT_NAME} PRIVATE
+    "config"
+    "${LIB_DIR}/common/include"
 )
 
-# Add include paths
-target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
-    # Add user defined include paths
-)
+# ---------------- TraceRecorder Library ----------------
+# If you need a specific stream port, set it before the add_subdirectory, e.g.:
+set(TRC_STREAMPORT "STM32_USB_CDC")
+set(BOARD_DIR "${CMAKE_CURRENT_LIST_DIR}/board")
+add_subdirectory("${LIB_DIR}/trace_recorder" "${CMAKE_BINARY_DIR}/trace_recorder")
 
-# Add project symbols (macros)
-target_compile_definitions(${CMAKE_PROJECT_NAME} PRIVATE
-    # Add user defined symbols
-)
+# Pull object files into firmware and enable the include guard in FreeRTOSConfig.h
+target_sources(${PROJECT_NAME} PRIVATE $<TARGET_OBJECTS:TraceRecorder>)
+target_compile_definitions(${PROJECT_NAME} PRIVATE ENABLE_TRACERECORDER=1)
 
-# Remove wrong libob.a library dependency when using cpp files
-list(REMOVE_ITEM CMAKE_C_IMPLICIT_LINK_LIBRARIES ob)
-
-# Add linked libraries
-target_link_libraries(${CMAKE_PROJECT_NAME}
+# ---------------- Linking ----------------
+target_link_libraries(${PROJECT_NAME}
+    ${TOOLCHAIN_LINK_LIBRARIES}
+    ${CMAKE_SOURCE_DIR}/microros_lib/libmicroros.a
     stm32cubemx
-
-    # Add user defined libraries
-)
-
-# Create hex and bin files
-add_custom_command(TARGET ${CMAKE_PROJECT_NAME} POST_BUILD
-    COMMAND arm-none-eabi-objcopy -O ihex $<TARGET_FILE:${CMAKE_PROJECT_NAME}> ${CMAKE_PROJECT_NAME}.hex
-    COMMAND arm-none-eabi-objcopy -O binary $<TARGET_FILE:${CMAKE_PROJECT_NAME}> ${CMAKE_PROJECT_NAME}.bin
+    TraceRecorder
 )
