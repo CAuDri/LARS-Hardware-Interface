@@ -9,12 +9,12 @@
                 "HardwareInterface",
                 "NucleoF439",
             ],
-            "default": "NucleoF439"
+            "default": "HardwareInterface"
         }
     ],
     "configurations": [
         {
-            "name": "Debug Bussystem",
+            "name": "Debug Hardware Interface",
             "type": "cortex-debug",
             "request": "launch",
             "servertype": "openocd",
