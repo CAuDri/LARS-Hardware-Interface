@@ -15,4 +15,6 @@ ATTRS{idVendor}=="0483", ATTRS{idProduct}=="374b", MODE="660", GROUP="plugdev", 
 ATTRS{product}=="*CMSIS-DAP*", MODE="660", GROUP="plugdev", TAG+="uaccess"
 
 # STM32 DFU Bootloader -> /dev/bootloader
-ATTRS{idVendor}=="0483", MODE="660", GROUP="plugdev", TAG+="uaccess", SYMLINK+="bootloader"
+SUBSYSTEM=="usb", ENV{DEVTYPE}=="usb_device", ATTR{idVendor}=="0483", \
+  ENV{ID_USB_INTERFACES}=="*:fe0102:*", \
+  MODE="660", GROUP="plugdev", TAG+="uaccess", SYMLINK+="bootloader"
