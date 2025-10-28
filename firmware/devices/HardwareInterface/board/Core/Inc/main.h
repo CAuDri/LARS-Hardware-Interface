@@ -56,6 +56,31 @@ void Error_Handler(void);
 
 /* USER CODE BEGIN EFP */
 
+// CAuDri - Manual forward declaration of the HAL handles (for use in config.h)
+extern ADC_HandleTypeDef hadc1;
+extern ADC_HandleTypeDef hadc2;
+
+extern CAN_HandleTypeDef hcan1;
+
+extern I2C_HandleTypeDef hi2c1;
+extern I2C_HandleTypeDef hi2c2;
+
+extern SPI_HandleTypeDef hspi4;
+
+extern TIM_HandleTypeDef htim3;
+extern TIM_HandleTypeDef htim4;
+extern TIM_HandleTypeDef htim8;
+
+extern UART_HandleTypeDef huart2;
+extern UART_HandleTypeDef huart3;
+extern UART_HandleTypeDef huart6;
+extern DMA_HandleTypeDef hdma_usart2_rx;
+extern DMA_HandleTypeDef hdma_usart2_tx;
+extern DMA_HandleTypeDef hdma_usart3_rx;
+extern DMA_HandleTypeDef hdma_usart3_tx;
+extern DMA_HandleTypeDef hdma_usart6_rx;
+extern DMA_HandleTypeDef hdma_usart6_tx;
+
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
