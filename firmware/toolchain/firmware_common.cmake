@@ -24,8 +24,21 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 get_filename_component(FIRMWARE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../.." ABSOLUTE)
 set(LIB_DIR "${FIRMWARE_DIR}/libraries")
 
+target_compile_options(${PROJECT_NAME} PRIVATE
+    -mfloat-abi=hard
+    -mthumb
+    -Wall
+    -fdata-sections
+    -ffunction-sections
+    # -Og
+    # $<$<CONFIG:Debug>:-Og>)
+)
+
 target_link_options(${PROJECT_NAME} PRIVATE
   --specs=nosys.specs -u _printf_float
+  -Wl,-Map=${PROJECT_NAME}.map,--cref
+  -Wl,--print-memory-usage
+  -Wl,--gc-sections,--undefined=uxTopUsedPriority
 )
 
 # Post-build artifacts (hex/bin/size)
