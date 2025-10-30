@@ -17,6 +17,12 @@
 #include <cmsis_os2.h>
 #include <logger.h>
 
+// This implementation relies on the HAL_CAN_RegisterCallback function to register the necessary callbacks
+#if (USE_HAL_CAN_REGISTER_CALLBACKS != 1)
+    #error "thread_safe_can.c requires USE_HAL_CAN_REGISTER_CALLBACKS to be enabled in stm32f4xx_hal_conf.h"
+#endif
+
+// Define "LOG_VERBOSE" to enable verbose logging of the CAN interface
 #ifdef LOG_VERBOSE
     #define LogVerbose(...) LogDebug(__VA_ARGS__)
 #else
@@ -24,11 +30,11 @@
 #endif
 
 #define CAN_MUTEX_TIMEOUT_MS 100
-
 #define CAN_MESSAGE_QUEUE_SIZE 16
 
-__weak CAN_HandleTypeDef hcan1;
-__weak CAN_HandleTypeDef hcan2;
+// TODO: Don't be as dumb as before and do this properly
+// __weak CAN_HandleTypeDef hcan1 = {0};
+__weak CAN_HandleTypeDef hcan2 = {0};
 
 /**
  * @brief Structure for CAN message queue entries
@@ -49,7 +55,7 @@ static osThreadAttr_t can_dispatcher_thread_attr = {
     .name = "CAN Dispatcher",
     .cb_mem = &can_dispatcher_thread_cb,
     .cb_size = sizeof(can_dispatcher_thread_cb),
-    .stack_mem = &can_dispatcher_thread_stack,
+    .stack_mem = can_dispatcher_thread_stack,
     .stack_size = sizeof(can_dispatcher_thread_stack),
     .priority = CAN_DISPATCHER_THREAD_PRIORITY,
 };
@@ -91,7 +97,7 @@ static bool can_initialized = false;
 void CAN_DispatcherThread(void* argument);
 void CAN_Fifo0CallbackHandler(CAN_HandleTypeDef* hcan);
 void CAN_Fifo1CallbackHandler(CAN_HandleTypeDef* hcan);
-
+void CAN_ErrorCallbackHandler(CAN_HandleTypeDef* hcan);
 
 /**
  * @brief Initialize the thread-safe CAN wrapper
@@ -100,6 +106,13 @@ void CAN_Fifo1CallbackHandler(CAN_HandleTypeDef* hcan);
  * It creates the necessary mutexes for thread safety.
  */
 bool CAN_Init() {
+    // Check if any of the CAN peripherals are actually used
+    // We have weak definitions of hcan1 and hcan2 that will be overridden by the CubeMX-generated code
+    if (hcan1.Instance == NULL && hcan2.Instance == NULL) {
+        LogWarning("CAN: CAN_Init called but no CAN peripherals are configured");
+        return false;
+    }
+
     can1_mutex = osMutexNew(&can1_mutex_attr);
     if (can1_mutex == NULL) {
         LogError("CAN: Failed to create CAN1 mutex");
@@ -120,10 +133,36 @@ bool CAN_Init() {
     can_dispatcher_thread_id = osThreadNew(CAN_DispatcherThread, NULL, &can_dispatcher_thread_attr);
     if (can_dispatcher_thread_id == NULL) {
         LogError("CAN: Failed to create CAN dispatcher thread");
-        osMutexDelete(can1_mutex);
-        osMutexDelete(can2_mutex);
         return false;
     }
+
+    // Start the CAN peripherals and enable interrupts
+    uint32_t notify_flags = CAN_IT_RX_FIFO0_MSG_PENDING | CAN_IT_RX_FIFO1_MSG_PENDING | CAN_IT_TX_MAILBOX_EMPTY |
+                            CAN_IT_ERROR_WARNING | CAN_IT_ERROR_PASSIVE | CAN_IT_BUSOFF;
+    if (hcan1.Instance != NULL && hcan1.State != HAL_CAN_STATE_LISTENING) {
+        if (HAL_CAN_ActivateNotification(&hcan1, notify_flags) != HAL_OK) {
+            LogError("CAN: Failed to activate CAN1 interrupt notifications");
+            return false;
+        }
+        if (HAL_CAN_Start(&hcan1) != HAL_OK) {
+            LogError("CAN: Failed to start CAN1 peripheral");
+            return false;
+        }
+        LogVerbose("CAN: CAN1 peripheral started");
+    }
+    if (hcan2.Instance != NULL && hcan2.State != HAL_CAN_STATE_LISTENING) {
+        if (HAL_CAN_Start(&hcan2) != HAL_OK) {
+            LogError("CAN: Failed to start CAN2 peripheral");
+            return false;
+        }
+        if (HAL_CAN_ActivateNotification(&hcan2, notify_flags) != HAL_OK) {
+            LogError("CAN: Failed to activate CAN2 interrupt notifications");
+            return false;
+        }
+        LogVerbose("CAN: CAN2 peripheral started");
+    }
+
+    LogDebug("CAN: Thread-safe CAN wrapper initialized");
 
     can_initialized = true;
     return true;
@@ -174,12 +213,30 @@ HAL_StatusTypeDef CAN_ConfigFilter(CAN_HandleTypeDef* hcan, const CAN_FilterType
     HAL_StatusTypeDef status = HAL_CAN_ConfigFilter(hcan, sFilterConfig);
     if (status != HAL_OK) {
         LogError("CAN: Failed to configure filter bank %lu", sFilterConfig->FilterBank);
+        if (HAL_CAN_Start(hcan) != HAL_OK) {  // Try to restart CAN even on failure
+            LogError("CAN: Failed to (re)start CAN peripheral after filter config failure");
+        }
         osMutexRelease(mutex);
         return status;
     }
 
+    // Restart CAN after the filter has been configured
+    status = HAL_CAN_Start(hcan);
+    if (status != HAL_OK) {
+        LogError("CAN: Failed to (re)start CAN peripheral after filter config on filter bank %lu",
+                 sFilterConfig->FilterBank);
+    }
+
+    if (HAL_CAN_ActivateNotification(hcan, CAN_IT_RX_FIFO0_MSG_PENDING) != HAL_OK ||
+        HAL_CAN_ActivateNotification(hcan, CAN_IT_RX_FIFO1_MSG_PENDING) != HAL_OK) {
+        LogError("CAN: Failed to reactivate notifications after filter config");
+        status = HAL_ERROR;
+    }
+
+    LogVerbose("CAN: Configured filter bank %lu", sFilterConfig->FilterBank);
+
     osMutexRelease(mutex);
-    return HAL_OK;
+    return status;
 }
 
 /**
@@ -214,27 +271,33 @@ HAL_StatusTypeDef CAN_ConfigAndAllocateFilter(CAN_HandleTypeDef* hcan, const CAN
 
     // The bxCAN peripheral has 28 filter banks in total, split between CAN1 and CAN2.
     // The split point can be configured and is stored in the CAN1 FMR register.
-    uint8_t filter_bank_split = (CAN1->FMR >> 8) & 0x3F;  // bits [13:8]
+    // uint8_t filter_bank_split = (CAN1->FMR >> 8) & 0x3F;  // bits 8-13
+    uint8_t filter_bank_split = 14;  // Default
     uint8_t start_bank = (hcan->Instance == CAN1) ? 0 : filter_bank_split;
     uint8_t end_bank = (hcan->Instance == CAN1) ? filter_bank_split : 28;
 
     // All active filter banks are stored in the FA1R register as a bitmask
-    uint32_t active_banks = hcan->Instance->FA1R;
+    uint32_t active_banks = CAN1->FA1R;
 
     // Shift active banks to find the lowest available filter bank
     bool found = false;
     for (uint32_t i = start_bank; i < end_bank; i++) {
         if ((active_banks & (1 << i)) == 0) {
-            filter_config.FilterBank = i;
+            filter_config.FilterBank = i + start_bank;
             found = true;
             break;
         }
     }
     if (!found) {
         LogError("CAN: No available filter banks for CAN%d", (hcan->Instance == CAN1) ? 1 : 2);
+        LogDebug("CAN: Active filter banks bitmask: 0x%08lX", active_banks);
         osMutexRelease(mutex);
         return HAL_ERROR;
     }
+
+    LogVerbose("CAN: Allocated filter bank %lu for CAN%d",
+               filter_config.FilterBank,
+               (hcan->Instance == CAN1) ? 1 : 2);
 
     // Just hope that the mutex will instantly be reacquired in CAN_ConfigFilter
     // If you ever suspect a race condition in this implementation, start here and protect the whole function call
@@ -253,16 +316,46 @@ HAL_StatusTypeDef CAN_ConfigAndAllocateFilter(CAN_HandleTypeDef* hcan, const CAN
  * @param callback The callback function to be called on message reception
  */
 HAL_StatusTypeDef CAN_RegisterRxCallback(CAN_HandleTypeDef* hcan, uint32_t filter_bank, CAN_RxCallback_t callback) {
-    // Register the global RX callback handler if not already done
-    if (!hcan->RxFifo0MsgPendingCallback || !hcan->RxFifo1MsgPendingCallback) {
-        HAL_CAN_RegisterCallback(hcan, HAL_CAN_RX_FIFO0_MSG_PENDING_CB_ID, CAN_Fifo0CallbackHandler);
-        HAL_CAN_RegisterCallback(hcan, HAL_CAN_RX_FIFO1_MSG_PENDING_CB_ID, CAN_Fifo1CallbackHandler);
-        LogDebug("CAN: Registered global RX FIFO callbacks for CAN%d", (hcan->Instance == CAN1) ? 1 : 2);
+    if (filter_bank >= 28) {
+        LogError("CAN: Invalid filter bank %lu for RX callback registration", filter_bank);
+        return HAL_ERROR;
+    }
+
+    // Register the global callback handler if not already done
+    if (hcan->RxFifo0MsgPendingCallback != CAN_Fifo0CallbackHandler ||
+        hcan->RxFifo1MsgPendingCallback != CAN_Fifo1CallbackHandler) {
+        LogVerbose("CAN: Registering global RX FIFO callbacks for CAN%d", (hcan->Instance == CAN1) ? 1 : 2);
+
+        // The CAN peripheral must be stopped to register callbacks
+        HAL_CAN_Stop(hcan);
+
+        if (HAL_CAN_RegisterCallback(hcan, HAL_CAN_RX_FIFO0_MSG_PENDING_CB_ID, CAN_Fifo0CallbackHandler) != HAL_OK ||
+            HAL_CAN_RegisterCallback(hcan, HAL_CAN_RX_FIFO1_MSG_PENDING_CB_ID, CAN_Fifo1CallbackHandler) != HAL_OK) {
+            LogError("CAN: Failed to register global RX FIFO callbacks for CAN%d",
+                     (hcan->Instance == CAN1) ? 1 : 2);
+            return HAL_ERROR;
+        }
+
+        if (HAL_CAN_RegisterCallback(hcan, HAL_CAN_ERROR_CB_ID, CAN_ErrorCallbackHandler) != HAL_OK) {
+            LogError("CAN: Failed to register global error callback for CAN%d",
+                     (hcan->Instance == CAN1) ? 1 : 2);
+            return HAL_ERROR;
+        }
+
+        LogDebug("CAN: Registered global callbacks for CAN%d", (hcan->Instance == CAN1) ? 1 : 2);
+
+        if (HAL_CAN_Start(hcan) != HAL_OK) {
+            LogError(
+                "CAN: Failed to restart CAN peripheral after registering RX callbacks for CAN%d",
+                (hcan->Instance == CAN1) ? 1 : 2);
+            return HAL_ERROR;
+        }
     }
 
     if (can_rx_callbacks[filter_bank] != NULL) {
         LogWarning("CAN: Overwriting existing RX callback for filter bank %lu", filter_bank);
     }
+
     can_rx_callbacks[filter_bank] = callback;
     LogDebug("CAN: Registered RX callback for filter bank %lu on CAN%d",
              filter_bank,
@@ -293,7 +386,7 @@ HAL_StatusTypeDef CAN_AddTxMessage(CAN_HandleTypeDef* hcan,
 
     HAL_StatusTypeDef status = HAL_CAN_AddTxMessage(hcan, pHeader, aData, pTxMailbox);
     if (status != HAL_OK) {
-        LogError("CAN: Failed to add TX message to mailbox %lu", *pTxMailbox);
+        LogError("CAN: Failed to add TX message to mailbox");
         osMutexRelease(mutex);
         return status;
     }
@@ -339,7 +432,7 @@ HAL_StatusTypeDef CAN_GetRxMessage(CAN_HandleTypeDef* hcan, uint32_t RxFifo, CAN
  */
 void CAN_DispatcherThread(void* arg) {
     (void)arg;
-    LogInfo("CAN: CAN dispatcher thread started");
+    LogDebug("CAN: CAN dispatcher thread started");
 
     while (1) {
         // Wait for a message to arrive in the queue
@@ -363,21 +456,22 @@ void CAN_DispatcherThread(void* arg) {
 }
 
 void CAN_Fifo0CallbackHandler(CAN_HandleTypeDef* hcan) {
-    CAN_MessageQueueItem_t message;
-    message.hcan = hcan;
+    CAN_MessageQueueItem_t msg;
+    msg.hcan = hcan;
 
-    // Retrieve one message from FIFO 0
-    HAL_StatusTypeDef status = HAL_CAN_GetRxMessage(hcan, CAN_RX_FIFO0, &message.header, message.data);
-    if (status != HAL_OK) {
-        LogWarning("CAN: Failed to get message from FIFO 0 in RX callback");
-        return;
-    }
+    LogVerbose("CAN: FIFO 0 callback triggered for CAN%d", (hcan->Instance == CAN1) ? 1 : 2);
 
-    // Post the message to the dispatcher thread queue
-    osStatus_t os_status = osMessageQueuePut(can_message_queue, &message, 0, 0);
-    if (os_status != osOK) {
-        LogWarning(
-            "CAN: Failed to post message to dispatcher queue from FIFO 0 callback, status: %d", os_status);
+    // Retrieve all messages from the FIFO
+    while (HAL_CAN_GetRxFifoFillLevel(hcan, CAN_RX_FIFO0) > 0) {
+        if (HAL_CAN_GetRxMessage(hcan, CAN_RX_FIFO0, &msg.header, msg.data) != HAL_OK) {
+            LogWarning("CAN: Failed to get message from FIFO 0 in RX callback loop");
+            break;
+        }
+        osStatus_t os_status = osMessageQueuePut(can_message_queue, &msg, 0, 0);
+        if (os_status != osOK) {
+            LogWarning(
+                "CAN: Failed to post message to dispatcher queue from FIFO 0 callback, status: %d", os_status);
+        }
     }
 }
 
@@ -385,17 +479,108 @@ void CAN_Fifo1CallbackHandler(CAN_HandleTypeDef* hcan) {
     CAN_MessageQueueItem_t message;
     message.hcan = hcan;
 
-    // Retrieve one message from FIFO 1
-    HAL_StatusTypeDef status = HAL_CAN_GetRxMessage(hcan, CAN_RX_FIFO1, &message.header, message.data);
-    if (status != HAL_OK) {
-        LogWarning("CAN: Failed to get message from FIFO 1 in RX callback");
-        return;
-    }
+    LogVerbose("CAN: FIFO 1 callback triggered for CAN%d", (hcan->Instance == CAN1) ? 1 : 2);
 
-    // Post the message to the dispatcher thread queue
-    osStatus_t os_status = osMessageQueuePut(can_message_queue, &message, 0, 0);
-    if (os_status != osOK) {
-        LogWarning(
-            "CAN: Failed to post message to dispatcher queue from FIFO 1 callback, status: %d", os_status);
+    // Retrieve all messages from the FIFO
+    while (HAL_CAN_GetRxFifoFillLevel(hcan, CAN_RX_FIFO1) > 0) {
+        if (HAL_CAN_GetRxMessage(hcan, CAN_RX_FIFO1, &message.header, message.data) != HAL_OK) {
+            LogWarning("CAN: Failed to get message from FIFO 1 in RX callback loop");
+            break;
+        }
+        osStatus_t os_status = osMessageQueuePut(can_message_queue, &message, 0, 0);
+        if (os_status != osOK) {
+            LogWarning(
+                "CAN: Failed to post message to dispatcher queue from FIFO 1 callback, status: %d", os_status);
+        }
+    }
+}
+
+void CAN_TxCallbackHandler(CAN_HandleTypeDef* hcan) {
+    LogVerbose("CAN: TX callback triggered for CAN%d", (hcan->Instance == CAN1) ? 1 : 2);
+    // Currently not used, but could be implemented to notify when a message has been transmitted
+}
+
+void CAN_ErrorCallbackHandler(CAN_HandleTypeDef* hcan) {
+    const char* preamble = "CAN: Error callback triggered for CAN%d - Error:";
+    uint32_t error_code = HAL_CAN_GetError(hcan);
+    switch (error_code) {
+        case HAL_CAN_ERROR_NONE:
+            LogWarning("%s No Error", preamble);
+            break;
+        case HAL_CAN_ERROR_EWG:
+            LogWarning("%s Warning Error", preamble);
+            break;
+        case HAL_CAN_ERROR_EPV:
+            LogWarning("%s Passive Error", preamble);
+            break;
+        case HAL_CAN_ERROR_BOF:
+            LogWarning("%s Bus-Off Error", preamble);
+            break;
+        case HAL_CAN_ERROR_STF:
+            LogWarning("%s Stuff Error", preamble);
+            break;
+        case HAL_CAN_ERROR_FOR:
+            LogWarning("%s Form Error", preamble);
+            break;
+        case HAL_CAN_ERROR_ACK:
+            LogWarning("%s Acknowledgment Error", preamble);
+            break;
+        case HAL_CAN_ERROR_BR:
+            LogWarning("%s Bit Recessive Error", preamble);
+            break;
+        case HAL_CAN_ERROR_BD:
+            LogWarning("%s Bit Dominant Error", preamble);
+            break;
+        case HAL_CAN_ERROR_CRC:
+            LogWarning("%s CRC Error", preamble);
+            break;
+        case HAL_CAN_ERROR_RX_FOV0:
+            LogWarning("%s FIFO 0 Overrun Error", preamble);
+            break;
+        case HAL_CAN_ERROR_RX_FOV1:
+            LogWarning("%s FIFO 1 Overrun Error", preamble);
+            break;
+        case HAL_CAN_ERROR_TX_ALST0:
+            LogWarning("%s TX Mailbox 0 Lost Arbitration Error", preamble);
+            break;
+        case HAL_CAN_ERROR_TX_ALST1:
+            LogWarning("%s TX Mailbox 1 Lost Arbitration Error", preamble);
+            break;
+        case HAL_CAN_ERROR_TX_ALST2:
+            LogWarning("%s TX Mailbox 2 Lost Arbitration Error", preamble);
+            break;
+        case HAL_CAN_ERROR_TX_TERR0:
+            LogWarning("%s TX Mailbox 0 Transmission Error", preamble);
+            break;
+        case HAL_CAN_ERROR_TX_TERR1:
+            LogWarning("%s TX Mailbox 1 Transmission Error", preamble);
+            break;
+        case HAL_CAN_ERROR_TX_TERR2:
+            LogWarning("%s TX Mailbox 2 Transmission Error", preamble);
+            break;
+        case HAL_CAN_ERROR_TIMEOUT:
+            LogWarning("%s Timeout Error", preamble);
+            break;
+        case HAL_CAN_ERROR_NOT_INITIALIZED:
+            LogWarning("%s Not Initialized Error", preamble);
+            break;
+        case HAL_CAN_ERROR_NOT_READY:
+            LogWarning("%s Not Ready Error", preamble);
+            break;
+        case HAL_CAN_ERROR_NOT_STARTED:
+            LogWarning("%s Not Started Error", preamble);
+            break;
+        case HAL_CAN_ERROR_PARAM:
+            LogWarning("%s Parameter Error", preamble);
+            break;
+        case HAL_CAN_ERROR_INVALID_CALLBACK:
+            LogWarning("%s Invalid Callback Error", preamble);
+            break;
+        case HAL_CAN_ERROR_INTERNAL:
+            LogWarning("%s Internal Error", preamble);
+            break;
+        default:
+            LogWarning("%s Unknown Error Code: 0x%08lX", preamble, error_code);
+            break;
     }
 }
