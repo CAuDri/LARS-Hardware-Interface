@@ -25,6 +25,8 @@
 /* USER CODE BEGIN Includes */
 
 #include "logger.h"
+#include "thread_safe_can.h"
+#include "thread_safe_i2c.h"
 
 /* USER CODE END Includes */
 
@@ -72,10 +74,12 @@ DMA_HandleTypeDef hdma_usart6_tx;
 osThreadId_t defaultTaskHandle;
 const osThreadAttr_t defaultTask_attributes = {
   .name = "defaultTask",
-  .stack_size = 128 * 4,
+  .stack_size = 1280 * 4,
   .priority = (osPriority_t) osPriorityNormal,
 };
 /* USER CODE BEGIN PV */
+
+
 
 /* USER CODE END PV */
 
@@ -186,7 +190,11 @@ int main(void)
   /* USER CODE BEGIN RTOS_THREADS */
 
   // CAuDri - Initialize the logging interface and start the logger thread
-  logger_init();
+  if (!logger_init()) {
+      LogInline("Main: Failed to initialize logger");
+  } else {
+      LogClear();
+  }
 
   /* add threads, ... */
   /* USER CODE END RTOS_THREADS */
@@ -723,7 +731,7 @@ static void MX_USART2_UART_Init(void)
 
   /* USER CODE END USART2_Init 1 */
   huart2.Instance = USART2;
-  huart2.Init.BaudRate = 115200;
+  huart2.Init.BaudRate = 420000;
   huart2.Init.WordLength = UART_WORDLENGTH_8B;
   huart2.Init.StopBits = UART_STOPBITS_1;
   huart2.Init.Parity = UART_PARITY_NONE;
@@ -1045,6 +1053,18 @@ void StartDefaultTask(void *argument)
     logger_trace_init();
     HAL_GPIO_WritePin(DEBUG_LED_BLUE_GPIO_Port, DEBUG_LED_BLUE_Pin, GPIO_PIN_RESET);
   #endif
+
+  osDelay(10);
+
+  // CAuDri - Initialize the thread-safe HAL wrapper
+  if (!I2C_Init()) {
+      LogError("Main: Failed to initialize thread-safe I2C wrapper");
+  }
+  if (!CAN_Init()) {
+      LogError("Main: Failed to initialize thread-safe CAN wrapper");
+  }
+
+  osDelay(10);
 
   // CAuDri - Jump to our main entry point in main.cpp
   mainTask();
