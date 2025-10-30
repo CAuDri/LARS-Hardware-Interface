@@ -88,7 +88,8 @@ bool RCReceiver::init(const Config& config) {
     thread_attributes.cb_size = sizeof(thread_control_block);
 
     receiver_thread = osThreadNew(
-        // Helper function for non-static member thread function
+        // Helper function for using a non-static method as the thread entry point
+        // The 'this' pointer is passed as the user argument to the lambda
         [](void* arg) -> void {
             auto* obj = static_cast<RCReceiver*>(arg);
             obj->receiverThread(arg);
@@ -161,7 +162,7 @@ bool RCReceiver::waitForDisconnect(uint32_t timeout_ms) const {
 /**
  * @brief Get the latest received channel data
  *
- * The channel data is considered valid if it was updated within the last CHANNEL_DATA_VALIDITY_MS milliseconds.
+ * The channel data is considered valid if it was updated within the last RC_CHANNEL_DATA_VALIDITY_MS milliseconds.
  *
  * @param channels Reference to a ChannelData array to store the received channel values
  * @return true if valid channel data was retrieved, false otherwise
@@ -170,8 +171,8 @@ bool RCReceiver::getChannelData(crsf::ChannelData& channels) const {
     if (state != State::RUNNING) {
         return false;
     }
-    if (osKernelGetTickCount() - channel_update_ms > CHANNEL_DATA_VALIDITY_MS) {
-        LogWarning("RC Receiver: Channel data is older than %lu ms", CHANNEL_DATA_VALIDITY_MS);
+    if (osKernelGetTickCount() - channel_update_ms > RC_CHANNEL_DATA_VALIDITY_MS) {
+        LogWarning("RC Receiver: Channel data is older than %lu ms", RC_CHANNEL_DATA_VALIDITY_MS);
         return false;
     }
     if (osMutexAcquire(channel_mutex, MUTEX_ACQUIRE_TIMEOUT_MS) != osOK) {
@@ -187,7 +188,7 @@ bool RCReceiver::getChannelData(crsf::ChannelData& channels) const {
 /**
  * @brief Get the latest received link statistics
  *
- * The statistics data is considered valid if it was updated within the last STATISTICS_DATA_VALIDITY_MS milliseconds.
+ * The statistics data is considered valid if it was updated within the last RC_STATISTICS_DATA_VALIDITY_MS milliseconds.
  *
  * @param stats Reference to a LinkStatistics struct to store the received statistics
  * @return true if valid statistics data was retrieved, false otherwise
@@ -196,8 +197,8 @@ bool RCReceiver::getLinkStatistics(crsf::LinkStatistics& stats) const {
     if (state != State::RUNNING) {
         return false;
     }
-    if (osKernelGetTickCount() - statistics_update_ms > STATISTICS_DATA_VALIDITY_MS) {
-        LogWarning("RC Receiver: Link statistics data is older than %lu ms", STATISTICS_DATA_VALIDITY_MS);
+    if (osKernelGetTickCount() - statistics_update_ms > RC_STATISTICS_DATA_VALIDITY_MS) {
+        LogWarning("RC Receiver: Link statistics data is older than %lu ms", RC_STATISTICS_DATA_VALIDITY_MS);
         return false;
     }
     stats = statistics;

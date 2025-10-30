@@ -25,9 +25,9 @@
 constexpr uint32_t RC_THREAD_STACK_SIZE = 1024;
 
 // Time in ms after which channel data is considered stale
-constexpr uint32_t CHANNEL_DATA_VALIDITY_MS = 100;
+constexpr uint32_t RC_CHANNEL_DATA_VALIDITY_MS = 100;
 // Time in ms after which statistics data is considered stale
-constexpr uint32_t STATISTICS_DATA_VALIDITY_MS = 1000;
+constexpr uint32_t RC_STATISTICS_DATA_VALIDITY_MS = 1000;
 
 // Thread flags for notifying the receiver thread
 // Change if any conflicts arise
@@ -39,6 +39,7 @@ constexpr uint32_t RC_RX_COMPLETE_THREAD_FLAG = 0x02;
  */
 class RCReceiver : public Driver {
    public:
+   
     /**
      * @brief Configuration for the RCReceiver driver
      *
