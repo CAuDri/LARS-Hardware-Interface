@@ -374,7 +374,7 @@ HAL_StatusTypeDef CAN_AddTxMessage(CAN_HandleTypeDef* hcan,
                                    const uint8_t aData[],
                                    uint32_t* pTxMailbox) {
     if (!can_initialized) {
-        LogError("CAN: CAN_AddTxMessage called before CAN_Init");
+        LogWarning("CAN: CAN_AddTxMessage called before CAN_Init");
         return HAL_ERROR;
     }
 
@@ -386,7 +386,7 @@ HAL_StatusTypeDef CAN_AddTxMessage(CAN_HandleTypeDef* hcan,
 
     HAL_StatusTypeDef status = HAL_CAN_AddTxMessage(hcan, pHeader, aData, pTxMailbox);
     if (status != HAL_OK) {
-        LogError("CAN: Failed to add TX message to mailbox");
+        LogVerbose("CAN: Failed to add TX message to mailbox");
         osMutexRelease(mutex);
         return status;
     }
@@ -448,7 +448,7 @@ void CAN_DispatcherThread(void* arg) {
             if (can_rx_callbacks[message.header.FilterMatchIndex] != NULL) {
                 can_rx_callbacks[message.header.FilterMatchIndex](message.header, message.data);
             } else {
-                LogDebug("CAN: Filter bank %lu received message but no callback registered",
+                LogVerbose("CAN: Filter bank %lu received message but no callback registered",
                          message.header.FilterMatchIndex);
             }
         }
@@ -508,76 +508,76 @@ void CAN_ErrorCallbackHandler(CAN_HandleTypeDef* hcan) {
             LogWarning("%s No Error", preamble);
             break;
         case HAL_CAN_ERROR_EWG:
-            LogWarning("%s Warning Error", preamble);
+            LogVerbose("%s Warning Error", preamble);
             break;
         case HAL_CAN_ERROR_EPV:
-            LogWarning("%s Passive Error", preamble);
+            LogVerbose("%s Passive Error", preamble);
             break;
         case HAL_CAN_ERROR_BOF:
-            LogWarning("%s Bus-Off Error", preamble);
+            LogVerbose("%s Bus-Off Error", preamble);
             break;
         case HAL_CAN_ERROR_STF:
-            LogWarning("%s Stuff Error", preamble);
+            LogVerbose("%s Stuff Error", preamble);
             break;
         case HAL_CAN_ERROR_FOR:
-            LogWarning("%s Form Error", preamble);
+            LogVerbose("%s Form Error", preamble);
             break;
         case HAL_CAN_ERROR_ACK:
-            LogWarning("%s Acknowledgment Error", preamble);
+            LogVerbose("%s Acknowledgment Error", preamble);
             break;
         case HAL_CAN_ERROR_BR:
-            LogWarning("%s Bit Recessive Error", preamble);
+            LogVerbose("%s Bit Recessive Error", preamble);
             break;
         case HAL_CAN_ERROR_BD:
-            LogWarning("%s Bit Dominant Error", preamble);
+            LogVerbose("%s Bit Dominant Error", preamble);
             break;
         case HAL_CAN_ERROR_CRC:
-            LogWarning("%s CRC Error", preamble);
+            LogVerbose("%s CRC Error", preamble);
             break;
         case HAL_CAN_ERROR_RX_FOV0:
-            LogWarning("%s FIFO 0 Overrun Error", preamble);
+            LogVerbose("%s FIFO 0 Overrun Error", preamble);
             break;
         case HAL_CAN_ERROR_RX_FOV1:
-            LogWarning("%s FIFO 1 Overrun Error", preamble);
+            LogVerbose("%s FIFO 1 Overrun Error", preamble);
             break;
         case HAL_CAN_ERROR_TX_ALST0:
-            LogWarning("%s TX Mailbox 0 Lost Arbitration Error", preamble);
+            LogVerbose("%s TX Mailbox 0 Lost Arbitration Error", preamble);
             break;
         case HAL_CAN_ERROR_TX_ALST1:
-            LogWarning("%s TX Mailbox 1 Lost Arbitration Error", preamble);
+            LogVerbose("%s TX Mailbox 1 Lost Arbitration Error", preamble);
             break;
         case HAL_CAN_ERROR_TX_ALST2:
-            LogWarning("%s TX Mailbox 2 Lost Arbitration Error", preamble);
+            LogVerbose("%s TX Mailbox 2 Lost Arbitration Error", preamble);
             break;
         case HAL_CAN_ERROR_TX_TERR0:
-            LogWarning("%s TX Mailbox 0 Transmission Error", preamble);
+            LogVerbose("%s TX Mailbox 0 Transmission Error", preamble);
             break;
         case HAL_CAN_ERROR_TX_TERR1:
-            LogWarning("%s TX Mailbox 1 Transmission Error", preamble);
+            LogVerbose("%s TX Mailbox 1 Transmission Error", preamble);
             break;
         case HAL_CAN_ERROR_TX_TERR2:
-            LogWarning("%s TX Mailbox 2 Transmission Error", preamble);
+            LogVerbose("%s TX Mailbox 2 Transmission Error", preamble);
             break;
         case HAL_CAN_ERROR_TIMEOUT:
-            LogWarning("%s Timeout Error", preamble);
+            LogVerbose("%s Timeout Error", preamble);
             break;
         case HAL_CAN_ERROR_NOT_INITIALIZED:
-            LogWarning("%s Not Initialized Error", preamble);
+            LogVerbose("%s Not Initialized Error", preamble);
             break;
         case HAL_CAN_ERROR_NOT_READY:
-            LogWarning("%s Not Ready Error", preamble);
+            LogVerbose("%s Not Ready Error", preamble);
             break;
         case HAL_CAN_ERROR_NOT_STARTED:
-            LogWarning("%s Not Started Error", preamble);
+            LogVerbose("%s Not Started Error", preamble);
             break;
         case HAL_CAN_ERROR_PARAM:
-            LogWarning("%s Parameter Error", preamble);
+            LogVerbose("%s Parameter Error", preamble);
             break;
         case HAL_CAN_ERROR_INVALID_CALLBACK:
-            LogWarning("%s Invalid Callback Error", preamble);
+            LogVerbose("%s Invalid Callback Error", preamble);
             break;
         case HAL_CAN_ERROR_INTERNAL:
-            LogWarning("%s Internal Error", preamble);
+            LogVerbose("%s Internal Error", preamble);
             break;
         default:
             LogWarning("%s Unknown Error Code: 0x%08lX", preamble, error_code);
