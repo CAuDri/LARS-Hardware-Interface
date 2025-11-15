@@ -15,12 +15,12 @@
 #include <cstdint>
 
 // Uncomment to enable detailed parsing logs
-#define CRSF_LOG_PARSE_INFO
+// #define CRSF_LOG_PARSE_INFO
 
 #ifdef CRSF_LOG_PARSE_INFO
-    #define LogParse(...) LogInfo(__VA_ARGS__)
+    #define LogVerboseCRSF(...) LogDebug(__VA_ARGS__)
 #else
-    #define LogParse(...)
+    #define LogVerboseCRSF(...)
 #endif
 
 namespace crsf {
@@ -68,36 +68,55 @@ constexpr uint8_t EXTENDED_FRAME_MIN_TYPE = 0x27;  // Minimum frame type value f
 constexpr size_t RC_CHANNELS_PAYLOAD_SIZE = 22;      // Size of the RC_CHANNELS_PACKED frame
 constexpr size_t LINK_STATISTICS_PAYLOAD_SIZE = 10;  // Size of the LINK_STATISTICS frame
 
-constexpr uint32_t CONNECTION_TIMEOUT_MS = 1000;  // Time without valid RC data before considering the link lost
+constexpr uint32_t CONNECTION_TIMEOUT_MS = 100;  // Time without valid RC data before considering the link lost
 
 /**
  * @brief Result of parsing a CRSF frame
+ *
+ * @param valid Whether the frame was valid (CRC + length check)
+ * @param length Total length of the frame, excluding sync and length bytes
+ * @param frame_type Type of the frame (crsf::FrameType)
+ * @param extended Whether the frame uses the extended header format
+ * @param source_address Source address of the frame
+ * @param destination_address Destination address of the frame
+ * @param payload Payload data of the frame
  */
 struct ParseResult {
-    bool valid = false;               // Whether the frame was valid (CRC + length check)
-    size_t length = 0;                // Total length of the frame, excluding sync and length bytes
-    uint8_t frame_type = 0;           // Type of the frame (crsf::FrameType)
-    bool extended = false;            // Whether the frame uses the extended header format
-    uint8_t source_address = 0;       // Source address of the frame
-    uint8_t destination_address = 0;  // Destination address of the frame
-    std::array<uint8_t, MAX_PAYLOAD_SIZE> payload{};  // Payload data of the frame
+    bool valid = false;
+    size_t length = 0;
+    uint8_t frame_type = 0;
+    bool extended = false;
+    uint8_t source_address = 0;
+    uint8_t destination_address = 0;
+    std::array<uint8_t, MAX_PAYLOAD_SIZE> payload{};
 };
 
 /**
  * @brief Link statistics from the receiver module (Signal strength, SNR, etc.)
+ *
+ * @param uplink_rssi_1 Uplink RSSI (receiver to transmitter) Antenna 1 (dBm)
+ * @param uplink_rssi_2 Uplink RSSI (receiver to transmitter) Antenna 2 (dBm)
+ * @param uplink_quality Uplink Link Quality/Packet Success Rate (%)
+ * @param uplink_snr Uplink Signal-to-Noise Ratio (dB)
+ * @param active_antenna Active Antenna (0 -> Antenna 1, 1 -> Antenna 2)
+ * @param rf_mode RF Mode (0-5 -> 4, 50, 150, 250, 500, 1000 FPS)
+ * @param uplink_tx_power Uplink TX Power (0-7 -> 0, 10, 25,100, 250, 500, 1000, 2000 mW)
+ * @param downlink_rssi Downlink RSSI (transmitter to receiver)
+ * @param downlink_quality Downlink Link Quality/Packet Success Rate (%)
+ * @param downlink_snr Downlink Signal-to-Noise Ratio (dB)
  */
 struct LinkStatistics {
-    uint8_t uplink_rssi_1;    // Uplink RSSI (receiver to transmitter) Antenna 1 (dBm)
-    uint8_t uplink_rssi_2;    // Uplink RSSI (receiver to transmitter) Antenna 2 (dBm)
-    uint8_t uplink_quality;   // Uplink Link Quality/Packet Success Rate (%)
-    int8_t uplink_snr;        // Uplink Signal-to-Noise Ratio (dB)
-    uint8_t active_antenna;   // Active Antenna (0 -> Antenna 1, 1 -> Antenna 2)
-    uint8_t rf_mode;          // RF Mode (0-5 -> 4, 50, 150, 250, 500, 1000 FPS)
-    uint8_t uplink_tx_power;  // Uplink TX Power (0-7 -> 0, 10, 25,100, 250, 500, 1000, 2000 mW)
+    uint8_t uplink_rssi_1;
+    uint8_t uplink_rssi_2;
+    uint8_t uplink_quality;
+    int8_t uplink_snr;
+    uint8_t active_antenna;
+    uint8_t rf_mode;
+    uint8_t uplink_tx_power;
 
-    uint8_t downlink_rssi;     // Downlink RSSI (transmitter to receiver)
-    uint8_t downlink_quality;  // Downlink Link Quality/Packet Success Rate (%)
-    int8_t downlink_snr;       // Downlink Signal-to-Noise Ratio ( dB)
+    uint8_t downlink_rssi;
+    uint8_t downlink_quality;
+    int8_t downlink_snr;
 };
 
 using ChannelData = std::array<uint16_t, 16>;  // Type for storing 16 RC channel values (11-bit each)
@@ -144,11 +163,11 @@ inline uint8_t calcCRC(const uint8_t* data, size_t length) {
  */
 inline bool parseFrame(uint8_t* data, size_t length, ParseResult& result) {
     if (data == nullptr) {
-        LogParse("CRSF Parser: Null data pointer");
+        LogVerboseCRSF("CRSF Parser: Null data pointer");
         return false;
     }
     if (length < MIN_HEADER_SIZE) {
-        LogParse("CRSF Parser: Frame too short, length: %u", length);
+        LogVerboseCRSF("CRSF Parser: Frame too short, length: %u", length);
         return false;
     }
 
@@ -157,19 +176,19 @@ inline bool parseFrame(uint8_t* data, size_t length, ParseResult& result) {
     // (0x80). Some receivers may use the BROADCAST address (0x00) as a sync byte.
     uint8_t sync_byte = data[0];
     if (sync_byte != SYNC_BYTE && sync_byte != (Address::BROADCAST) && sync_byte != (Address::FLIGHT_CONTROLLER)) {
-        LogParse("CRSF Parser: Received invalid sync byte: 0x%02X", sync_byte);
+        LogVerboseCRSF("CRSF Parser: Received invalid sync byte: 0x%02X", sync_byte);
         return false;
     }
 
     // Length of the frame excluding sync and length bytes read from the message
     uint8_t frame_length = data[1];
     if (frame_length < MIN_FRAME_LENGTH || frame_length > MAX_FRAME_LENGTH) {
-        LogParse("CRSF Parser: Received invalid frame length: %d", frame_length);
+        LogVerboseCRSF("CRSF Parser: Received invalid frame length: %d", frame_length);
         return false;
     }
 
     if (length < frame_length + 2u) {
-        LogParse("CRSF Parser: Incomplete frame received, expected length %d, got %d", frame_length + 2, length);
+        LogVerboseCRSF("CRSF Parser: Incomplete frame received, expected length %d, got %d", frame_length + 2, length);
         // TODO: Handle incomplete frame (buffering, etc.)
         return false;
     }
@@ -179,7 +198,7 @@ inline bool parseFrame(uint8_t* data, size_t length, ParseResult& result) {
     uint8_t received_crc = data[frame_length + 1];
     uint8_t calc_crc = calcCRC(&data[2], frame_length - 1);
     if (received_crc != calc_crc) {
-        LogParse("CRSF Parser: Invalid CRC, received 0x%02X, calculated 0x%02X", received_crc, calc_crc);
+        LogVerboseCRSF("CRSF Parser: Invalid CRC, received 0x%02X, calculated 0x%02X", received_crc, calc_crc);
         return false;
     }
 
@@ -209,7 +228,7 @@ inline bool parseFrame(uint8_t* data, size_t length, ParseResult& result) {
         result.destination_address = data[4];
     }
 
-    // LogParse(
+    // LogVerboseCRSF(
     //     "CRSF Parser: Parsed frame type 0x%02X, length %d, extended %d, src 0x%02X, dst "
     //     "0x%02X",
     //     result.frame_type,
@@ -231,6 +250,10 @@ inline bool parseFrame(uint8_t* data, size_t length, ParseResult& result) {
  * @param channels Output array to store the unpacked channel values (16 elements)
  */
 inline void parseChannelData(const uint8_t* payload, ChannelData& channels) {
+    if (payload == nullptr) {
+        LogError("CRSF Parser: Invalid payload pointer for ChannelData");
+        return;
+    }
     constexpr uint32_t MASK_11_BIT = 0x7FF;
 
     uint32_t bit_pos = 0;
@@ -259,7 +282,7 @@ inline void parseChannelData(const uint8_t* payload, ChannelData& channels) {
  */
 inline void parseLinkStatistics(const uint8_t* payload, LinkStatistics& stats) {
     if (payload == nullptr) {
-        LogParse("CRSF Parser: Invalid payload pointer for LinkStatistics");
+        LogError("CRSF Parser: Invalid payload pointer for LinkStatistics");
         return;
     }
 
