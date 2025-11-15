@@ -32,6 +32,17 @@ class Driver {
     enum class State { ERROR, UNINITIALIZED, INITIALIZED, RUNNING };
 
     /**
+     * @brief Possible connection states for drivers that manage connections
+     * 
+     * The connection can be in one of the following states:
+     * - DISCONNECTED: No active connection
+     * - CONNECTING: In the process of establishing a connection
+     * - CONNECTED: Active and healthy connection
+     * - UNKNOWN: Connection state is not applicable or cannot be determined
+     */
+    enum class ConnectionState { DISCONNECTED, CONNECTING, CONNECTED, UNKNOWN };
+
+    /**
      * @brief Virtual destructor for the driver interface
      * 
      * Ensures proper cleanup of derived classes.
@@ -46,6 +57,13 @@ class Driver {
     State getState() const { return state; }
 
     /**
+     * @brief Get the current connection state of the driver
+     * 
+     * @return The current connection state (UNKNOWN if not applicable)
+     */
+    ConnectionState getConnectionState() const { return connection_state; }
+
+    /**
      * @brief Get the name of the driver
      * 
      * @return Pointer to a string containing the driver name
@@ -54,6 +72,7 @@ class Driver {
 
    protected:
     State state = State::UNINITIALIZED;
+    ConnectionState connection_state = ConnectionState::UNKNOWN;
 
     /**
      * @brief Constructor for the common driver interface
@@ -67,6 +86,8 @@ class Driver {
         snprintf(channel_name.data(), CHANNEL_NAME_MAX_LENGTH, "driver/%s_state", name);
         channel_name[CHANNEL_NAME_MAX_LENGTH - 1] = '\0'; // Ensure null termination
 
+        // TODO: Fix trace recorder registration when initializing statically
+        // It can only be done after the recorder is started
         if (xTraceStringRegister(channel_name.data(), &state_channel) != TRC_SUCCESS) {
             return;
         }
@@ -105,7 +126,41 @@ class Driver {
                     xTracePrint(state_channel, "RUNNING");
                     break;
                 default:
-                    xTracePrint(state_channel, "UNKNOWN");
+                    xTracePrint(state_channel, "INVALID STATE");
+                    break;
+            }
+        }
+    }
+
+    /**
+     * @brief Set the current connection state of the driver
+     * 
+     * UNKNOWN is considered the default state for drivers that do/can not manage the connection state.
+     * 
+     * @param new_connection The new connection state to set
+     */
+    void setConnectionState(const ConnectionState new_connection) {
+        if (connection_state == new_connection) {
+            return;
+        }
+        connection_state = new_connection;
+
+        if (trace_initialized) {
+            switch (connection_state) {
+                case ConnectionState::DISCONNECTED:
+                    xTracePrint(connection_channel, "DISCONNECTED");
+                    break;
+                case ConnectionState::CONNECTING:
+                    xTracePrint(connection_channel, "CONNECTING");
+                    break;
+                case ConnectionState::CONNECTED:
+                    xTracePrint(connection_channel, "CONNECTED");
+                    break;
+                case ConnectionState::UNKNOWN:
+                    xTracePrint(connection_channel, "UNKNOWN");
+                    break;
+                default:
+                    xTracePrint(connection_channel, "INVALID_STATE");
                     break;
             }
         }
@@ -117,4 +172,5 @@ class Driver {
 
     bool trace_initialized = false;
     TraceStringHandle_t state_channel = nullptr;
+    TraceStringHandle_t connection_channel = nullptr;
 };
