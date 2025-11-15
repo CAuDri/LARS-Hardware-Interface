@@ -1,7 +1,7 @@
 BasedOnStyle: Google
 PenaltyExcessCharacter: 1
 IndentWidth: 4
-ColumnLimit: 100
+ColumnLimit: 120
 BinPackArguments: false
 BinPackParameters: false
 AllowShortIfStatementsOnASingleLine: false
