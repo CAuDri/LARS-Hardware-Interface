@@ -31,6 +31,9 @@
 // A new transmission will be started if the previous one did not complete within this time
 #define LOG_MAX_TX_TIMEOUT_MS 10
 
+#define LOG_USB_TX_RETRIES 100
+#define LOG_USB_TX_RETRY_DELAY_MS 20
+
 // Flags for the logger thread
 #define LOG_UART_TX_COMPLETE_FLAG 0x01
 #define LOG_USB_TX_COMPLETE_FLAG 0x02
@@ -220,8 +223,9 @@ void logger_log_message(uint32_t log_level, const char* message, ...) {
     // Log Messages will be saved in the log queue and later retrieved by the log thread
     osStatus_t status = osMessageQueuePut(logger_queue, &msg, 0, 0);
 
-    if (status != osOK) {
-        LogInline("Logger: Log Queue full, dropping message, status: %d", status);
+    if (status != osOK && DEBUG_LOG_LEVEL >= LOG_LEVEL_DEBUG) {
+        // TODO: Find a better way to report dropped log messages that won't interfere with system performance
+        // LogInline("Logger: Log Queue full, dropping message, status: %d", status);
         return;
     }
 }
@@ -272,8 +276,13 @@ static void logger_transmit_message(char* buffer, uint32_t length) {
             return;
         }
 
-        status = USBD_CDC_TransmitPacket(husb);
-
+        for (uint32_t i = 0; i < LOG_USB_TX_RETRIES; i++) {
+            status = USBD_CDC_TransmitPacket(husb);
+            if (status == USBD_OK) {
+                break;
+            }
+            osDelay(LOG_USB_TX_RETRY_DELAY_MS);
+        }
         if (status != USBD_OK) {
             LogInline("Logger: USB CDC transmit packet failed, status: %lu", status);
             return;
@@ -366,8 +375,16 @@ static void logger_parse_message(const log_message_t* msg) {
  */
 static void logger_thread_func(void* argument) {
     logger_thread_running = true;
-
     log_message_t msg;
+
+    #if DEBUG_LOG_OUTPUT == LOG_OUTPUT_USB_CDC
+    // We will wait until the USB connection is established before processing log messages
+    // This will decrease the chance of losing log messages during startup
+    while (husb->dev_state != USBD_STATE_CONFIGURED) {
+        osDelay(100);
+    }
+    osDelay(1000);
+    #endif
 
     while (1) {
         // Wait for new log messages in the queue
