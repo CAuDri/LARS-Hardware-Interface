@@ -2756,9 +2756,10 @@
 	)
 	(text "5V Power\n"
 		(exclude_from_sim no)
-		(at 36.322 26.924 0)
+		(at 35.052 26.924 0)
 		(effects
 			(font
+				(face "Arial")
 				(size 3.048 3.048)
 				(thickness 0.4064)
 				(bold yes)
@@ -2771,6 +2772,7 @@
 		(at 186.944 38.354 0)
 		(effects
 			(font
+				(face "Arial")
 				(size 1.778 1.778)
 			)
 		)
@@ -2781,6 +2783,7 @@
 		(at 116.84 44.196 0)
 		(effects
 			(font
+				(face "Arial")
 				(size 1.524 1.524)
 			)
 			(justify left)
@@ -2792,6 +2795,7 @@
 		(at 30.226 61.722 0)
 		(effects
 			(font
+				(face "Arial")
 				(size 1.016 1.016)
 			)
 		)
@@ -2799,9 +2803,10 @@
 	)
 	(text "ESD Protection"
 		(exclude_from_sim no)
-		(at 204.724 120.142 0)
+		(at 206.502 120.396 0)
 		(effects
 			(font
+				(face "Arial")
 				(size 3.048 3.048)
 				(thickness 0.4064)
 				(bold yes)
@@ -2811,9 +2816,10 @@
 	)
 	(text "3.3V Power\n"
 		(exclude_from_sim no)
-		(at 38.1 120.65 0)
+		(at 36.83 120.65 0)
 		(effects
 			(font
+				(face "Arial")
 				(size 3.048 3.048)
 				(thickness 0.4064)
 				(bold yes)
@@ -2826,6 +2832,7 @@
 		(at 108.204 125.476 0)
 		(effects
 			(font
+				(face "Arial")
 				(size 1.778 1.778)
 			)
 		)
@@ -2836,6 +2843,7 @@
 		(at 262.89 37.592 0)
 		(effects
 			(font
+				(face "Arial")
 				(size 1.778 1.778)
 			)
 		)
@@ -2846,6 +2854,7 @@
 		(at 205.74 52.578 0)
 		(effects
 			(font
+				(face "Arial")
 				(size 1.524 1.524)
 			)
 			(justify left)
@@ -2857,6 +2866,7 @@
 		(at 84.074 36.83 0)
 		(effects
 			(font
+				(face "Arial")
 				(size 1.778 1.778)
 			)
 		)
@@ -2867,6 +2877,7 @@
 		(at 152.4 125.984 0)
 		(effects
 			(font
+				(face "Arial")
 				(size 1.778 1.778)
 			)
 		)
@@ -2877,6 +2888,7 @@
 		(at 191.008 126.238 0)
 		(effects
 			(font
+				(face "Arial")
 				(size 1.524 1.524)
 			)
 			(justify left)
@@ -4309,6 +4321,7 @@
 		(at 107.95 60.96 0)
 		(effects
 			(font
+				(face "Arial")
 				(size 0.508 0.508)
 			)
 			(justify left bottom)
@@ -4319,6 +4332,7 @@
 		(at 36.83 68.58 0)
 		(effects
 			(font
+				(face "Arial")
 				(size 0.508 0.508)
 			)
 			(justify left bottom)
@@ -4329,6 +4343,7 @@
 		(at 238.76 77.47 0)
 		(effects
 			(font
+				(face "Arial")
 				(size 0.508 0.508)
 			)
 			(justify left bottom)
@@ -4341,6 +4356,7 @@
 		(fields_autoplaced yes)
 		(effects
 			(font
+				(face "Arial")
 				(size 1.016 1.016)
 			)
 			(justify left)
@@ -4350,6 +4366,7 @@
 			(at 171.7938 58.42 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(justify left)
@@ -4363,6 +4380,7 @@
 		(fields_autoplaced yes)
 		(effects
 			(font
+				(face "Arial")
 				(size 1.016 1.016)
 			)
 			(justify right)
@@ -4372,6 +4390,7 @@
 			(at 187.6163 77.47 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(justify right)
@@ -4385,6 +4404,7 @@
 		(fields_autoplaced yes)
 		(effects
 			(font
+				(face "Arial")
 				(size 1.016 1.016)
 			)
 			(justify right)
@@ -4394,6 +4414,7 @@
 			(at 91.5391 72.39 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(justify right)
@@ -4407,6 +4428,7 @@
 		(fields_autoplaced yes)
 		(effects
 			(font
+				(face "Arial")
 				(size 1.016 1.016)
 			)
 			(justify right)
@@ -4416,6 +4438,7 @@
 			(at 185.1971 81.28 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(justify right)
@@ -4437,6 +4460,7 @@
 			(at 254 92.71 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -4446,6 +4470,7 @@
 			(at 254 91.44 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 			)
@@ -4454,6 +4479,7 @@
 			(at 254 86.36 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -4463,6 +4489,7 @@
 			(at 254 86.36 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -4472,6 +4499,7 @@
 			(at 254 86.36 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -4503,6 +4531,7 @@
 			(at 231.14 125.73 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -4512,6 +4541,7 @@
 			(at 231.14 116.84 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 			)
@@ -4520,6 +4550,7 @@
 			(at 231.14 121.92 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -4529,6 +4560,7 @@
 			(at 231.14 121.92 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -4538,6 +4570,7 @@
 			(at 231.14 121.92 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -4569,6 +4602,7 @@
 			(at 152.4 179.07 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -4578,6 +4612,7 @@
 			(at 152.4 177.8 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 			)
@@ -4586,6 +4621,7 @@
 			(at 152.4 172.72 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -4595,6 +4631,7 @@
 			(at 152.4 172.72 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -4604,6 +4641,7 @@
 			(at 152.4 172.72 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -4634,6 +4672,7 @@
 			(at 256.032 77.47 90)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(justify left)
@@ -4643,6 +4682,7 @@
 			(at 256.032 79.756 90)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(justify left)
@@ -4652,6 +4692,7 @@
 			(at 254 78.74 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -4661,6 +4702,7 @@
 			(at 254 78.74 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -4670,6 +4712,7 @@
 			(at 254 78.74 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -4704,6 +4747,7 @@
 			(at 87.63 179.07 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -4713,6 +4757,7 @@
 			(at 87.63 177.8 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 			)
@@ -4721,6 +4766,7 @@
 			(at 87.63 172.72 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -4730,6 +4776,7 @@
 			(at 87.63 172.72 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -4739,6 +4786,7 @@
 			(at 87.63 172.72 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -4769,6 +4817,7 @@
 			(at 134.62 151.892 90)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 			)
@@ -4777,6 +4826,7 @@
 			(at 134.874 160.274 90)
 			(effects
 				(font
+					(face "Arial")
 					(size 0.762 0.762)
 				)
 			)
@@ -4785,6 +4835,7 @@
 			(at 134.62 157.988 90)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -4794,6 +4845,7 @@
 			(at 134.62 156.21 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -4803,6 +4855,7 @@
 			(at 134.62 156.21 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -4836,6 +4889,7 @@
 			(at 160.782 78.74 90)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(justify left)
@@ -4845,6 +4899,7 @@
 			(at 160.782 81.026 90)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(justify left)
@@ -4854,6 +4909,7 @@
 			(at 158.75 80.01 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -4863,6 +4919,7 @@
 			(at 158.75 80.01 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -4872,6 +4929,7 @@
 			(at 158.75 80.01 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -4906,6 +4964,7 @@
 			(at 90.17 92.71 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -4915,6 +4974,7 @@
 			(at 90.17 91.44 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 			)
@@ -4923,6 +4983,7 @@
 			(at 90.17 86.36 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -4932,6 +4993,7 @@
 			(at 90.17 86.36 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -4941,6 +5003,7 @@
 			(at 90.17 86.36 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -4971,15 +5034,17 @@
 			(at 43.434 58.928 90)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.016 1.016)
 				)
 				(justify left)
 			)
 		)
-		(property "Value" "470"
-			(at 43.18 60.96 90)
+		(property "Value" "1k"
+			(at 43.688 60.96 90)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.016 1.016)
 				)
 				(justify left)
@@ -4989,6 +5054,7 @@
 			(at 44.45 60.96 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -4998,6 +5064,7 @@
 			(at 44.45 60.96 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -5007,6 +5074,7 @@
 			(at 44.45 60.96 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -5040,6 +5108,7 @@
 			(at 80.772 78.994 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(justify left)
@@ -5049,6 +5118,7 @@
 			(at 80.772 81.026 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(justify left)
@@ -5058,6 +5128,7 @@
 			(at 78.4352 83.82 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -5067,6 +5138,7 @@
 			(at 77.47 80.01 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -5076,6 +5148,7 @@
 			(at 77.47 80.01 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -5110,6 +5183,7 @@
 			(at 38.1 92.71 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -5119,6 +5193,7 @@
 			(at 38.1 91.44 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 			)
@@ -5127,6 +5202,7 @@
 			(at 38.1 86.36 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -5136,6 +5212,7 @@
 			(at 38.1 86.36 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -5145,6 +5222,7 @@
 			(at 38.1 86.36 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -5176,6 +5254,7 @@
 			(at 104.14 92.71 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -5185,6 +5264,7 @@
 			(at 104.14 91.44 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 			)
@@ -5193,6 +5273,7 @@
 			(at 104.14 86.36 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -5202,6 +5283,7 @@
 			(at 104.14 86.36 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -5211,6 +5293,7 @@
 			(at 104.14 86.36 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -5241,6 +5324,7 @@
 			(at 69.342 78.74 90)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(justify left)
@@ -5250,6 +5334,7 @@
 			(at 69.342 81.026 90)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(justify left)
@@ -5259,6 +5344,7 @@
 			(at 67.31 80.01 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -5268,6 +5354,7 @@
 			(at 67.31 80.01 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -5277,6 +5364,7 @@
 			(at 67.31 80.01 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -5310,6 +5398,7 @@
 			(at 99.822 165.1 90)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(justify left)
@@ -5319,6 +5408,7 @@
 			(at 99.822 167.386 90)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(justify left)
@@ -5328,6 +5418,7 @@
 			(at 97.79 166.37 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -5337,6 +5428,7 @@
 			(at 97.79 166.37 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -5346,6 +5438,7 @@
 			(at 97.79 166.37 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -5379,6 +5472,7 @@
 			(at 99.314 59.436 90)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.016 1.016)
 				)
 				(justify left)
@@ -5388,6 +5482,7 @@
 			(at 99.06 60.96 90)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.016 1.016)
 				)
 				(justify left)
@@ -5397,6 +5492,7 @@
 			(at 100.33 60.96 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -5406,6 +5502,7 @@
 			(at 100.33 60.96 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -5415,6 +5512,7 @@
 			(at 100.33 60.96 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -5449,6 +5547,7 @@
 			(at 238.76 92.71 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -5458,6 +5557,7 @@
 			(at 238.76 91.44 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 			)
@@ -5466,6 +5566,7 @@
 			(at 238.76 86.36 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -5475,6 +5576,7 @@
 			(at 238.76 86.36 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -5484,6 +5586,7 @@
 			(at 238.76 86.36 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -5515,6 +5618,7 @@
 			(at 35.56 179.07 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -5524,6 +5628,7 @@
 			(at 35.56 177.8 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 			)
@@ -5532,6 +5637,7 @@
 			(at 35.56 172.72 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -5541,6 +5647,7 @@
 			(at 35.56 172.72 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -5550,6 +5657,7 @@
 			(at 35.56 172.72 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -5580,6 +5688,7 @@
 			(at 95.25 69.85 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -5589,6 +5698,7 @@
 			(at 95.25 67.056 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.016 1.016)
 				)
 			)
@@ -5597,6 +5707,7 @@
 			(at 95.25 63.5 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -5606,6 +5717,7 @@
 			(at 95.25 63.5 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -5615,6 +5727,7 @@
 			(at 95.25 63.5 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -5646,6 +5759,7 @@
 			(at 152.4 143.51 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -5655,6 +5769,7 @@
 			(at 152.4 134.62 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 			)
@@ -5663,6 +5778,7 @@
 			(at 152.4 139.7 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -5672,6 +5788,7 @@
 			(at 152.4 139.7 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -5681,6 +5798,7 @@
 			(at 152.4 139.7 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -5711,6 +5829,7 @@
 			(at 38.1 165.1 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(justify left)
@@ -5720,6 +5839,7 @@
 			(at 38.1 167.64 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(justify left)
@@ -5729,6 +5849,7 @@
 			(at 36.5252 170.18 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -5738,6 +5859,7 @@
 			(at 35.56 166.37 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -5747,6 +5869,7 @@
 			(at 35.56 166.37 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -5781,6 +5904,7 @@
 			(at 67.31 92.71 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -5790,6 +5914,7 @@
 			(at 67.31 91.44 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 			)
@@ -5798,6 +5923,7 @@
 			(at 67.31 86.36 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -5807,6 +5933,7 @@
 			(at 67.31 86.36 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -5816,6 +5943,7 @@
 			(at 67.31 86.36 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -5846,6 +5974,7 @@
 			(at 250.952 127 90)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(justify left)
@@ -5855,6 +5984,7 @@
 			(at 250.952 129.286 90)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(justify left)
@@ -5864,6 +5994,7 @@
 			(at 248.92 128.27 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -5873,6 +6004,7 @@
 			(at 248.92 128.27 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -5882,6 +6014,7 @@
 			(at 248.92 128.27 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -5915,6 +6048,7 @@
 			(at 180.34 78.74 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(justify left)
@@ -5924,6 +6058,7 @@
 			(at 180.34 81.28 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(justify left)
@@ -5933,6 +6068,7 @@
 			(at 178.7652 83.82 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -5942,6 +6078,7 @@
 			(at 177.8 80.01 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -5951,6 +6088,7 @@
 			(at 177.8 80.01 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -5984,6 +6122,7 @@
 			(at 28.702 65.024 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(justify left)
@@ -5993,6 +6132,7 @@
 			(at 28.194 76.2 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(justify left)
@@ -6002,6 +6142,7 @@
 			(at 30.48 72.39 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -6011,6 +6152,7 @@
 			(at 30.48 72.39 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -6020,6 +6162,7 @@
 			(at 30.48 84.836 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -6053,6 +6196,7 @@
 			(at 221.996 62.992 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.524 1.524)
 				)
 			)
@@ -6061,6 +6205,7 @@
 			(at 222.504 87.884 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.524 1.524)
 				)
 			)
@@ -6069,6 +6214,7 @@
 			(at 222.25 74.93 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 					(italic yes)
 				)
@@ -6079,6 +6225,7 @@
 			(at 222.25 74.93 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 					(italic yes)
 				)
@@ -6089,6 +6236,7 @@
 			(at 222.25 74.93 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -6135,6 +6283,7 @@
 			(at 72.39 66.675 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -6144,6 +6293,7 @@
 			(at 72.39 63.5 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -6153,6 +6303,7 @@
 			(at 72.39 68.58 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -6162,6 +6313,7 @@
 			(at 72.39 68.58 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -6171,6 +6323,7 @@
 			(at 72.39 68.58 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -6201,15 +6354,17 @@
 			(at 154.94 60.706 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.016 1.016)
 				)
 				(justify left)
 			)
 		)
-		(property "Value" "4k7"
+		(property "Value" "5k1"
 			(at 152.4 62.23 90)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.016 1.016)
 				)
 				(justify left)
@@ -6219,6 +6374,7 @@
 			(at 152.4 63.5 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -6228,6 +6384,7 @@
 			(at 152.4 63.5 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -6237,6 +6394,7 @@
 			(at 152.4 63.5 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -6271,6 +6429,7 @@
 			(at 167.64 92.71 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -6280,6 +6439,7 @@
 			(at 167.64 91.44 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 			)
@@ -6288,6 +6448,7 @@
 			(at 167.64 86.36 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -6297,6 +6458,7 @@
 			(at 167.64 86.36 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -6306,6 +6468,7 @@
 			(at 167.64 86.36 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -6337,6 +6500,7 @@
 			(at 177.8 92.71 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -6346,6 +6510,7 @@
 			(at 177.8 91.44 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 			)
@@ -6354,6 +6519,7 @@
 			(at 177.8 86.36 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -6363,6 +6529,7 @@
 			(at 177.8 86.36 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -6372,6 +6539,7 @@
 			(at 177.8 86.36 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -6402,6 +6570,7 @@
 			(at 60.452 78.74 90)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(justify left)
@@ -6411,6 +6580,7 @@
 			(at 60.452 81.026 90)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(justify left)
@@ -6420,6 +6590,7 @@
 			(at 58.42 80.01 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -6429,6 +6600,7 @@
 			(at 58.42 80.01 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -6438,6 +6610,7 @@
 			(at 58.42 80.01 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -6471,6 +6644,7 @@
 			(at 49.53 58.928 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.016 1.016)
 				)
 			)
@@ -6479,6 +6653,7 @@
 			(at 49.53 63.754 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.016 1.016)
 				)
 			)
@@ -6487,6 +6662,7 @@
 			(at 49.53 60.96 90)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -6496,6 +6672,7 @@
 			(at 49.53 60.96 90)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -6505,6 +6682,7 @@
 			(at 49.53 60.96 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -6539,6 +6717,7 @@
 			(at 110.49 92.71 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -6548,6 +6727,7 @@
 			(at 110.49 91.44 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 			)
@@ -6556,6 +6736,7 @@
 			(at 110.49 86.36 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -6565,6 +6746,7 @@
 			(at 110.49 86.36 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -6574,6 +6756,7 @@
 			(at 110.49 86.36 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -6604,15 +6787,17 @@
 			(at 209.042 71.12 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.016 1.016)
 				)
 				(justify left)
 			)
 		)
-		(property "Value" "4k7"
+		(property "Value" "5k1"
 			(at 205.74 72.39 90)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.016 1.016)
 				)
 				(justify left)
@@ -6622,6 +6807,7 @@
 			(at 205.74 73.66 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -6631,6 +6817,7 @@
 			(at 205.74 73.66 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -6640,6 +6827,7 @@
 			(at 205.74 73.66 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -6674,6 +6862,7 @@
 			(at 118.11 179.07 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -6683,6 +6872,7 @@
 			(at 118.11 177.8 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 			)
@@ -6691,6 +6881,7 @@
 			(at 118.11 172.72 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -6700,6 +6891,7 @@
 			(at 118.11 172.72 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -6709,6 +6901,7 @@
 			(at 118.11 172.72 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -6740,6 +6933,7 @@
 			(at 158.75 92.71 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -6749,6 +6943,7 @@
 			(at 158.75 91.44 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 			)
@@ -6757,6 +6952,7 @@
 			(at 158.75 86.36 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -6766,6 +6962,7 @@
 			(at 158.75 86.36 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -6775,6 +6972,7 @@
 			(at 158.75 86.36 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -6806,6 +7004,7 @@
 			(at 77.47 92.71 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -6815,6 +7014,7 @@
 			(at 77.47 91.44 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 			)
@@ -6823,6 +7023,7 @@
 			(at 77.47 86.36 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -6832,6 +7033,7 @@
 			(at 77.47 86.36 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -6841,6 +7043,7 @@
 			(at 77.47 86.36 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -6871,6 +7074,7 @@
 			(at 131.064 52.07 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.524 1.524)
 				)
 			)
@@ -6879,6 +7083,7 @@
 			(at 131.318 88.138 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.524 1.524)
 				)
 			)
@@ -6887,6 +7092,7 @@
 			(at 110.49 58.42 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 					(italic yes)
 				)
@@ -6897,6 +7103,7 @@
 			(at 110.49 58.42 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 					(italic yes)
 				)
@@ -6907,6 +7114,7 @@
 			(at 110.49 58.42 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -6959,6 +7167,7 @@
 			(at 97.79 179.07 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -6968,6 +7177,7 @@
 			(at 97.79 177.8 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 			)
@@ -6976,6 +7186,7 @@
 			(at 97.79 172.72 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -6985,6 +7196,7 @@
 			(at 97.79 172.72 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -6994,6 +7206,7 @@
 			(at 97.79 172.72 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -7025,6 +7238,7 @@
 			(at 35.56 143.51 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -7034,6 +7248,7 @@
 			(at 35.56 134.62 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 			)
@@ -7042,6 +7257,7 @@
 			(at 35.56 139.7 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -7051,6 +7267,7 @@
 			(at 35.56 139.7 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -7060,6 +7277,7 @@
 			(at 35.56 139.7 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -7091,6 +7309,7 @@
 			(at 231.14 140.97 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -7100,6 +7319,7 @@
 			(at 231.14 139.7 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 			)
@@ -7108,6 +7328,7 @@
 			(at 231.14 134.62 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -7117,6 +7338,7 @@
 			(at 231.14 134.62 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -7126,6 +7348,7 @@
 			(at 231.14 134.62 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -7156,6 +7379,7 @@
 			(at 242.062 127 90)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(justify left)
@@ -7165,6 +7389,7 @@
 			(at 242.062 129.286 90)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(justify left)
@@ -7174,6 +7399,7 @@
 			(at 240.03 128.27 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -7183,6 +7409,7 @@
 			(at 240.03 128.27 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -7192,6 +7419,7 @@
 			(at 240.03 128.27 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -7225,6 +7453,7 @@
 			(at 68.58 137.16 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 			)
@@ -7233,6 +7462,7 @@
 			(at 68.58 142.748 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 			)
@@ -7241,6 +7471,7 @@
 			(at 68.58 139.7 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -7250,6 +7481,7 @@
 			(at 68.58 139.7 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -7259,6 +7491,7 @@
 			(at 68.58 139.7 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -7268,6 +7501,7 @@
 			(at 68.58 139.7 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -7277,6 +7511,7 @@
 			(at 68.58 139.7 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -7310,6 +7545,7 @@
 			(at 233.172 127 90)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(justify left)
@@ -7319,6 +7555,7 @@
 			(at 233.172 129.286 90)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(justify left)
@@ -7328,6 +7565,7 @@
 			(at 231.14 128.27 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -7337,6 +7575,7 @@
 			(at 231.14 128.27 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -7346,6 +7585,7 @@
 			(at 231.14 128.27 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -7380,6 +7620,7 @@
 			(at 146.05 154.305 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -7389,6 +7630,7 @@
 			(at 146.05 151.13 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -7398,6 +7640,7 @@
 			(at 146.05 156.21 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -7407,6 +7650,7 @@
 			(at 146.05 156.21 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -7416,6 +7660,7 @@
 			(at 146.05 156.21 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -7446,6 +7691,7 @@
 			(at 92.71 78.74 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(justify left)
@@ -7455,6 +7701,7 @@
 			(at 92.71 81.28 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(justify left)
@@ -7464,6 +7711,7 @@
 			(at 91.1352 83.82 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -7473,6 +7721,7 @@
 			(at 90.17 80.01 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -7482,6 +7731,7 @@
 			(at 90.17 80.01 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -7515,6 +7765,7 @@
 			(at 154.94 165.1 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(justify left)
@@ -7524,6 +7775,7 @@
 			(at 154.94 167.64 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(justify left)
@@ -7533,6 +7785,7 @@
 			(at 153.3652 170.18 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -7542,6 +7795,7 @@
 			(at 152.4 166.37 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -7551,6 +7805,7 @@
 			(at 152.4 166.37 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -7584,6 +7839,7 @@
 			(at 107.95 143.51 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -7593,6 +7849,7 @@
 			(at 107.95 134.62 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 			)
@@ -7601,6 +7858,7 @@
 			(at 107.95 139.7 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -7610,6 +7868,7 @@
 			(at 107.95 139.7 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -7619,6 +7878,7 @@
 			(at 107.95 139.7 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -7649,6 +7909,7 @@
 			(at 120.65 165.1 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(justify left)
@@ -7658,6 +7919,7 @@
 			(at 120.65 167.64 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(justify left)
@@ -7667,6 +7929,7 @@
 			(at 119.0752 170.18 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -7676,6 +7939,7 @@
 			(at 118.11 166.37 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -7685,6 +7949,7 @@
 			(at 118.11 166.37 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -7718,6 +7983,7 @@
 			(at 265.43 77.47 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(justify left)
@@ -7727,6 +7993,7 @@
 			(at 265.43 80.01 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(justify left)
@@ -7736,6 +8003,7 @@
 			(at 263.8552 82.55 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -7745,6 +8013,7 @@
 			(at 262.89 78.74 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -7754,6 +8023,7 @@
 			(at 262.89 78.74 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -7787,6 +8057,7 @@
 			(at 259.842 127 90)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(justify left)
@@ -7796,6 +8067,7 @@
 			(at 259.842 129.286 90)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(justify left)
@@ -7805,6 +8077,7 @@
 			(at 257.81 128.27 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -7814,6 +8087,7 @@
 			(at 257.81 128.27 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -7823,6 +8097,7 @@
 			(at 257.81 128.27 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -7857,6 +8132,7 @@
 			(at 68.58 179.07 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -7866,6 +8142,7 @@
 			(at 68.58 177.8 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 			)
@@ -7874,6 +8151,7 @@
 			(at 68.58 172.72 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -7883,6 +8161,7 @@
 			(at 68.58 172.72 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -7892,6 +8171,7 @@
 			(at 68.58 172.72 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -7923,6 +8203,7 @@
 			(at 262.89 55.88 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -7932,6 +8213,7 @@
 			(at 262.89 46.99 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 			)
@@ -7940,6 +8222,7 @@
 			(at 262.89 52.07 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -7949,6 +8232,7 @@
 			(at 262.89 52.07 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -7958,6 +8242,7 @@
 			(at 262.89 52.07 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -7988,6 +8273,7 @@
 			(at 106.68 78.74 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(justify left)
@@ -7997,6 +8283,7 @@
 			(at 106.68 81.28 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(justify left)
@@ -8006,6 +8293,7 @@
 			(at 105.1052 83.82 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -8015,6 +8303,7 @@
 			(at 104.14 80.01 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -8024,6 +8313,7 @@
 			(at 104.14 80.01 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -8058,6 +8348,7 @@
 			(at 186.69 55.88 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -8067,6 +8358,7 @@
 			(at 186.69 46.99 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 			)
@@ -8075,6 +8367,7 @@
 			(at 186.69 52.07 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -8084,6 +8377,7 @@
 			(at 186.69 52.07 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -8093,6 +8387,7 @@
 			(at 186.69 52.07 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -8123,6 +8418,7 @@
 			(at 244.348 79.756 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.016 1.016)
 				)
 				(justify left)
@@ -8132,6 +8428,7 @@
 			(at 243.84 84.074 90)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.016 1.016)
 				)
 				(justify left)
@@ -8141,6 +8438,7 @@
 			(at 243.84 82.55 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -8150,6 +8448,7 @@
 			(at 243.84 82.55 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -8159,6 +8458,7 @@
 			(at 243.84 82.55 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -8193,6 +8493,7 @@
 			(at 262.89 92.71 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -8202,6 +8503,7 @@
 			(at 262.89 91.44 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 			)
@@ -8210,6 +8512,7 @@
 			(at 262.89 86.36 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -8219,6 +8522,7 @@
 			(at 262.89 86.36 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -8228,6 +8532,7 @@
 			(at 262.89 86.36 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -8258,15 +8563,17 @@
 			(at 205.232 71.12 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.016 1.016)
 				)
 				(justify left)
 			)
 		)
-		(property "Value" "4k7"
+		(property "Value" "5k1"
 			(at 201.93 72.39 90)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.016 1.016)
 				)
 				(justify left)
@@ -8276,6 +8583,7 @@
 			(at 201.93 73.66 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -8285,6 +8593,7 @@
 			(at 201.93 73.66 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -8294,6 +8603,7 @@
 			(at 201.93 73.66 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -8328,6 +8638,7 @@
 			(at 83.82 55.88 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -8337,6 +8648,7 @@
 			(at 83.82 46.99 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 			)
@@ -8345,6 +8657,7 @@
 			(at 83.82 52.07 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -8354,6 +8667,7 @@
 			(at 83.82 52.07 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -8363,6 +8677,7 @@
 			(at 83.82 52.07 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -8394,6 +8709,7 @@
 			(at 243.84 92.71 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -8403,6 +8719,7 @@
 			(at 243.84 91.44 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 			)
@@ -8411,6 +8728,7 @@
 			(at 243.84 86.36 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -8420,6 +8738,7 @@
 			(at 243.84 86.36 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -8429,6 +8748,7 @@
 			(at 243.84 86.36 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -8459,6 +8779,7 @@
 			(at 169.672 78.74 90)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(justify left)
@@ -8468,6 +8789,7 @@
 			(at 169.672 81.026 90)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(justify left)
@@ -8477,6 +8799,7 @@
 			(at 167.64 80.01 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -8486,6 +8809,7 @@
 			(at 167.64 80.01 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -8495,6 +8819,7 @@
 			(at 167.64 80.01 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -8528,6 +8853,7 @@
 			(at 68.58 147.066 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 			)
@@ -8536,6 +8862,7 @@
 			(at 74.93 165.608 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.016 1.016)
 				)
 			)
@@ -8544,6 +8871,7 @@
 			(at 45.72 157.48 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 					(italic yes)
 				)
@@ -8554,6 +8882,7 @@
 			(at 45.72 157.48 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 					(italic yes)
 				)
@@ -8564,6 +8893,7 @@
 			(at 45.72 157.48 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -8600,6 +8930,7 @@
 			(at 106.426 63.754 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.016 1.016)
 				)
 				(justify left)
@@ -8609,6 +8940,7 @@
 			(at 105.41 65.532 90)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.016 1.016)
 				)
 				(justify left)
@@ -8618,6 +8950,7 @@
 			(at 105.41 64.77 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -8627,6 +8960,7 @@
 			(at 105.41 64.77 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -8636,6 +8970,7 @@
 			(at 105.41 64.77 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -8669,6 +9004,7 @@
 			(at 89.662 165.1 90)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(justify left)
@@ -8678,6 +9014,7 @@
 			(at 89.662 167.386 90)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(justify left)
@@ -8687,6 +9024,7 @@
 			(at 87.63 166.37 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -8696,6 +9034,7 @@
 			(at 87.63 166.37 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -8705,6 +9044,7 @@
 			(at 87.63 166.37 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -8739,6 +9079,7 @@
 			(at 58.42 92.71 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -8748,6 +9089,7 @@
 			(at 58.42 91.44 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 			)
@@ -8756,6 +9098,7 @@
 			(at 58.42 86.36 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -8765,6 +9108,7 @@
 			(at 58.42 86.36 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -8774,6 +9118,7 @@
 			(at 58.42 86.36 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -8804,6 +9149,7 @@
 			(at 46.99 66.548 90)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 			)
@@ -8812,6 +9158,7 @@
 			(at 46.99 71.374 90)
 			(effects
 				(font
+					(face "Arial")
 					(size 0.762 0.762)
 				)
 			)
@@ -8820,6 +9167,7 @@
 			(at 52.07 67.31 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(justify left)
@@ -8830,6 +9178,7 @@
 			(at 46.99 68.58 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
@@ -8839,6 +9188,7 @@
 			(at 46.99 68.58 0)
 			(effects
 				(font
+					(face "Arial")
 					(size 1.27 1.27)
 				)
 				(hide yes)
