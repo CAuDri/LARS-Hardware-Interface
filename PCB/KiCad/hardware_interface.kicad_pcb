@@ -72815,7 +72815,7 @@
 			(justify left bottom)
 		)
 	)
-	(gr_text "HI  LO  GND  5V"
+	(gr_text "LO  HI  GND  5V"
 		(at 108.4 124.775 0)
 		(layer "F.SilkS")
 		(uuid "00cb9af6-da94-4cbf-8b26-c866c89840be")
@@ -72854,7 +72854,7 @@
 			(justify left bottom)
 		)
 	)
-	(gr_text "ADC GND 5V PWM"
+	(gr_text "PWM 5V GND ADC"
 		(at 125.11 56.9 0)
 		(layer "F.SilkS")
 		(uuid "0cc8aa5d-3dce-4a3e-9b37-aaf36193d2e1")
