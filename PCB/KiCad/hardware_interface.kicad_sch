@@ -6,8 +6,8 @@
 	(paper "A4")
 	(title_block
 		(title "LARS Hardware Interface")
-		(date "2025-03-04")
-		(rev "v1.0")
+		(date "2025-11-29")
+		(rev "v1.1")
 		(company "CAuDri e.V.")
 		(comment 1 "Source: https://ohwr.org/cern_ohl_w_v2.txt")
 		(comment 2 "A copy of the license is included in the LICENSE file.")

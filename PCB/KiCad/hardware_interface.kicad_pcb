@@ -73107,7 +73107,7 @@
 			(justify left bottom)
 		)
 	)
-	(gr_text "LARS Hardware Interface \nv1.0"
+	(gr_text "LARS Hardware Interface \nv1.1"
 		(at 105.4 96.9 0)
 		(layer "F.SilkS")
 		(uuid "5f6bdcad-3099-46d5-801b-3eb0bed82d89")
@@ -73596,7 +73596,7 @@
 			(justify mirror)
 		)
 	)
-	(gr_text "CAuDri e.V. - 06/2025"
+	(gr_text "CAuDri e.V. - 11/2025"
 		(at 122.6 89.65 0)
 		(layer "B.SilkS")
 		(uuid "1a741a58-abc5-4eec-9246-ccce6cb1fbbf")
@@ -73620,7 +73620,7 @@
 			(justify mirror)
 		)
 	)
-	(gr_text "LARS Hardware Interface v1.0\n"
+	(gr_text "LARS Hardware Interface v1.1\n"
 		(at 109 87.05 0)
 		(layer "B.SilkS")
 		(uuid "433c191b-3c14-45ad-9342-0063506636f0")
@@ -88156,20 +88156,20 @@
 		(uuid "f41bd725-cdbd-4775-a966-245e63ab5d20")
 	)
 	(segment
-		(start 150.8775 100.4)
-		(end 152.1 100.4)
-		(width 0.2)
-		(layer "F.Cu")
-		(net 143)
-		(uuid "11fd8c68-9ff4-42e4-bc0e-c3fcfdfa1587")
-	)
-	(segment
 		(start 152.1 100.4)
 		(end 152.45 100.05)
 		(width 0.2)
 		(layer "F.Cu")
 		(net 143)
-		(uuid "59a251c3-0a80-4bda-aa43-62d6df73330d")
+		(uuid "611365e7-ab2d-4c8e-ac62-049c2f2c1dd4")
+	)
+	(segment
+		(start 150.8775 100.4)
+		(end 152.1 100.4)
+		(width 0.2)
+		(layer "F.Cu")
+		(net 143)
+		(uuid "736395c1-2bd5-4812-8a49-56f55fb4320b")
 	)
 	(segment
 		(start 152.45 100.05)
@@ -88177,7 +88177,7 @@
 		(width 0.2)
 		(layer "F.Cu")
 		(net 143)
-		(uuid "ebaf5300-4ad8-4e7f-ab68-217694c3e808")
+		(uuid "855f2ae5-c33d-4ffa-a972-8d48c1edddda")
 	)
 	(segment
 		(start 149.9 97.9)
