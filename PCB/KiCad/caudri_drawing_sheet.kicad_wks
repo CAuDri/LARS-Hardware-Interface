@@ -93,7 +93,10 @@
 	)
 	(tbtext "Date: ${ISSUE_DATE}"
 		(name "")
-		(pos 75.57 6.9002)
+		(pos 75.57 6.9)
+		(font
+			(face "Arial")
+		)
 	)
 	(line
 		(name "")
@@ -102,7 +105,10 @@
 	)
 	(tbtext "${KICAD_VERSION}"
 		(name "")
-		(pos 97.57 4.1002)
+		(pos 97.57 4.1)
+		(font
+			(face "Arial")
+		)
 		(comment "Kicad version")
 	)
 	(line
@@ -113,28 +119,37 @@
 	(tbtext "Rev: ${REVISION}"
 		(name "")
 		(pos 24 6.9)
-		(font bold)
+		(font
+			(face "Arial") bold)
 	)
 	(tbtext "Size: ${PAPER}"
 		(name "")
-		(pos 97.57 6.9002)
+		(pos 97.57 6.9)
+		(font
+			(face "Arial")
+		)
 		(comment "Paper format name")
 	)
 	(tbtext "Sheet: ${#}/${##}"
 		(name "")
 		(pos 24 4.1)
+		(font
+			(face "Arial")
+		)
 		(comment "Sheet id")
 	)
 	(tbtext "${TITLE}"
 		(name "")
 		(pos 67.09 42.933)
 		(font
+			(face "Arial")
 			(size 3.048 3.048) bold)
 	)
 	(tbtext "File: ${FILENAME}"
 		(name "")
-		(pos 97.57 11.7602)
+		(pos 97.57 11.76)
 		(font
+			(face "Arial")
 			(size 1.778 1.778)
 		)
 	)
@@ -145,35 +160,49 @@
 	)
 	(tbtext "Sheet: ${SHEETPATH}"
 		(name "")
-		(pos 97.57 15.7302)
+		(pos 97.57 15.73)
 		(font
+			(face "Arial")
 			(size 1.778 1.778) bold italic)
 	)
 	(tbtext "${COMPANY}"
 		(name "")
 		(pos 66.836 37.348)
 		(font
+			(face "Arial")
 			(size 2.032 2.032) bold italic)
 		(comment "Company name")
 	)
 	(tbtext "${COMMENT1}"
 		(name "")
-		(pos 97.57 21.7302)
+		(pos 97.57 21.73)
+		(font
+			(face "Arial")
+		)
 		(comment "Comment 0")
 	)
 	(tbtext "${COMMENT2}"
 		(name "")
-		(pos 97.57 24.7302)
+		(pos 97.57 24.73)
+		(font
+			(face "Arial")
+		)
 		(comment "Comment 1")
 	)
 	(tbtext "${COMMENT3}"
 		(name "")
-		(pos 97.57 27.7302)
+		(pos 97.57 27.73)
+		(font
+			(face "Arial")
+		)
 		(comment "Comment 2")
 	)
 	(tbtext "${COMMENT4}"
 		(name "")
-		(pos 97.57 30.7302)
+		(pos 97.57 30.73)
+		(font
+			(face "Arial")
+		)
 		(comment "Comment 3")
 	)
 	(line
