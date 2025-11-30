@@ -734,7 +734,7 @@
       "gencad": "",
       "idf": "",
       "netlist": "",
-      "plot": "../images/",
+      "plot": "../export/",
       "pos_files": "../manufacturing_files/",
       "specctra_dsn": "",
       "step": "../images/hardware_interface.step",
