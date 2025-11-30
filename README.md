@@ -60,8 +60,8 @@ The hardware design files are released under the [CERN Open Hardware Licence v2]
 
 The board was designed in KiCad 9.0. The project file can be found in the `/PCB/KiCad` directory.
 
-A full [Schematic](https://github.com/CAuDri/LARS-Hardware-Interface/blob/main/PCB/schematic.pdf) of the board can be found as a PDF in the `/PCB` directory.
+Link to the [Schematic](https://github.com/CAuDri/LARS-Hardware-Interface/blob/main/PCB/schematic.pdf).
 
-All PCB design files, a bill of materials and Gerber Files for manufacturing at [JLCPCB](https://jlcpcb.com/) can be found in the `/PCB/manufacturing` directory.
+All PCB design files, a bill of materials and Gerber Files for manufacturing at [JLCPCB](https://jlcpcb.com/) can be found in the `/PCB/manufacturing` directory. They have been exported using the [Fabrication Toolkit](https://github.com/bennymeg/Fabrication-Toolkit) KiCad plugin.
 
 A 3D STEP model of the board can be found in the `/PCB/export` directory.
