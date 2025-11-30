@@ -82,17 +82,12 @@ class Driver {
      * @param name The name of the driver
      */
     explicit Driver(const char* name) : name(name) {
-        // State changes will be logged on a dedicated "driver/<name>_state" channel in Tracealyzer
-        snprintf(channel_name.data(), CHANNEL_NAME_MAX_LENGTH, "driver/%s_state", name);
-        channel_name[CHANNEL_NAME_MAX_LENGTH - 1] = '\0'; // Ensure null termination
-
-        // TODO: Fix trace recorder registration when initializing statically
-        // It can only be done after the recorder is started
-        if (xTraceStringRegister(channel_name.data(), &state_channel) != TRC_SUCCESS) {
-            return;
+        // Tracealyzer channels can only be initialized once the Tracealyzer recorder is running
+        // Should the driver be initialized before that, we defer channel initialization until the first state change
+        if (initTraceChannels()) {
+            tracing_initialized = true;
+            tracing_enabled = true;
         }
-        trace_initialized = true;
-        xTracePrint(state_channel, "UNINITIALIZED");
     }
 
     /**
@@ -111,7 +106,15 @@ class Driver {
         }
         state = new_state;
 
-        if (trace_initialized) {
+        // Try to initialize Tracealyzer channels on first state change if not already done
+        if (!tracing_initialized) {
+            if (initTraceChannels()) {
+                tracing_enabled = true;
+            }
+            tracing_initialized = true;
+        }
+
+        if (tracing_enabled) {
             switch (state) {
                 case State::ERROR:
                     xTracePrint(state_channel, "ERROR");
@@ -145,7 +148,15 @@ class Driver {
         }
         connection_state = new_connection;
 
-        if (trace_initialized) {
+        // Try to initialize Tracealyzer channels on first state change if not already done
+        if (!tracing_initialized) {
+            if (initTraceChannels()) {
+                tracing_enabled = true;
+            }
+            tracing_initialized = true;
+        }
+
+        if (tracing_enabled) {
             switch (connection_state) {
                 case ConnectionState::DISCONNECTED:
                     xTracePrint(connection_channel, "DISCONNECTED");
@@ -170,7 +181,37 @@ class Driver {
     const char* name = nullptr;
     std::array<char, CHANNEL_NAME_MAX_LENGTH> channel_name{};
 
-    bool trace_initialized = false;
+    bool tracing_initialized = false;
+    bool tracing_enabled = false;
     TraceStringHandle_t state_channel = nullptr;
     TraceStringHandle_t connection_channel = nullptr;
+
+    /**
+     * @brief Initialize Tracealyzer channels for driver state and connection logging
+     */
+    bool initTraceChannels() {
+        if (tracing_initialized) {
+            return true;
+        }
+        
+        // Initialize Tracealyzer channels for state and connection logging
+        snprintf(channel_name.data(), CHANNEL_NAME_MAX_LENGTH, "driver/%s State", name);
+        channel_name[CHANNEL_NAME_MAX_LENGTH - 1] = '\0'; // Ensure null termination
+
+        if (xTraceStringRegister(channel_name.data(), &state_channel) != TRC_SUCCESS) {
+            return false;
+        }
+
+        snprintf(channel_name.data(), CHANNEL_NAME_MAX_LENGTH, "driver/%s Connection", name);
+        channel_name[CHANNEL_NAME_MAX_LENGTH - 1] = '\0'; // Ensure null termination
+
+        if (xTraceStringRegister(channel_name.data(), &connection_channel) != TRC_SUCCESS) {
+            return false;
+        }
+
+        xTracePrint(state_channel, "UNINITIALIZED");
+        xTracePrint(connection_channel, "UNKNOWN");
+
+        return true;
+    }
 };
