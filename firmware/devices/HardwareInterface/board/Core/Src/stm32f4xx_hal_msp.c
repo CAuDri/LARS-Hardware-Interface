@@ -23,6 +23,8 @@
 /* USER CODE BEGIN Includes */
 
 /* USER CODE END Includes */
+extern DMA_HandleTypeDef hdma_tim4_ch3;
+
 extern DMA_HandleTypeDef hdma_usart2_rx;
 
 extern DMA_HandleTypeDef hdma_usart2_tx;
@@ -506,6 +508,25 @@ void HAL_TIM_IC_MspInit(TIM_HandleTypeDef* htim_ic)
     GPIO_InitStruct.Alternate = GPIO_AF2_TIM4;
     HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
 
+    /* TIM4 DMA Init */
+    /* TIM4_CH3 Init */
+    hdma_tim4_ch3.Instance = DMA1_Stream7;
+    hdma_tim4_ch3.Init.Channel = DMA_CHANNEL_2;
+    hdma_tim4_ch3.Init.Direction = DMA_MEMORY_TO_PERIPH;
+    hdma_tim4_ch3.Init.PeriphInc = DMA_PINC_DISABLE;
+    hdma_tim4_ch3.Init.MemInc = DMA_MINC_ENABLE;
+    hdma_tim4_ch3.Init.PeriphDataAlignment = DMA_PDATAALIGN_HALFWORD;
+    hdma_tim4_ch3.Init.MemDataAlignment = DMA_MDATAALIGN_HALFWORD;
+    hdma_tim4_ch3.Init.Mode = DMA_NORMAL;
+    hdma_tim4_ch3.Init.Priority = DMA_PRIORITY_LOW;
+    hdma_tim4_ch3.Init.FIFOMode = DMA_FIFOMODE_DISABLE;
+    if (HAL_DMA_Init(&hdma_tim4_ch3) != HAL_OK)
+    {
+      Error_Handler();
+    }
+
+    __HAL_LINKDMA(htim_ic,hdma[TIM_DMA_ID_CC3],hdma_tim4_ch3);
+
     /* USER CODE BEGIN TIM4_MspInit 1 */
 
     /* USER CODE END TIM4_MspInit 1 */
@@ -634,6 +655,8 @@ void HAL_TIM_IC_MspDeInit(TIM_HandleTypeDef* htim_ic)
     */
     HAL_GPIO_DeInit(GPIOD, GPIO_PIN_12|GPIO_PIN_13|LED1_PWM_Pin|LED2_PWM_Pin);
 
+    /* TIM4 DMA DeInit */
+    HAL_DMA_DeInit(htim_ic->hdma[TIM_DMA_ID_CC3]);
     /* USER CODE BEGIN TIM4_MspDeInit 1 */
 
     /* USER CODE END TIM4_MspDeInit 1 */
