@@ -26,17 +26,38 @@ using namespace crsf;
     #define LogVerbose(...)
 #endif
 
+static constexpr uint32_t RC_CHANNEL_DATA_VALIDITY_MS = 100;  // Time in ms after which channel data is considered stale
+static constexpr uint32_t RC_STATISTICS_DATA_VALIDITY_MS = 1000;  // Time in ms after which statistics are considered stale
+
+static constexpr size_t RC_MAX_DROPPED_FRAMES = 20;  // Number of dropped frames before considering the link lost
+static constexpr size_t RC_MIN_GOOD_FRAMES = 5;  // Minimum number of consecutive  frames to consider the link restored
+
+static constexpr uint32_t RC_INITIAL_CONNECTION_TIMEOUT_MS = 30000;  // Maximum time to wait for the initial connection
+static constexpr uint32_t RC_RECONNECT_TIMEOUT_MS = 10000;  // Maximum time to wait for reconnection after a disconnect
+static constexpr uint32_t RC_MAX_DISCONNECT_ATTEMPTS = 3;  // Maximum number of reconnect attempts before entering ERROR state
+
+static constexpr uint32_t RC_MAX_MESSAGE_DELAY_FACTOR = 3;  // Factor of expected message interval to consider a message loss
+static constexpr size_t RC_MAX_UART_ERROR_COUNT = 250;  // Maximum number of UART errors before considering the link lost
+static constexpr uint32_t RC_UART_ERROR_VALIDITY_MS = 2000;  // Time after which the error count is reset
+
+static constexpr osPriority_t RC_DEFAULT_THREAD_PRIORITY = osPriorityHigh;  // Default thread priority for the receiver thread
+
+// Thread flags for notifying the receiver thread
+// Change if any conflicts arise
+static constexpr uint32_t RC_START_THREAD_FLAG = 0x01;
+static constexpr uint32_t RC_ERROR_THREAD_FLAG = 0x02;
+
 RCReceiver* RCReceiver::rx_callback_instance = nullptr;
 
 /**
  * @brief Construct a new RCReceiver object for later initialization
  */
-RCReceiver::RCReceiver() : Driver("rc_receiver") {}
+RCReceiver::RCReceiver() : Driver("RC Receiver") {}
 
 /**
  * @brief Construct a new RCReceiver object with the given configuration
  */
-RCReceiver::RCReceiver(const Config& config) : Driver("rc_receiver") { init(config); }
+RCReceiver::RCReceiver(const Config& config) : Driver("RC Receiver") { init(config); }
 
 /**
  * @brief Destruct the RCReceiver object and terminate the receiver thread
@@ -204,27 +225,50 @@ bool RCReceiver::waitForDisconnect(uint32_t timeout_ms) const {
  * The callback will be called whenever a new value is received for the specified channel.
  * If a callback is already registered for the channel, it will be overwritten.
  *
- * @param channel Channel number (0-15)
+ * @param channel Channel number (1-16)
  * @param callback Function pointer to the callback function
  * @param on_change If true, the callback will only be called when the channel value changes, otherwise it will be called on every update
  * @return true if the callback was registered successfully, false otherwise
  */
-bool RCReceiver::registerChannelCallback(size_t channel, ChannelCallback callback, bool on_change) {
-    if (channel >= channel_callbacks.size()) {
-        LogError("RC Receiver: Invalid channel number %zu for callback registration, max: %zu",
-                 channel,
-                 channel_callbacks.size() - 1);
+bool RCReceiver::registerSingleChannelCallback(size_t channel, SingleChannelCallback callback, bool on_change) {
+    // Channel is one-indexed for the user (1-16), since this is common in RC systems
+    if (channel == 0) {
+        LogError("RC Receiver: Invalid channel (0) for callback registration, valid range: 1-16");
         return false;
     }
+    if (channel > single_channel_callbacks.size()) {
+        LogError(
+            "RC Receiver: Invalid channel (%zu) for callback registration, max: %zu", channel, single_channel_callbacks.size());
+        return false;
+    }
+
     if (!callback) {
         LogError("RC Receiver: Callback function is null for channel %u", channel);
         return false;
     }
-    if (channel_callbacks[channel]) {
+    if (single_channel_callbacks[channel - 1]) {
         LogWarning("RC Receiver: Overwriting existing callback for channel %u", channel);
     }
-    channel_callbacks[channel] = callback;
-    callback_on_change[channel] = on_change;
+    single_channel_callbacks[channel - 1] = callback;
+    callback_on_change[channel - 1] = on_change;
+    return true;
+}
+
+/**
+ * @brief Register a callback function for all channels
+ *
+ * The callback will be called whenever new channel data is received.
+ * If a callback is already registered, it will be overwritten.
+ */
+bool RCReceiver::registerChannelCallback(ChannelCallback callback) {
+    if (!callback) {
+        LogError("RC Receiver: Channel callback function is null");
+        return false;
+    }
+    if (this->channel_callback) {
+        LogWarning("RC Receiver: Overwriting existing channel callback");
+    }
+    this->channel_callback = callback;
     return true;
 }
 
@@ -381,13 +425,17 @@ bool RCReceiver::handleReceivedMessage(crsf::ParseResult& result) {
                 break;
             }
 
+            // Invoke the all-channels callback if registered
+            if (channel_callback) {
+                channel_callback(channels);
+            }
             // Invoke registered callbacks for each channel
             for (size_t i = 0; i < channels.size(); ++i) {
-                if (channel_callbacks[i]) {
+                if (single_channel_callbacks[i]) {
                     if (callback_on_change[i] && channels[i] == channel_data[i]) {
                         continue;  // Skip callback if value hasn't changed
                     }
-                    channel_callbacks[i](channels[i]);
+                    single_channel_callbacks[i](channels[i]);
                 }
             }
 
@@ -557,7 +605,7 @@ void RCReceiver::receiverThread(void* arg) {
                     valid_frame_count = 0;
 
                     // Invalidate channel data
-                    channel_data.fill(0);  
+                    channel_data.fill(0);
                     channel_update_ms = 0;
                     break;
                 }
@@ -716,7 +764,7 @@ void RCReceiver::onReceive(uint16_t pos) {
 
 /**
  * @brief Static callback function for UART error events
- * 
+ *
  * Currently only used for debugging purposes since errors are handled in the receiver thread and will be detected due to missing frames.
  *
  * @note This implementation currently supports only a single instance of RCReceiver.

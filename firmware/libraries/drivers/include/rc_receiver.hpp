@@ -20,31 +20,8 @@
 #include "driver.hpp"
 #include "stm32f4xx_hal.h"
 
-
-constexpr uint32_t RC_CHANNEL_DATA_VALIDITY_MS = 100;      // Time in ms after which channel data is considered stale
-constexpr uint32_t RC_STATISTICS_DATA_VALIDITY_MS = 1000;  // Time in ms after which statistics are considered stale
-
-constexpr size_t RC_MAX_DROPPED_FRAMES = 20;  // Number of dropped frames before considering the link lost
-constexpr size_t RC_MIN_GOOD_FRAMES = 5;      // Minimum number of consecutive  frames to consider the link restored
-
-constexpr uint32_t RC_INITIAL_CONNECTION_TIMEOUT_MS = 30000;  // Maximum time to wait for the initial connection
-constexpr uint32_t RC_RECONNECT_TIMEOUT_MS = 10000;  // Maximum time to wait for reconnection after a disconnect
-constexpr uint32_t RC_MAX_DISCONNECT_ATTEMPTS = 3;   // Maximum number of reconnect attempts before entering ERROR state
-
-constexpr uint32_t RC_MAX_MESSAGE_DELAY_FACTOR = 3;  // Factor of expected message interval to consider a message loss
-
-constexpr size_t RC_MAX_UART_ERROR_COUNT = 250;       // Maximum number of UART errors before considering the link lost
-constexpr uint32_t RC_UART_ERROR_VALIDITY_MS = 2000;  // Time after which the error count is reset
-
-constexpr uint32_t RC_THREAD_STACK_SIZE = 1024;                      // Stack size for the receiver thread in bytes
-constexpr osPriority_t RC_DEFAULT_THREAD_PRIORITY = osPriorityHigh;  // Default thread priority for the receiver thread
-
-constexpr size_t RC_RX_QUEUE_LENGTH = 8;  // Max number of messages in the RX queue
-
-// Thread flags for notifying the receiver thread
-// Change if any conflicts arise
-constexpr uint32_t RC_START_THREAD_FLAG = 0x01;
-constexpr uint32_t RC_ERROR_THREAD_FLAG = 0x02;
+static constexpr uint32_t RC_THREAD_STACK_SIZE = 1024;  // Stack size for the receiver thread in bytes
+static constexpr size_t RC_RX_QUEUE_LENGTH = 8;         // Max number of messages in the RX queue
 
 /**
  * @brief Driver for communicating with an RC receiver using the CRSF protocol
@@ -68,9 +45,14 @@ class RCReceiver : public Driver {
     };
 
     /**
-     * @brief Callback type for channel updates
+     * @brief Callback type for single channel updates
      */
-    using ChannelCallback = CallbackWrapper<void(uint16_t)>;
+    using SingleChannelCallback = CallbackWrapper<void(uint16_t)>;
+
+    /**
+     * @brief Callback type for all channels
+     */
+    using ChannelCallback = CallbackWrapper<void(const crsf::ChannelData&)>;
 
     RCReceiver();
     explicit RCReceiver(const Config& config);
@@ -83,7 +65,8 @@ class RCReceiver : public Driver {
     bool waitForConnect(uint32_t timeout_ms = 0) const;
     bool waitForDisconnect(uint32_t timeout_ms = 0) const;
 
-    bool registerChannelCallback(size_t channel, ChannelCallback callback, bool on_change = true);
+    bool registerSingleChannelCallback(size_t channel, SingleChannelCallback callback, bool on_change = true);
+    bool registerChannelCallback(ChannelCallback callback);
     bool getChannelData(crsf::ChannelData& channels) const;
     bool getLinkStatistics(crsf::LinkStatistics& stats) const;
 
@@ -129,8 +112,9 @@ class RCReceiver : public Driver {
     crsf::LinkStatistics statistics{};  // Last received link statistics
     uint32_t statistics_update_ms = 0;  // Timestamp of the last statistics update
 
-    std::array<ChannelCallback, 16> channel_callbacks{};  // Callbacks for each of the 16 channels
-    std::array<bool, 16> callback_on_change{};            // Whether to call the callback only on value change
+    std::array<SingleChannelCallback, 16> single_channel_callbacks;  // Callbacks for each of the 16 channels
+    std::array<bool, 16> callback_on_change{};  // Whether to call the callback only on value change
+    ChannelCallback channel_callback;           // Callback for all channels
 
     uint32_t uart_error_code = 0;       // Last UART error code
     uint32_t last_error_timestamp = 0;  // Timestamp of the last UART/general error
