@@ -26,26 +26,26 @@ using namespace crsf;
     #define LogVerbose(...)
 #endif
 
-static constexpr uint32_t RC_CHANNEL_DATA_VALIDITY_MS = 100;  // Time in ms after which channel data is considered stale
-static constexpr uint32_t RC_STATISTICS_DATA_VALIDITY_MS = 1000;  // Time in ms after which statistics are considered stale
+static constexpr uint32_t CHANNEL_DATA_VALIDITY_MS = 100;  // Time in ms after which channel data is considered stale
+static constexpr uint32_t STATISTICS_DATA_VALIDITY_MS = 1000;  // Time in ms after which statistics are considered stale
 
-static constexpr size_t RC_MAX_DROPPED_FRAMES = 20;  // Number of dropped frames before considering the link lost
-static constexpr size_t RC_MIN_GOOD_FRAMES = 5;  // Minimum number of consecutive  frames to consider the link restored
+static constexpr size_t MAX_DROPPED_FRAMES = 20;  // Number of dropped frames before considering the link lost
+static constexpr size_t MIN_GOOD_FRAMES = 5;      // Minimum number of consecutive  frames to consider the link restored
 
-static constexpr uint32_t RC_INITIAL_CONNECTION_TIMEOUT_MS = 30000;  // Maximum time to wait for the initial connection
-static constexpr uint32_t RC_RECONNECT_TIMEOUT_MS = 10000;  // Maximum time to wait for reconnection after a disconnect
-static constexpr uint32_t RC_MAX_DISCONNECT_ATTEMPTS = 3;  // Maximum number of reconnect attempts before entering ERROR state
+static constexpr uint32_t INITIAL_CONNECTION_TIMEOUT_MS = 30000;  // Maximum time to wait for the initial connection
+static constexpr uint32_t RECONNECT_TIMEOUT_MS = 10000;  // Maximum time to wait for reconnection after a disconnect
+static constexpr uint32_t MAX_DISCONNECT_ATTEMPTS = 3;  // Maximum number of reconnect attempts before entering ERROR state
 
-static constexpr uint32_t RC_MAX_MESSAGE_DELAY_FACTOR = 3;  // Factor of expected message interval to consider a message loss
-static constexpr size_t RC_MAX_UART_ERROR_COUNT = 250;  // Maximum number of UART errors before considering the link lost
-static constexpr uint32_t RC_UART_ERROR_VALIDITY_MS = 2000;  // Time after which the error count is reset
+static constexpr uint32_t MAX_MESSAGE_DELAY_FACTOR = 3;  // Factor of expected message interval to consider a message loss
+static constexpr size_t MAX_UART_ERROR_COUNT = 250;  // Maximum number of UART errors before considering the link lost
+static constexpr uint32_t UART_ERROR_VALIDITY_MS = 2000;  // Time after which the error count is reset
 
-static constexpr osPriority_t RC_DEFAULT_THREAD_PRIORITY = osPriorityHigh;  // Default thread priority for the receiver thread
+static constexpr osPriority_t DEFAULT_THREAD_PRIORITY = osPriorityHigh;  // Default thread priority for the receiver thread
 
 // Thread flags for notifying the receiver thread
 // Change if any conflicts arise
-static constexpr uint32_t RC_START_THREAD_FLAG = 0x01;
-static constexpr uint32_t RC_ERROR_THREAD_FLAG = 0x02;
+static constexpr uint32_t START_THREAD_FLAG = 0x01;
+static constexpr uint32_t ERROR_THREAD_FLAG = 0x02;
 
 RCReceiver* RCReceiver::rx_callback_instance = nullptr;
 
@@ -174,7 +174,7 @@ bool RCReceiver::start() {
         return false;
     }
 
-    osThreadFlagsSet(receiver_thread, RC_START_THREAD_FLAG);
+    osThreadFlagsSet(receiver_thread, START_THREAD_FLAG);
     return true;
 }
 
@@ -284,8 +284,8 @@ bool RCReceiver::getChannelData(crsf::ChannelData& channels) const {
     if (state != State::RUNNING) {
         return false;
     }
-    if (osKernelGetTickCount() - channel_update_ms > RC_CHANNEL_DATA_VALIDITY_MS) {
-        LogWarning("RC Receiver: Channel data is older than %lu ms", RC_CHANNEL_DATA_VALIDITY_MS);
+    if (osKernelGetTickCount() - channel_update_ms > CHANNEL_DATA_VALIDITY_MS) {
+        LogWarning("RC Receiver: Channel data is older than %lu ms", CHANNEL_DATA_VALIDITY_MS);
         return false;
     }
     if (osMutexAcquire(channel_mutex, MUTEX_ACQUIRE_TIMEOUT_MS) != osOK) {
@@ -310,8 +310,8 @@ bool RCReceiver::getLinkStatistics(crsf::LinkStatistics& stats) const {
     if (state != State::RUNNING) {
         return false;
     }
-    if (osKernelGetTickCount() - statistics_update_ms > RC_STATISTICS_DATA_VALIDITY_MS) {
-        LogWarning("RC Receiver: Link statistics data is older than %lu ms", RC_STATISTICS_DATA_VALIDITY_MS);
+    if (osKernelGetTickCount() - statistics_update_ms > STATISTICS_DATA_VALIDITY_MS) {
+        LogWarning("RC Receiver: Link statistics data is older than %lu ms", STATISTICS_DATA_VALIDITY_MS);
         return false;
     }
     stats = statistics;
@@ -483,8 +483,8 @@ bool RCReceiver::handleReceivedMessage(crsf::ParseResult& result) {
  */
 void RCReceiver::receiverThread(void* arg) {
     // Wait for the start signal from the main application
-    uint32_t flags = osThreadFlagsWait(RC_START_THREAD_FLAG, osFlagsWaitAny, osWaitForever);
-    if (!(flags & RC_START_THREAD_FLAG) || (flags & osFlagsError)) {
+    uint32_t flags = osThreadFlagsWait(START_THREAD_FLAG, osFlagsWaitAny, osWaitForever);
+    if (!(flags & START_THREAD_FLAG) || (flags & osFlagsError)) {
         LogError("RC Receiver: Error starting receiver thread, flags: 0x%08lX", flags);
         setState(State::ERROR);
         osDelay(osWaitForever);
@@ -497,7 +497,7 @@ void RCReceiver::receiverThread(void* arg) {
     // Some receivers may send some initial frames on power-up, we will wait a bit to avoid false timeouts
     osDelay(1000);
 
-    const uint32_t MESSAGE_TIMEOUT_MS = expected_message_interval_ms * RC_MAX_MESSAGE_DELAY_FACTOR;
+    const uint32_t MESSAGE_TIMEOUT_MS = expected_message_interval_ms * MAX_MESSAGE_DELAY_FACTOR;
 
     uint32_t missed_frame_count = 0;
     uint32_t valid_frame_count = 0;
@@ -513,10 +513,10 @@ void RCReceiver::receiverThread(void* arg) {
         }
 
         uint32_t flags = osThreadFlagsGet();
-        if (flags & RC_ERROR_THREAD_FLAG) {
+        if (flags & ERROR_THREAD_FLAG) {
             LogWarning("RC Receiver: Error flag set in receiver thread)");
             // TODO: Find out if UART error handling is needed here
-            osThreadFlagsClear(RC_ERROR_THREAD_FLAG);
+            osThreadFlagsClear(ERROR_THREAD_FLAG);
         }
 
         RXQueueMessage rx_message;
@@ -525,9 +525,9 @@ void RCReceiver::receiverThread(void* arg) {
 
         switch (connection_state) {
             case ConnectionState::UNKNOWN:  // Initial connection attempt, wait for any valid frame to be received
-                status = osMessageQueueGet(rx_queue, &rx_message, nullptr, RC_INITIAL_CONNECTION_TIMEOUT_MS);
+                status = osMessageQueueGet(rx_queue, &rx_message, nullptr, INITIAL_CONNECTION_TIMEOUT_MS);
                 if (status == osErrorTimeout) {
-                    LogError("RC Receiver: Initial connection timeout after %lu ms, shutting down", RC_INITIAL_CONNECTION_TIMEOUT_MS);
+                    LogError("RC Receiver: Initial connection timeout after %lu ms, shutting down", INITIAL_CONNECTION_TIMEOUT_MS);
                     setConnectionState(ConnectionState::DISCONNECTED);
                     setState(State::ERROR);
                     continue;
@@ -555,7 +555,7 @@ void RCReceiver::receiverThread(void* arg) {
                 break;
 
             case ConnectionState::CONNECTING:  // No messages will be handled until a stable connection is established
-                if (missed_frame_count >= RC_MAX_DROPPED_FRAMES) {
+                if (missed_frame_count >= MAX_DROPPED_FRAMES) {
                     LogWarning("RC Receiver: Missed too many frames during connection attempt");
                     missed_frame_count = 0;
                     valid_frame_count = 0;
@@ -567,7 +567,7 @@ void RCReceiver::receiverThread(void* arg) {
                 if (status == osErrorTimeout) {
                     missed_frame_count++;
                     valid_frame_count = 0;
-                    LogVerbose("RC Receiver: Timeout waiting for frame while connecting (%lu/%u)", missed_frame_count, RC_MAX_DROPPED_FRAMES);
+                    LogVerbose("RC Receiver: Timeout waiting for frame while connecting (%lu/%u)", missed_frame_count, MAX_DROPPED_FRAMES);
                     break;
                 } else if (status != osOK) {
                     missed_frame_count++;
@@ -579,13 +579,13 @@ void RCReceiver::receiverThread(void* arg) {
                 if (!parseFrame(rx_message.data, rx_message.size, result)) {
                     missed_frame_count++;
                     valid_frame_count = 0;
-                    LogVerbose("RC Receiver: Failed to parse frame during connection attempt (%lu/%u)", missed_frame_count, RC_MAX_DROPPED_FRAMES);
+                    LogVerbose("RC Receiver: Failed to parse frame during connection attempt (%lu/%u)", missed_frame_count, MAX_DROPPED_FRAMES);
                     break;
                 }
 
                 // The missed frame count will not be reset, to avoid endless connection attempts if the link is bad
                 valid_frame_count++;
-                if (valid_frame_count >= RC_MIN_GOOD_FRAMES) {
+                if (valid_frame_count >= MIN_GOOD_FRAMES) {
                     LogSuccess("RC Receiver: Connection established");
                     setConnectionState(ConnectionState::CONNECTED);
                     publishConnectionState(true);
@@ -595,7 +595,7 @@ void RCReceiver::receiverThread(void* arg) {
                 break;
 
             case ConnectionState::CONNECTED:  // Normal operation, process incoming frames and monitor connection state
-                if (missed_frame_count >= RC_MAX_DROPPED_FRAMES) {
+                if (missed_frame_count >= MAX_DROPPED_FRAMES) {
                     // The transceiver has probably gone out of range or powered off
                     // We will notify the rest of the system and try to reconnect
                     LogWarning("RC Receiver: Missed too many frames, considering link lost");
@@ -613,7 +613,7 @@ void RCReceiver::receiverThread(void* arg) {
                 status = osMessageQueueGet(rx_queue, &rx_message, nullptr, MESSAGE_TIMEOUT_MS);
                 if (status == osErrorTimeout) {
                     missed_frame_count++;
-                    LogVerbose("RC Receiver: Timeout waiting for frame (%lu/%u)", missed_frame_count, RC_MAX_DROPPED_FRAMES);
+                    LogVerbose("RC Receiver: Timeout waiting for frame (%lu/%u)", missed_frame_count, MAX_DROPPED_FRAMES);
                     break;
                 } else if (status != osOK) {
                     missed_frame_count++;
@@ -623,7 +623,7 @@ void RCReceiver::receiverThread(void* arg) {
 
                 if (!parseFrame(rx_message.data, rx_message.size, result)) {
                     missed_frame_count++;
-                    LogVerbose("RC Receiver: Failed to parse frame (%lu/%u)", missed_frame_count, RC_MAX_DROPPED_FRAMES);
+                    LogVerbose("RC Receiver: Failed to parse frame (%lu/%u)", missed_frame_count, MAX_DROPPED_FRAMES);
                     break;
                 }
 
@@ -637,26 +637,26 @@ void RCReceiver::receiverThread(void* arg) {
 
             case ConnectionState::DISCONNECTED:  // Connection lost, one last reconnect will be attempted before entering the ERROR state
                 // To prevent endless reconnect attempts the total number of disconnects is limited
-                if (disconnect_count >= RC_MAX_DISCONNECT_ATTEMPTS) {
-                    LogError("RC Receiver: Maximum reconnect attempts reached (%lu), shutting down", RC_MAX_DISCONNECT_ATTEMPTS);
+                if (disconnect_count >= MAX_DISCONNECT_ATTEMPTS) {
+                    LogError("RC Receiver: Maximum reconnect attempts reached (%lu), shutting down", MAX_DISCONNECT_ATTEMPTS);
                     setState(State::ERROR);
                     continue;
                 }
                 if (disconnect_timestamp == 0) {  // First attempt after disconnect
                     disconnect_timestamp = osKernelGetTickCount();
                     LogWarning("RC Receiver: Trying to reconnect to the transmitter...");
-                } else if ((osKernelGetTickCount() - disconnect_timestamp) >= RC_RECONNECT_TIMEOUT_MS) {
+                } else if ((osKernelGetTickCount() - disconnect_timestamp) >= RECONNECT_TIMEOUT_MS) {
                     LogError(
                         "RC Receiver: Reconnect timeout after %lu ms with multiple invalid frames received, shutting "
                         "down",
-                        RC_RECONNECT_TIMEOUT_MS);
+                        RECONNECT_TIMEOUT_MS);
                     setState(State::ERROR);
                     continue;
                 }
 
-                status = osMessageQueueGet(rx_queue, &rx_message, nullptr, RC_RECONNECT_TIMEOUT_MS);
+                status = osMessageQueueGet(rx_queue, &rx_message, nullptr, RECONNECT_TIMEOUT_MS);
                 if (status == osErrorTimeout) {
-                    LogError("RC Receiver: Reconnect was unsuccessful after %lu ms, shutting down", RC_RECONNECT_TIMEOUT_MS);
+                    LogError("RC Receiver: Reconnect was unsuccessful after %lu ms, shutting down", RECONNECT_TIMEOUT_MS);
                     setState(State::ERROR);
                     continue;
                 } else if (status != osOK) {
@@ -783,7 +783,7 @@ void RCReceiver::errorCallback(UART_HandleTypeDef* huart) {
     uint32_t error = huart->ErrorCode;
     uint32_t current_time = osKernelGetTickCount();
 
-    if (current_time - instance->last_error_timestamp > RC_UART_ERROR_VALIDITY_MS) {
+    if (current_time - instance->last_error_timestamp > UART_ERROR_VALIDITY_MS) {
         // Reset error count if last error was too long ago
         instance->error_count = 0;
     }
@@ -792,9 +792,9 @@ void RCReceiver::errorCallback(UART_HandleTypeDef* huart) {
     instance->error_count++;
 
     // If more than RC_MAX_UART_ERROR_COUNT errors have occurred, within RC_UART_ERROR_VALIDITY_MS of each other, raise the error flag
-    if (instance->error_count >= RC_MAX_UART_ERROR_COUNT) {
+    if (instance->error_count >= MAX_UART_ERROR_COUNT) {
         LogWarning("RC Receiver: Too many UART errors, raising error flag");
-        osThreadFlagsSet(instance->receiver_thread, RC_ERROR_THREAD_FLAG);
+        osThreadFlagsSet(instance->receiver_thread, ERROR_THREAD_FLAG);
         instance->error_count = 0;  // Reset error count after raising the flag
     }
 
