@@ -1,0 +1,85 @@
+/**
+ * @file drive_controller.hpp
+ *
+ * @brief Drive controller node for handling drive commands and modes.
+ */
+#pragma once
+
+#include "cmsis_os.h"
+#include "rc_receiver.hpp"
+#include "servo.hpp"
+#include "trcRecorder.h"
+#include "vesc.hpp"
+
+constexpr size_t DRIVE_CONTROLLER_THREAD_STACK_SIZE = 1024;
+
+enum class NodeState { UNINITIALIZED, INITIALIZING, RUNNING, ERROR };
+
+class DriveController {
+   public:
+   /**
+    * @brief Possible drive modes for the vehicle
+    * 
+    * @param IDLE The vehicle is idle and not responding to commands
+    * @param MANUAL The vehicle is under manual control via RC receiver
+    * @param AUTONOMOUS The vehicle is under autonomous control
+    * @param MANDATORY_STOP The vehicle is executing a mandatory stop procedure
+    * @param EMERGENCY_STOP The vehicle is executing an emergency stop procedure
+    */
+    enum class DriveMode { IDLE, MANUAL, AUTONOMOUS, MANDATORY_STOP, EMERGENCY_STOP };
+
+    struct Config {
+        crsf::Channel throttle_channel = crsf::INVALID_CHANNEL;
+        crsf::Channel steering_channel = crsf::INVALID_CHANNEL;
+        // crsf::Channel deadman_switch_channel = crsf::INVALID_CHANNEL;
+        crsf::Channel mode_switch_channel = crsf::INVALID_CHANNEL;
+
+        osPriority_t thread_priority = osPriorityNormal;
+    };
+
+    DriveController();
+    DriveController(const Config& config, RCReceiver& rc_receiver, VESC& vesc, Servo& servo);
+    ~DriveController();
+
+    bool init(const Config& config, RCReceiver& rc_receiver, VESC& vesc, Servo& servo);
+    bool start();
+    bool restart();
+
+    bool changeDriveMode(DriveMode mode);
+    DriveMode getDriveMode() { return current_drive_mode; }
+
+    void emergencyStop();
+
+   private:
+    NodeState state = NodeState::UNINITIALIZED;
+    DriveMode current_drive_mode = DriveMode::IDLE;
+
+    const Config* config = nullptr;
+
+    RCReceiver* rc_receiver = nullptr;
+    VESC* vesc = nullptr;
+    Servo* servo = nullptr;
+
+    RCReceiver::ChannelCallback rc_callback;
+    uint32_t last_rc_update_timestamp = 0;
+
+    osThreadId_t controller_thread = nullptr;
+    osThreadAttr_t thread_attributes{};
+    StaticTask_t thread_control_block{};
+    uint32_t thread_stack[DRIVE_CONTROLLER_THREAD_STACK_SIZE]{};
+
+    TraceStringHandle_t drive_mode_channel = nullptr;
+
+    bool setState(NodeState new_state);
+    void setDriveMode(DriveMode mode);
+
+    void stopVehicle();
+    bool handleEmergencyStop();
+    bool handleModeSwitch(uint16_t channel_value);
+    bool handleThrottle(uint16_t channel_value);
+    bool handleSteering(uint16_t channel_value);
+
+    void controllerThread(void* argument);
+
+    void remoteControlCallback(const crsf::ChannelData& channels);
+};
