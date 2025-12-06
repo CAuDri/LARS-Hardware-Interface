@@ -627,6 +627,14 @@ static void Get_SerialNum(void)
   uint32_t deviceserial1;
   uint32_t deviceserial2;
 
+  /* USER CODE BEGIN Get_SerialNum */
+
+  deviceserial0 = *(uint32_t *)DEVICE_ID1;
+  deviceserial1 = *(uint32_t *)DEVICE_ID2;
+  deviceserial2 = *(uint32_t *)DEVICE_ID3;
+
+  /* USER CODE END Get_SerialNum */
+
   deviceserial0 += deviceserial2;
 
   if (deviceserial0 != 0)
