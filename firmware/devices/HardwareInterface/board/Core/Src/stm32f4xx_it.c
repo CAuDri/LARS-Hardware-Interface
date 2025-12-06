@@ -52,6 +52,35 @@
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
+/**
+ * CAuDri - Macros and register definitions for fault handling and debugging
+ */
+#define HALT_IF_DEBUGGING()                                 \
+  do {                                                      \
+    if (CoreDebug->DHCSR & CoreDebug_DHCSR_C_DEBUGEN_Msk) { \
+      __asm volatile("bkpt 1");                             \
+    }                                                       \
+  } while (0)
+
+// Register addresses for system fault registers
+#define SCB_HFSR *((volatile uint32_t*)0xE000ED2C)
+#define SCB_CFSR *((volatile uint32_t*)0xE000ED28)
+#define SCB_MMFAR *((volatile uint32_t*)0xE000ED34)
+#define SCB_BFAR *((volatile uint32_t*)0xE000ED38)
+
+typedef struct __attribute__((packed)) ContextStateFrame {
+  uint32_t r0;
+  uint32_t r1;
+  uint32_t r2;
+  uint32_t r3;
+  uint32_t r12;
+  uint32_t lr;
+  uint32_t return_address;
+  uint32_t xpsr;
+} sContextStateFrame;
+
+__attribute__((optimize("O0"))) void show_context_state(sContextStateFrame* frame);
+
 /* USER CODE END 0 */
 
 /* External variables --------------------------------------------------------*/
@@ -99,9 +128,21 @@ void NMI_Handler(void)
 void HardFault_Handler(void)
 {
   /* USER CODE BEGIN HardFault_IRQn 0 */
-  HAL_GPIO_WritePin(DEBUG_LED_RED_GPIO_Port, DEBUG_LED_RED_Pin, GPIO_PIN_SET);
-  HAL_GPIO_WritePin(DEBUG_LED_GREEN_GPIO_Port, DEBUG_LED_GREEN_Pin, GPIO_PIN_SET);
-  HAL_GPIO_WritePin(DEBUG_LED_BLUE_GPIO_Port, DEBUG_LED_BLUE_Pin, GPIO_PIN_SET);
+
+  /**
+   * @brief CAuDri - This inline assembly retrieves the correct stack pointer
+   * and branches to the show_context_state function to display the fault context.
+   * 
+   * Bit 2 of the LR register (EXC_RETURN) indicates which stack pointer was in use:
+   * - If bit 2 is 0, the Main Stack Pointer (MSP) was in use.
+   * - If bit 2 is 1, the Process Stack Pointer (PSP) was in use.
+   */
+  __asm volatile(
+      "tst lr, #4 \n"
+      "ite eq \n"
+      "mrseq r0, msp \n"
+      "mrsne r0, psp \n"
+      "b show_context_state \n");
 
   /* USER CODE END HardFault_IRQn 0 */
   while (1)
@@ -551,5 +592,75 @@ void OTG_HS_IRQHandler(void)
 }
 
 /* USER CODE BEGIN 1 */
+
+/**
+ * @brief CAuDri - This function is called from the HardFault_Handler
+ * It is passed the stack pointer that was in use when the hard fault occurred
+ * Using a debugger, we can inspect the stack contents to see what caused the hard fault
+ */
+__attribute__((optimize("O0"))) void show_context_state(sContextStateFrame* frame) {
+  // Turn on all LEDs to indicate a hard fault
+  HAL_GPIO_WritePin(DEBUG_LED_RED_GPIO_Port, DEBUG_LED_RED_Pin, GPIO_PIN_SET);
+  HAL_GPIO_WritePin(DEBUG_LED_GREEN_GPIO_Port, DEBUG_LED_GREEN_Pin, GPIO_PIN_SET);
+  HAL_GPIO_WritePin(DEBUG_LED_BLUE_GPIO_Port, DEBUG_LED_BLUE_Pin, GPIO_PIN_SET);
+
+  // Print a message to the console
+  // The __io_putchar() implementation for printf() may not use interrupts, to be used in a fault handler
+
+  printf("\n\n\x1B[31m"); // Red text
+  printf(" ****************** HARD FAULT ******************\n\n");
+  printf("Whoopsie! You've triggered a hard fault!\n");
+  printf("Time to panic? Probably! \n\n");
+
+  printf("Most common reasons why this could have happened:\n");
+  printf("   - Dereferencing a NULL pointer\n");
+  printf("   - Accessing an invalid memory location, i.e.:\n");
+  printf("       - An uninitialized pointer\n");
+  printf("       - An array out of bounds\n");
+  printf("       - A buffer overflow\n");
+  printf("       - A stack overflow\n");
+  printf("   - Accessing an uninitialized peripheral\n");
+
+  printf("\nWant to know the actual reason? There you go:\n\n");
+
+  printf(" --- Context State ---\n");
+  printf("R0   = 0x%08lX\n", frame->r0);
+  printf("R1   = 0x%08lX\n", frame->r1);
+  printf("R2   = 0x%08lX\n", frame->r2);
+  printf("R3   = 0x%08lX\n", frame->r3);
+  printf("R12  = 0x%08lX\n", frame->r12);
+  printf("LR   = 0x%08lX [Link Register]\n", frame->lr);
+  printf("PC   = 0x%08lX [Program Counter]\n", frame->return_address);
+  printf("xPSR = 0x%08lX [Program Status Register]\n", frame->xpsr);
+
+  printf("\n --- Fault Status Registers ---\n");
+  printf("HFSR = 0x%08lX", SCB_HFSR);
+  if (SCB_HFSR & (1 << 30)) {
+    printf("  (-> Forced Hard Fault)\n");
+  }
+
+  printf("CFSR = 0x%08lX", SCB_CFSR);
+  if (SCB_CFSR & 0xFFFF0000) {
+    printf("  (-> Bus Fault)\n");
+  } else if (SCB_CFSR & 0xFF00) {
+    printf("  (-> Usage Fault)\n");
+  } else if (SCB_CFSR & 0xFF) {
+    printf("  (-> Memory Management Fault)\n");
+  }
+  if (SCB_CFSR & (1 << 7)) {
+    printf("\nMMFAR = 0x%08lX\n", SCB_MMFAR);
+  }
+  if (SCB_CFSR & (1 << 15)) {
+    printf("\nBFAR = 0x%08lX\n", SCB_BFAR);
+  }
+
+  printf("\nYour best bet now is to connect a debugger \nand inspect the stack to find the root cause.\n");
+  printf("\x1B[0m"); // Reset text color
+
+  // If a debugger is attached, execute a breakpoint instruction so you can take a look at what triggered the fault
+  HALT_IF_DEBUGGING();
+
+  return;
+}
 
 /* USER CODE END 1 */
