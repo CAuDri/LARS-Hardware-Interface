@@ -12,7 +12,7 @@
 
 #include "logger.h"
 
-static constexpr uint32_t THREAD_TRANSMIT_TIMEOUT_MS = 10;
+static constexpr uint32_t THREAD_TRANSMIT_TIMEOUT_MS = 10; // Maximum timeout for transmitting the LED data
 
 static constexpr uint32_t TX_PERIOD_FULL_NS = 1250;  // Full bit period in nanoseconds
 static constexpr uint32_t TX_HIGH_TIME_0_NS = 350;   // High time for a '0' bit in nanoseconds
