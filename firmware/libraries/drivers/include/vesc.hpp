@@ -56,6 +56,8 @@ class VESC : public Driver {
     bool init(const Config& config);
     bool start();
 
+    const Config& getConfig() const { return config; }
+
     bool setDutyCycle(float duty_cycle);
     bool setRPM(int32_t rpm);
     bool setCurrent(float current_a);
@@ -72,6 +74,9 @@ class VESC : public Driver {
     float getFETTemp() const;
     float getConsumedAmpHours() const;
 
+    // TODO: Temp
+    vesc::Status* getRawStatus() { return &vesc_status; }
+
    private:
     Config config;
 
@@ -86,6 +91,8 @@ class VESC : public Driver {
     vesc::Status vesc_status{};
     std::array<uint32_t, 6> vesc_status_timestamps{};
 
+    static std::array<VESC*, 28> filter_bank_map;  // Map of CAN filter banks to VESC instances
+
     bool setConfig(const Config& config);
     bool initCAN();
     bool setCANMessageFilter();
@@ -97,5 +104,5 @@ class VESC : public Driver {
 
     void vescThread(void* argument);
 
-    void receiveCallback(const CAN_RxHeaderTypeDef* header, const uint8_t* data);
+    static void receiveCallback(CAN_RxHeaderTypeDef header, uint8_t* data);
 };

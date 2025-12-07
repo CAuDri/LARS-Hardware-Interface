@@ -7,7 +7,9 @@
  * https://vesc-project.com/sites/default/files/imce/u15301/VESC6_CAN_CommandsTelemetry.pdf
  * and the STM32F4 UART driver implementation:
  * https://github.com/vedderb/bldc_uart_comm_stm32f4_discovery
- *
+ * VESC communication protocol documentation:
+ * https://github.com/vedderb/bldc/blob/master/documentation/comm_can.md
+ * 
  */
 #pragma once
 

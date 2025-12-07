@@ -2,6 +2,7 @@
  * @file vesc.cpp
  *
  * @brief CAuDri - VESC Driver Implementation
+ *
  */
 #include "vesc.hpp"
 
@@ -15,6 +16,9 @@
 #else
     #define LogVerbose(...)
 #endif
+
+// Initialize static filter bank map
+std::array<VESC*, 28> VESC::filter_bank_map = {nullptr};
 
 /**
  * @brief Construct a new VESC driver object for static initialization
@@ -106,18 +110,12 @@ bool VESC::setConfig(const Config& config) {
     }
 
     if (config.max_duty_cycle < 0.0f || config.max_duty_cycle > VESC_MAX_DUTY_CYCLE) {
-        LogError("%s: Configured max duty cycle (%.2f) exceeds allowable limit (%.2f)",
-                 getName(),
-                 config.max_duty_cycle,
-                 VESC_MAX_DUTY_CYCLE);
+        LogError("%s: Configured max duty cycle (%.2f) exceeds allowable limit (%.2f)", getName(), config.max_duty_cycle, VESC_MAX_DUTY_CYCLE);
         return false;
     }
 
     if (config.current_limit < 0.0f || config.current_limit > VESC_MAX_CURRENT_LIMIT) {
-        LogError("%s: Configured current limit (%.2f A) exceeds allowable limit (%.2f A)",
-                 getName(),
-                 config.current_limit,
-                 VESC_MAX_CURRENT_LIMIT);
+        LogError("%s: Configured current limit (%.2f A) exceeds allowable limit (%.2f A)", getName(), config.current_limit, VESC_MAX_CURRENT_LIMIT);
         return false;
     }
 
@@ -145,11 +143,15 @@ bool VESC::initCAN() {
         return false;
     }
 
-    // Register the receive callback for the allocated filter bank
-    receive_callback.from<VESC, &VESC::receiveCallback>(this);
-    CAN_RxCallback_t receive_callback_handle = (CAN_RxCallback_t)(receive_callback.c_callback());
+    // For each VESC instance, a static map of filter banks to VESC objects is used
+    // to route incoming messages to the correct instance
+    if (filter_bank_map[can_filter_bank] != nullptr) {
+        LogError("%s: CAN filter bank %u already assigned to another VESC instance", getName(), can_filter_bank);
+        return false;
+    }
+    filter_bank_map[can_filter_bank] = this;
 
-    if (CAN_RegisterRxCallback(config.hcan, can_filter_bank, receive_callback_handle) != HAL_OK) {
+    if (CAN_RegisterRxCallback(config.hcan, can_filter_bank, &VESC::receiveCallback) != HAL_OK) {
         LogError("%s: Failed to register RX callback for CAN filter bank %u", getName(), can_filter_bank);
         return false;
     }
@@ -179,10 +181,6 @@ bool VESC::setCANMessageFilter() {
     // They are located at bits [10:3] in the 32-bit words used for filtering
     filter_id = ((static_cast<uint32_t>(config.vesc_id) & 0xFF) << 3);
     filter_mask = (0xFF << 3);  // Masked pins will be compared, unmasked pins are wildcards
-
-    // We only want to accept extended IDs (IDE = 1)
-    filter_id |= (1 << 1);
-    filter_mask |= (1 << 1);
 
     CAN_FilterTypeDef can_filter{};
 
@@ -265,13 +263,9 @@ bool VESC::sendMessage(uint8_t vesc_id, vesc::PacketID packet_id, const uint8_t*
     tx_header.TransmitGlobalTime = DISABLE;
 
     uint32_t tx_mailbox;
-    HAL_StatusTypeDef status =
-        CAN_AddTxMessage(config.hcan, &tx_header, const_cast<uint8_t*>(data), &tx_mailbox);
+    HAL_StatusTypeDef status = CAN_AddTxMessage(config.hcan, &tx_header, const_cast<uint8_t*>(data), &tx_mailbox);
     if (status != HAL_OK) {
-        LogWarning("%s: Failed to send CAN message (ID: 0x%08lX), status: %d",
-                 getName(),
-                 extended_id,
-                 static_cast<int>(status));
+        LogWarning("%s: Failed to send CAN message (ID: 0x%08lX), status: %d", getName(), extended_id, static_cast<int>(status));
         return false;
     }
 
@@ -306,10 +300,7 @@ bool VESC::parseReceivedMessage(const CAN_RxHeaderTypeDef* header, const uint8_t
                header->DLC);
 
     if (vesc_id != config.vesc_id) {
-        LogWarning("%s: Received message from VESC ID %u, but configured for ID %u",
-                   getName(),
-                   vesc_id,
-                   config.vesc_id);
+        LogWarning("%s: Received message from VESC ID %u, but configured for ID %u", getName(), vesc_id, config.vesc_id);
         return false;
     }
 
@@ -380,16 +371,85 @@ bool VESC::handleStatusPacket(const uint8_t* data, uint16_t length, uint8_t stat
             }
             // Amp-hours consumed: uint32_t (4 bytes) scaled by 10000
             // Amp-hours charged: uint32_t (4 bytes) scaled by 10000
-            uint32_t amp_hours_consumed =
-                (static_cast<uint32_t>(data[0]) << 24) | (static_cast<uint32_t>(data[1]) << 16) |
-                (static_cast<uint32_t>(data[2]) << 8) | static_cast<uint32_t>(data[3]);
-            uint32_t amp_hours_charged =
-                (static_cast<uint32_t>(data[4]) << 24) | (static_cast<uint32_t>(data[5]) << 16) |
-                (static_cast<uint32_t>(data[6]) << 8) | static_cast<uint32_t>(data[7]);
+            uint32_t amp_hours_consumed = (static_cast<uint32_t>(data[0]) << 24) | (static_cast<uint32_t>(data[1]) << 16) |
+                                          (static_cast<uint32_t>(data[2]) << 8) | static_cast<uint32_t>(data[3]);
+            uint32_t amp_hours_charged = (static_cast<uint32_t>(data[4]) << 24) | (static_cast<uint32_t>(data[5]) << 16) |
+                                         (static_cast<uint32_t>(data[6]) << 8) | static_cast<uint32_t>(data[7]);
 
             vesc_status.status2.amp_hours = static_cast<float>(amp_hours_consumed) / 10000.0f;
             vesc_status.status2.amp_hours_charged = static_cast<float>(amp_hours_charged) / 10000.0f;
             vesc_status_timestamps[1] = osKernelGetTickCount();
+            break;
+        }
+        case 3: {
+            if (length < 8) {
+                LogDebug("%s: Status packet 3 length %u is less than expected 8 bytes", getName(), length);
+                return false;
+            }
+            // Watt-hours consumed: uint32_t (4 bytes) scaled by 10000
+            // Watt-hours charged: uint32_t (4 bytes) scaled by 10000
+            uint32_t watt_hours_consumed = (static_cast<uint32_t>(data[0]) << 24) | (static_cast<uint32_t>(data[1]) << 16) |
+                                           (static_cast<uint32_t>(data[2]) << 8) | static_cast<uint32_t>(data[3]);
+            uint32_t watt_hours_charged = (static_cast<uint32_t>(data[4]) << 24) | (static_cast<uint32_t>(data[5]) << 16) |
+                                          (static_cast<uint32_t>(data[6]) << 8) | static_cast<uint32_t>(data[7]);
+            vesc_status.status3.watt_hours = static_cast<float>(watt_hours_consumed) / 10000.0f;
+            vesc_status.status3.watt_hours_charged = static_cast<float>(watt_hours_charged) / 10000.0f;
+            vesc_status_timestamps[2] = osKernelGetTickCount();
+            break;
+        }
+        case 4: {
+            if (length < 8) {
+                LogDebug("%s: Status packet 4 length %u is less than expected 8 bytes", getName(), length);
+                return false;
+            }
+            // Temperature FET: int16_t (2 bytes) scaled by 10
+            // Temperature motor: int16_t (2 bytes) scaled by 10
+            // Input current: int16_t (2 bytes) scaled by 10
+            // PID position: int16_t (2 bytes) scaled by 50
+            int16_t temp_fet = (static_cast<int16_t>(data[0]) << 8) | static_cast<int16_t>(data[1]);
+            int16_t temp_motor = (static_cast<int16_t>(data[2]) << 8) | static_cast<int16_t>(data[3]);
+            int16_t current_in = (static_cast<int16_t>(data[4]) << 8) | static_cast<int16_t>(data[5]);
+            int16_t pid_pos_now = (static_cast<int16_t>(data[6]) << 8) | static_cast<int16_t>(data[7]);
+            vesc_status.status4.temp_fet = static_cast<float>(temp_fet) / 10.0f;
+            vesc_status.status4.temp_motor = static_cast<float>(temp_motor) / 10.0f;
+            vesc_status.status4.current_in = static_cast<float>(current_in) / 10.0f;
+            vesc_status.status4.pid_pos_now = static_cast<float>(pid_pos_now) / 50.0f;
+            vesc_status_timestamps[3] = osKernelGetTickCount();
+            break;
+        }
+        case 5: {
+            if (length < 6) {
+                LogDebug("%s: Status packet 5 length %u is less than expected 6 bytes", getName(), length);
+                return false;
+            }
+            // Tacho value: int32_t (4 bytes) scaled by 6
+            // Input voltage: uint16_t (2 bytes) scaled by 10
+            int32_t tacho_value = (static_cast<int32_t>(data[0]) << 24) | (static_cast<int32_t>(data[1]) << 16) |
+                                  (static_cast<int32_t>(data[2]) << 8) | static_cast<int32_t>(data[3]);
+            uint16_t input_voltage = (static_cast<uint16_t>(data[4]) << 8) | static_cast<uint16_t>(data[5]);
+            vesc_status.status5.tacho_value = static_cast<float>(tacho_value) / 6.0f;
+            vesc_status.status5.v_in = static_cast<float>(input_voltage) / 10.0f;
+            vesc_status_timestamps[4] = osKernelGetTickCount();
+            break;
+        }
+        case 6: {
+            if (length < 8) {
+                LogDebug("%s: Status packet 6 length %u is less than expected 8 bytes", getName(), length);
+                return false;
+            }
+            // ADC 1: uint16_t (2 bytes) scaled by 1000
+            // ADC 2: uint16_t (2 bytes) scaled by 1000
+            // ADC 3: uint16_t (2 bytes) scaled by 1000
+            // PPM: uint16_t (2 bytes) scaled by 1000
+            uint16_t adc_1 = (static_cast<uint16_t>(data[0]) << 8) | static_cast<uint16_t>(data[1]);
+            uint16_t adc_2 = (static_cast<uint16_t>(data[2]) << 8) | static_cast<uint16_t>(data[3]);
+            uint16_t adc_3 = (static_cast<uint16_t>(data[4]) << 8) | static_cast<uint16_t>(data[5]);
+            uint16_t ppm = (static_cast<uint16_t>(data[6]) << 8) | static_cast<uint16_t>(data[7]);
+            vesc_status.status6.adc_1 = static_cast<float>(adc_1) / 1000.0f;
+            vesc_status.status6.adc_2 = static_cast<float>(adc_2) / 1000.0f;
+            vesc_status.status6.adc_3 = static_cast<float>(adc_3) / 1000.0f;
+            vesc_status.status6.ppm = static_cast<float>(ppm) / 1000.0f;
+            vesc_status_timestamps[5] = osKernelGetTickCount();
             break;
         }
         default:
@@ -503,7 +563,7 @@ bool VESC::setCurrent(float current) {
 
 /**
  * @brief Thread function for managing VESC communication and connection state
- * 
+ *
  * @param argument Pointer to the thread argument (unused)
  */
 void VESC::vescThread(void* argument) {
@@ -531,9 +591,7 @@ void VESC::vescThread(void* argument) {
     // We should now be able to receive CAN messages and will wait for the first status update
     flags = osThreadFlagsWait(VESC_STATUS_UPDATE_FLAG, osFlagsWaitAny, VESC_INITIAL_CONNECT_TIMEOUT_MS);
     if (flags == osFlagsErrorTimeout) {
-        LogError("%s: Connection to the VESC could not be established within %lu ms, shutting down",
-                 getName(),
-                 VESC_INITIAL_CONNECT_TIMEOUT_MS);
+        LogError("%s: Connection to the VESC could not be established within %lu ms, shutting down", getName(), VESC_INITIAL_CONNECT_TIMEOUT_MS);
         setConnectionState(ConnectionState::DISCONNECTED);
         setState(State::ERROR);
         osDelay(osWaitForever);
@@ -592,20 +650,36 @@ void VESC::vescThread(void* argument) {
 /**
  * @brief Callback function for received CAN messages
  *
+ * It will be called whenever a CAN message matching the configured filter is received.
+ * It is registered with the thread-safe CAN interface and will be executed in the context of the CAN dispatcher thread.
+ *
  * @param header Pointer to the received CAN Rx header
  * @param data Pointer to the received CAN data payload
  */
-void VESC::receiveCallback(const CAN_RxHeaderTypeDef* header, const uint8_t* data) {
-    LogVerbose("%s: CAN receive callback triggered", getName());
+void VESC::receiveCallback(CAN_RxHeaderTypeDef header, uint8_t* data) {
+    LogVerbose("VESC: CAN receive callback triggered, filter bank: %lu", header.FilterMatchIndex);
 
-    if (getState() != State::RUNNING) {
+    // Find the VESC instance associated with this filter bank
+    uint32_t filter_bank = header.FilterMatchIndex;
+    if (filter_bank > 27) {
+        LogError("VESC: Received CAN message on invalid filter bank %lu", filter_bank);
         return;
     }
-    if (getConnectionState() != ConnectionState::CONNECTED && getConnectionState() != ConnectionState::CONNECTING) {
+    VESC* instance = filter_bank_map[filter_bank];
+    if (instance == nullptr) {
+        LogError("VESC: No VESC instance found for CAN filter bank %lu", filter_bank);
         return;
     }
-    if (!parseReceivedMessage(header, data)) {
-        LogError("%s: Failed to parse received CAN message", getName());
+
+    if (instance->getState() != State::RUNNING) {
+        return;
+    }
+    // if (instance->connection_state != ConnectionState::CONNECTED && instance->connection_state != ConnectionState::CONNECTING) {
+    //     return;
+    // }
+
+    if (!instance->parseReceivedMessage(&header, data)) {
+        LogWarning("%s: Failed to parse received CAN message", instance->getName());
         return;
     }
 }
