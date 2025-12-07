@@ -17,6 +17,20 @@
     #define LogVerbose(...)
 #endif
 
+static constexpr uint32_t VESC_INITIAL_CONNECT_TIMEOUT_MS = 20000;  // Timeout for receiving the first message from the VESC
+static constexpr uint32_t VESC_CONNECTION_LOST_TIMEOUT_MS = 500;  // Timeout for considering the connection lost
+static constexpr uint32_t VESC_RECONNECT_TIMEOUT_MS = 10000;  // Max time to wait for reconnection after connection lost
+
+static constexpr uint32_t VESC_MIN_VALID_UPDATES = 10;  // Minimum number of valid status updates to consider the connection stable
+static constexpr uint32_t VESC_MAX_MISSED_UPDATES = 5;  // Maximum number of missed updates before considering the connection lost
+static constexpr uint32_t VESC_MAX_RECONNECT_ATTEMPTS = 3;  // Maximum number of reconnect attempts before entering ERROR state
+
+static constexpr uint32_t VESC_MAX_STATUS_DELAY_FACTOR = 3;  // Factor of expected status update interval to consider a message lost
+
+// Thread flags for notifying the VESC driver thread
+static constexpr uint32_t VESC_START_FLAG = 0x01;
+static constexpr uint32_t VESC_STATUS_UPDATE_FLAG = 0x02;
+
 // Initialize static filter bank map
 std::array<VESC*, 28> VESC::filter_bank_map = {nullptr};
 
@@ -117,6 +131,16 @@ bool VESC::setConfig(const Config& config) {
     if (config.current_limit < 0.0f || config.current_limit > VESC_MAX_CURRENT_LIMIT) {
         LogError("%s: Configured current limit (%.2f A) exceeds allowable limit (%.2f A)", getName(), config.current_limit, VESC_MAX_CURRENT_LIMIT);
         return false;
+    }
+
+    if (config.expected_status_rate_hz == 0) {
+        LogWarning("%s: Expected status rate is 0 Hz, defaulting to %lu Hz", getName(), VESC_DEFAULT_STATUS_RATE_HZ);
+        expected_status_interval_ms = 1000 / VESC_DEFAULT_STATUS_RATE_HZ;
+    } else {
+        expected_status_interval_ms = 1000 / config.expected_status_rate_hz;
+    }
+    if (expected_status_interval_ms == 0) {
+        expected_status_interval_ms = 1;  // Minimum interval of 1 ms
     }
 
     this->config = config;
@@ -577,73 +601,110 @@ void VESC::vescThread(void* argument) {
         osDelay(osWaitForever);
     }
 
-
+    LogInfo("%s: Driver started, connecting to VESC...", getName());
     setState(State::RUNNING);
-    setConnectionState(ConnectionState::CONNECTED);
-    osDelay(osWaitForever);
+    osThreadFlagsClear(VESC_STATUS_UPDATE_FLAG);
 
+    // Maximum timeout for receiving status updates while connected/connecting
+    uint32_t update_timeout_ms = expected_status_interval_ms * VESC_MAX_STATUS_DELAY_FACTOR;
 
-
-    setState(State::RUNNING);
-    setConnectionState(ConnectionState::CONNECTING);
-    LogInfo("%s: Driver started", getName());
-
-    // We should now be able to receive CAN messages and will wait for the first status update
-    flags = osThreadFlagsWait(VESC_STATUS_UPDATE_FLAG, osFlagsWaitAny, VESC_INITIAL_CONNECT_TIMEOUT_MS);
-    if (flags == osFlagsErrorTimeout) {
-        LogError("%s: Connection to the VESC could not be established within %lu ms, shutting down", getName(), VESC_INITIAL_CONNECT_TIMEOUT_MS);
-        setConnectionState(ConnectionState::DISCONNECTED);
-        setState(State::ERROR);
-        osDelay(osWaitForever);
-    } else if (!(flags & VESC_STATUS_UPDATE_FLAG) || (flags & osFlagsError)) {
-        LogError("%s: Error waiting for initial status update flag: 0x%08lX", getName(), flags);
-        setState(State::ERROR);
-        osDelay(osWaitForever);
-    }
-
-    // TODO: Ping or validate connection further
-
-    setConnectionState(ConnectionState::CONNECTED);
-    LogInfo("%s: Connection to the VESC established", getName());
+    uint32_t valid_update_count = 0;
+    uint32_t missed_update_count = 0;
+    uint32_t reconnect_attempts = 0;
 
     while (getState() == State::RUNNING) {
         switch (getConnectionState()) {
-            case ConnectionState::CONNECTED:
-                // Any time a status update is received, the receive callback will set the status update flag
-                // If no updates are received within VESC_CONNECTION_LOST_TIMEOUT_MS, we try to reconnect
-                flags = osThreadFlagsWait(VESC_STATUS_UPDATE_FLAG, osFlagsWaitAny, VESC_CONNECTION_LOST_TIMEOUT_MS);
+            case ConnectionState::UNKNOWN:  // Initial connection attempt, wait for first status update
+                flags = osThreadFlagsWait(VESC_STATUS_UPDATE_FLAG, osFlagsWaitAny, VESC_INITIAL_CONNECT_TIMEOUT_MS);
 
                 if (flags == osFlagsErrorTimeout) {
-                    LogWarning("%s: Connection to the VESC lost, attempting to reconnect", getName());
+                    LogError("%s: Initial connection to the VESC timed out after %lu ms", getName(), VESC_INITIAL_CONNECT_TIMEOUT_MS);
+                    setConnectionState(ConnectionState::DISCONNECTED);
+                    setState(State::ERROR);
+                } else if (!(flags & VESC_STATUS_UPDATE_FLAG) || (flags & osFlagsError)) {
+                    LogError("%s: Error waiting for initial status update flag: 0x%08lX", getName(), flags);
+                    setState(State::ERROR);
+                } else {
+                    // Successfully received first status update
+                    // Transition to CONNECTING state to check if the connection stays stable
                     setConnectionState(ConnectionState::CONNECTING);
                 }
                 break;
 
-            case ConnectionState::CONNECTING:
-                // Wait for the next status update to re-establish the connection
-                flags = osThreadFlagsWait(VESC_STATUS_UPDATE_FLAG, osFlagsWaitAny, VESC_RECONNECT_TIMEOUT_MS);
-
-                if (flags == osFlagsErrorTimeout) {
-                    LogError("%s: Reconnection attempt to the VESC timed out after %lu ms", getName(), VESC_RECONNECT_TIMEOUT_MS);
+            case ConnectionState::CONNECTING:  // Wait for a certain amount of valid status updates to (re-)establish the connection
+                if (missed_update_count >= VESC_MAX_MISSED_UPDATES) {
+                    LogWarning("%s: Missed too many status updates while connecting, retrying...", getName());
+                    missed_update_count = 0;
+                    valid_update_count = 0;
                     setConnectionState(ConnectionState::DISCONNECTED);
-                    setState(State::ERROR);
-                } else if (flags & VESC_STATUS_UPDATE_FLAG) {
-                    LogInfo("%s: Reconnected to the VESC", getName());
+                    break;
+                }
+
+                flags = osThreadFlagsWait(VESC_STATUS_UPDATE_FLAG, osFlagsWaitAny, update_timeout_ms);
+                if (flags == osFlagsErrorTimeout) {
+                    missed_update_count++;
+                    valid_update_count = 0;
+                    LogVerbose("%s: Missed status update while connecting (%u/%u)", getName(), missed_update_count, VESC_MAX_MISSED_UPDATES);
+                    break;
+                } else if (!(flags & VESC_STATUS_UPDATE_FLAG) || (flags & osFlagsError)) {
+                    LogError("%s: Error waiting for status update flag while connecting: 0x%08lX", getName(), flags);
+                    missed_update_count++;
+                    valid_update_count = 0;
+                    break;
+                }
+                valid_update_count++;
+                if (valid_update_count >= VESC_MIN_VALID_UPDATES) {
+                    LogInfo("%s: Connection to the VESC established", getName());
                     setConnectionState(ConnectionState::CONNECTED);
-                } else {
-                    LogError("%s: Error waiting for status update during reconnection: 0x%08lX", getName(), flags);
+                    missed_update_count = 0;
+                    valid_update_count = 0;
+                }
+                break;
+
+            case ConnectionState::CONNECTED:
+                // Any time a status update is received, the receive callback will set the status update flag
+                // If no updates are received within VESC_CONNECTION_LOST_TIMEOUT_MS, we try to reconnect
+                flags = osThreadFlagsWait(VESC_STATUS_UPDATE_FLAG, osFlagsWaitAny, VESC_CONNECTION_LOST_TIMEOUT_MS);
+                if (flags == osFlagsErrorTimeout) {
+                    LogWarning("%s: Connection to the VESC lost, attempting to reconnect", getName());
+                    setConnectionState(ConnectionState::DISCONNECTED);
+                } else if (!(flags & VESC_STATUS_UPDATE_FLAG) || (flags & osFlagsError)) {
+                    LogError("%s: Error waiting for status update flag: 0x%08lX", getName(), flags);
                     setState(State::ERROR);
                 }
                 break;
 
+            case ConnectionState::DISCONNECTED:
+                if (reconnect_attempts >= VESC_MAX_RECONNECT_ATTEMPTS) {
+                    LogError("%s: Maximum reconnect attempts (%lu) reached, shutting down...", getName(), VESC_MAX_RECONNECT_ATTEMPTS);
+                    setState(State::ERROR);
+                }
+                reconnect_attempts++;
+
+                // Wait for a valid status update or enter ERROR state after timeout
+                flags = osThreadFlagsWait(VESC_STATUS_UPDATE_FLAG, osFlagsWaitAny, VESC_RECONNECT_TIMEOUT_MS);
+                if (flags == osFlagsErrorTimeout) {
+                    LogError("%s: Reconnect to the VESC timed out after %lu ms", getName(), VESC_RECONNECT_TIMEOUT_MS);
+                    setState(State::ERROR);
+                } else if (!(flags & VESC_STATUS_UPDATE_FLAG) || (flags & osFlagsError)) {
+                    LogError("%s: Error waiting for status update flag during reconnection: 0x%08lX", getName(), flags);
+                    setState(State::ERROR);
+                } else {
+                    // Successfully received a status update, transition to CONNECTING state
+                    LogInfo("%s: Received status update during reconnect, verifying connection...", getName());
+                    setConnectionState(ConnectionState::CONNECTING);
+                }
+                break;
+
             default:
-                LogError("%s: Invalid connection state in VESC driver thread", getName());
+                LogError("%s: Invalid connection state %d", getName(), static_cast<int>(getConnectionState()));
                 setState(State::ERROR);
                 break;
         }
     }
-
-    LogDebug("%s: VESC driver thread exiting", getName());
+    LogError("%s: VESC driver thread exiting", getName());
+    setState(State::ERROR);
+    setConnectionState(ConnectionState::DISCONNECTED);
     osDelay(osWaitForever);
 }
 

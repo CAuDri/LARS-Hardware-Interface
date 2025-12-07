@@ -12,22 +12,16 @@
 #include "stm32f4xx_hal.h"
 #include "vesc_protocol.hpp"
 
-// Hard limits for VESC config parameters
-// Limits set in the configuration struct can not exceed these values
-constexpr int32_t VESC_MAX_RPM = 20000;          // Maximum allowable RPM
-constexpr float VESC_MAX_DUTY_CYCLE = 1.0f;      // Maximum allowable duty cycle (100%)
-constexpr float VESC_MAX_CURRENT_LIMIT = 50.0f;  // Maximum allowable motor current in Amperes
-
-constexpr uint32_t VESC_INITIAL_CONNECT_TIMEOUT_MS = 5000;  // Timeout for receiving the first message from the VESC
-constexpr uint32_t VESC_CONNECTION_LOST_TIMEOUT_MS = 1000;  // Timeout for considering the connection lost
-constexpr uint32_t VESC_RECONNECT_TIMEOUT_MS = 5000;        // Time before considering the reconnect attempt failed
-
-// Thread flags for notifying the VESC driver thread
-constexpr uint32_t VESC_START_FLAG = 0x01;
-constexpr uint32_t VESC_STATUS_UPDATE_FLAG = 0x02;
-
 // Stack size for the VESC driver thread in bytes
 constexpr uint32_t VESC_THREAD_STACK_SIZE = 1024;
+
+// Hard limits for VESC config parameters
+// Limits set in the configuration struct can not exceed these values
+static constexpr int32_t VESC_MAX_RPM = 20000;          // Maximum allowable RPM
+static constexpr float VESC_MAX_DUTY_CYCLE = 1.0f;      // Maximum allowable duty cycle (100%)
+static constexpr float VESC_MAX_CURRENT_LIMIT = 50.0f;  // Maximum allowable motor current in Amperes
+
+static constexpr uint32_t VESC_DEFAULT_STATUS_RATE_HZ = 50;  // Default expected rate of status updates from the VESC in Hz
 
 class VESC : public Driver {
    public:
@@ -47,6 +41,8 @@ class VESC : public Driver {
         int32_t max_rpm = VESC_MAX_RPM;
         float max_duty_cycle = VESC_MAX_DUTY_CYCLE;
         float current_limit = VESC_MAX_CURRENT_LIMIT;
+
+        uint32_t expected_status_rate_hz = 50;  // Expected rate of status updates from the VESC in Hz
     };
 
     VESC(const char* name);
@@ -90,6 +86,7 @@ class VESC : public Driver {
 
     vesc::Status vesc_status{};
     std::array<uint32_t, 6> vesc_status_timestamps{};
+    uint32_t expected_status_interval_ms = 0;
 
     static std::array<VESC*, 28> filter_bank_map;  // Map of CAN filter banks to VESC instances
 
