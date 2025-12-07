@@ -1,7 +1,9 @@
 /**
  * @file colors.hpp
  *
- * @brief CAuDri - Color representation for LEDs
+ * @brief CAuDri - Color Definitions and Conversions
+ *
+ * This file defines a Color struct for representing colors in RGB format, along with functions for converting between RGB and HSV color spaces.
  */
 #pragma once
 
@@ -43,98 +45,92 @@ struct Color {
     Color() = default;
     Color(uint8_t r, uint8_t g, uint8_t b) : red(r), green(g), blue(b) {}
 
-    static Color fromRGB(uint8_t r, uint8_t g, uint8_t b);
-    static Color fromHSV(uint16_t h, uint8_t s, uint8_t v);
-    void toHSV(uint16_t* h, uint8_t* s, uint8_t* v);
-
-    bool operator==(const Color& other) const { 
-        return red == other.red && green == other.green && blue == other.blue;
-    }
+    bool operator==(const Color& other) const { return red == other.red && green == other.green && blue == other.blue; }
     bool operator!=(const Color& other) const { return !(*this == other); }
+
+    /**
+     * @brief Create a Color from RGB values
+     *
+     * @param r Red component (0-255)
+     * @param g Green component (0-255)
+     * @param b Blue component (0-255)
+     *
+     * @return Color The created Color object
+     */
+    static Color fromRGB(uint8_t r, uint8_t g, uint8_t b) { return Color(r, g, b); }
+
+    /**
+     * @brief Create a Color from HSV values
+     *
+     * @param h Hue component (0-359)
+     * @param s Saturation component (0-255)
+     * @param v Value component (0-255)
+     *
+     * @return Color The created Color object
+     */
+    static Color fromHSV(uint16_t h, uint8_t s, uint8_t v) {
+        Color color;
+
+        if (s == 0) {
+            color.red = color.green = color.blue = v;
+            return color;
+        }
+
+        uint16_t region = h / 60;
+        uint16_t remainder = (h - (region * 60)) * 255 / 60;
+
+        uint8_t p = (v * (255 - s)) / 255;
+        uint8_t q = (v * (255 - ((s * remainder) / 255))) / 255;
+        uint8_t t = (v * (255 - ((s * (255 - remainder)) / 255))) / 255;
+
+        switch (region) {
+            case 0:
+                return Color(v, t, p);
+            case 1:
+                return Color(q, v, p);
+            case 2:
+                return Color(p, v, t);
+            case 3:
+                return Color(p, q, v);
+            case 4:
+                return Color(t, p, v);
+            case 5:
+            default:
+                return Color(v, p, q);
+        }
+    }
+
+    /**
+     * @brief Convert the Color from RGB to HSV
+     *
+     * @param h Pointer to store the Hue component (0-359)
+     * @param s Pointer to store the Saturation component (0-255)
+     * @param v Pointer to store the Value component (0-255)
+     */
+    void toHSV(uint16_t* h, uint8_t* s, uint8_t* v) {
+        // Convert RGB to HSV
+        uint8_t max = std::max({red, green, blue});
+        uint8_t min = std::min({red, green, blue});
+        *v = max;
+
+        if (max == 0) {
+            *s = 0;
+            *h = 0;
+            return;
+        }
+
+        *s = ((max - min) * 255) / max;
+
+        if (max == red) {
+            *h = ((green - blue) * 60) / (max - min);
+        } else if (max == green) {
+            *h = 120 + ((blue - red) * 60) / (max - min);
+        } else {
+            *h = 240 + ((red - green) * 60) / (max - min);
+        }
+
+        if (*h < 0) {
+            *h += 360;
+        }
+    }
 };
-
-/**
- * @brief Create a Color from RGB values
- *
- * @param r Red component (0-255)
- * @param g Green component (0-255)
- * @param b Blue component (0-255)
- *
- * @return Color The created Color object
- */
-Color Color::fromRGB(uint8_t r, uint8_t g, uint8_t b) { return Color(r, g, b); }
-
-/**
- * @brief Create a Color from HSV values
- *
- * @param h Hue component (0-359)
- * @param s Saturation component (0-255)
- * @param v Value component (0-255)
- *
- * @return Color The created Color object
- */
-Color Color::fromHSV(uint16_t h, uint8_t s, uint8_t v) {
-    Color color;
-
-    if (s == 0) {
-        color.red = color.green = color.blue = v;
-        return color;
-    }
-
-    uint16_t region = h / 60;
-    uint16_t remainder = (h - (region * 60)) * 255 / 60;
-
-    uint8_t p = (v * (255 - s)) / 255;
-    uint8_t q = (v * (255 - ((s * remainder) / 255))) / 255;
-    uint8_t t = (v * (255 - ((s * (255 - remainder)) / 255))) / 255;
-
-    switch (region) {
-        case 0:
-            return Color(v, t, p);
-        case 1:
-            return Color(q, v, p);
-        case 2:
-            return Color(p, v, t);
-        case 3:
-            return Color(p, q, v);
-        case 4:
-            return Color(t, p, v);
-        case 5:
-        default:
-            return Color(v, p, q);
-    }
-}
-
-/**
- * @brief Convert the Color from RGB to HSV
- *
- * @param h Pointer to store the Hue component (0-359)
- * @param s Pointer to store the Saturation component (0-255)
- * @param v Pointer to store the Value component (0-255)
- */
-void Color::toHSV(uint16_t* h, uint8_t* s, uint8_t* v) {
-    // Convert RGB to HSV
-    uint8_t max = std::max({red, green, blue});
-    uint8_t min = std::min({red, green, blue});
-    *v = max;
-
-    if (max == 0) {
-        *s = 0;
-        *h = 0;
-        return;
-    }
-
-    *s = ((max - min) * 255) / max;
-
-    if (max == red) {
-        *h = ((green - blue) * 60) / (max - min);
-    } else if (max == green) {
-        *h = 120 + ((blue - red) * 60) / (max - min);
-    } else {
-        *h = 240 + ((red - green) * 60) / (max - min);
-    }
-
-    if (*h < 0) {
-        *h += 360;
-    }
-}
