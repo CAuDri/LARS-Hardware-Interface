@@ -12,6 +12,12 @@
 
 #include "logger.h"
 
+#ifdef LOG_VERBOSE
+    #define LogVerbose(...) LogDebug(__VA_ARGS__)
+#else
+    #define LogVerbose(...)
+#endif
+
 Servo::Servo(const char* name) : Driver(name) {}
 
 Servo::Servo(const char* name, const Config& config, Calibration& calibration) : Driver(name) {
@@ -123,7 +129,7 @@ bool Servo::setAngle(float angle_deg) {
     // We can directly set the compare register to the desired pulse width
     __HAL_TIM_SET_COMPARE(config->htim, config->tim_channel, pulse_width);
 
-    LogDebug("%s: Set angle to %.2f deg (Pulse width: %lu us)", getName(), angle_deg, pulse_width);
+    LogVerbose("%s: Set angle to %.2f deg (Pulse width: %lu us)", getName(), angle_deg, pulse_width);
     return true;
 }
 
@@ -137,7 +143,7 @@ bool Servo::setPulseWidth(uint32_t pulse_width_us) {
 
     __HAL_TIM_SET_COMPARE(config->htim, config->tim_channel, pulse_width_us);
 
-    LogDebug("%s: Set pulse width to %lu us", getName(), pulse_width_us);
+    LogVerbose("%s: Set pulse width to %lu us", getName(), pulse_width_us);
     return true;
 }
 
