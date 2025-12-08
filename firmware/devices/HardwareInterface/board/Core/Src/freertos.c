@@ -24,7 +24,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "logger.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -62,6 +62,25 @@ void vApplicationStackOverflowHook(xTaskHandle xTask, signed char *pcTaskName)
    /* Run time stack overflow checking is performed if
    configCHECK_FOR_STACK_OVERFLOW is defined to 1 or 2. This hook function is
    called if a stack overflow is detected. */
+
+
+   /**
+    * CAuDri - Log the stack overflow error and halt the system
+    */
+   vTaskSuspendAll();
+
+   LogInline(" ");
+   LogInline("------ Stack Overflow in Task: %s ------", pcTaskName);
+   LogInline(" ");
+   LogInline("FreeRTOS: Stack overflow detected in task '%s'.", pcTaskName);
+   LogInline("FreeRTOS: Halting system.");
+   LogInline(" ");
+
+   // Signalize error state by blinking the red onboard LED
+   while(1){ 
+      HAL_GPIO_TogglePin(DEBUG_LED_RED_GPIO_Port, DEBUG_LED_RED_Pin);
+      HAL_Delay(100);
+   };
 }
 /* USER CODE END 4 */
 
@@ -78,6 +97,41 @@ void vApplicationMallocFailedHook(void)
    FreeRTOSConfig.h, and the xPortGetFreeHeapSize() API function can be used
    to query the size of free heap space that remains (although it does not
    provide information on how the remaining heap might be fragmented). */
+
+   /**
+    * CAuDri - Log the malloc failure
+    */
+  vTaskSuspendAll();
+
+  LogInline(" ");
+  LogInline("------ Memory Allocation Failed ------");
+  LogInline(" ");
+  LogInline("FreeRTOS: Memory allocation failed in pvPortMalloc(), possibly out of heap memory.");
+  LogInline("FreeRTOS: Halting system.");
+  LogInline(" ");
+
+  extern void vPortGetHeapStats( HeapStats_t *pxHeapStats );
+  HeapStats_t xHeapStats;
+
+  vPortGetHeapStats( &xHeapStats );
+
+  LogInline("FreeRTOS Heap Statistics:");
+  LogInline("Total heap size: %d", configTOTAL_HEAP_SIZE);
+  LogInline("Available heap space: %d", xHeapStats.xAvailableHeapSpaceInBytes);
+  LogInline("Largest free block: %d", xHeapStats.xSizeOfLargestFreeBlockInBytes);
+  LogInline("Smallest free block: %d", xHeapStats.xSizeOfSmallestFreeBlockInBytes);
+  LogInline("Number of free blocks: %d", xHeapStats.xNumberOfFreeBlocks);
+  LogInline("Minimum ever free bytes remaining: %d", xHeapStats.xMinimumEverFreeBytesRemaining);
+  LogInline("Number of successful allocations: %d", xHeapStats.xNumberOfSuccessfulAllocations);
+  LogInline("Number of successful frees: %d", xHeapStats.xNumberOfSuccessfulFrees);
+
+  vTaskSuspendAll();
+
+  // Signalize error state by blinking the blue onboard LED
+  while(1){
+    HAL_GPIO_TogglePin(DEBUG_LED_BLUE_GPIO_Port, DEBUG_LED_BLUE_Pin);
+    HAL_Delay(100);
+  };
 }
 /* USER CODE END 5 */
 
