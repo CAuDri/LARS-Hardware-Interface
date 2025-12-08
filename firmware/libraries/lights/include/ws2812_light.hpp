@@ -23,7 +23,7 @@
 constexpr uint8_t WS2812_MIN_BRIGHTNESS = 5;
 
 /**
- * @brief WS2812 LED strip light class
+ * @brief Implementation of the Light interface for WS2812 LED sub-strips
  *
  * @tparam LED_COUNT Number of LEDs in the strip
  */
