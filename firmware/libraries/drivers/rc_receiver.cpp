@@ -497,7 +497,7 @@ void RCReceiver::receiverThread(void* arg) {
     // Some receivers may send some initial frames on power-up, we will wait a bit to avoid false timeouts
     osDelay(1000);
 
-    const uint32_t MESSAGE_TIMEOUT_MS = expected_message_interval_ms * MAX_MESSAGE_DELAY_FACTOR;
+    uint32_t message_timeout_ms = expected_message_interval_ms * MAX_MESSAGE_DELAY_FACTOR;
 
     uint32_t missed_frame_count = 0;
     uint32_t valid_frame_count = 0;
@@ -560,10 +560,12 @@ void RCReceiver::receiverThread(void* arg) {
                     missed_frame_count = 0;
                     valid_frame_count = 0;
                     setConnectionState(ConnectionState::DISCONNECTED);
+                    publishConnectionState(false);
+                    break;
                 }
 
                 // Before considering the connection established, a few valid frames need to be received consecutively
-                status = osMessageQueueGet(rx_queue, &rx_message, nullptr, MESSAGE_TIMEOUT_MS);
+                status = osMessageQueueGet(rx_queue, &rx_message, nullptr, message_timeout_ms);
                 if (status == osErrorTimeout) {
                     missed_frame_count++;
                     valid_frame_count = 0;
@@ -586,7 +588,7 @@ void RCReceiver::receiverThread(void* arg) {
                 // The missed frame count will not be reset, to avoid endless connection attempts if the link is bad
                 valid_frame_count++;
                 if (valid_frame_count >= MIN_GOOD_FRAMES) {
-                    LogSuccess("RC Receiver: Connection established");
+                    LogInfo("RC Receiver: Connection to RC receiver established");
                     setConnectionState(ConnectionState::CONNECTED);
                     publishConnectionState(true);
                     missed_frame_count = 0;
@@ -610,7 +612,7 @@ void RCReceiver::receiverThread(void* arg) {
                     break;
                 }
 
-                status = osMessageQueueGet(rx_queue, &rx_message, nullptr, MESSAGE_TIMEOUT_MS);
+                status = osMessageQueueGet(rx_queue, &rx_message, nullptr, message_timeout_ms);
                 if (status == osErrorTimeout) {
                     missed_frame_count++;
                     LogVerbose("RC Receiver: Timeout waiting for frame (%lu/%u)", missed_frame_count, MAX_DROPPED_FRAMES);
@@ -678,11 +680,14 @@ void RCReceiver::receiverThread(void* arg) {
                 break;
 
             default:
+                LogError("RC Receiver: Unknown connection state %d", static_cast<int>(connection_state));
+                setState(State::ERROR);
                 break;
         }
     }
     LogError("RC Receiver: Receiver thread exiting due to error state");
     publishConnectionState(false);
+    setState(State::ERROR);
     setConnectionState(ConnectionState::DISCONNECTED);
     osDelay(osWaitForever);
 }
