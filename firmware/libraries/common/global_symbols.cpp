@@ -15,8 +15,8 @@ const volatile UBaseType_t uxTopUsedPriority = configMAX_PRIORITIES - 1;
 
 // Override new and delete operators to use FreeRTOS heap functions
 void* operator new(size_t size) {
-    LogWarning("System heap allocation detected using the 'new' operator. Will redirect to pvPortMalloc.");
-    LogWarning("Consider using static or stack allocation to avoid fragmentation.");
+    LogWarning("System heap allocation detected using 'new'. Will redirect to pvPortMalloc");
+    LogWarning("This is discouraged. Consider using static or stack allocation instead");
     return pvPortMalloc(size);
 }
 
@@ -24,8 +24,8 @@ void operator delete(void* ptr) noexcept { vPortFree(ptr); }
 
 // Override malloc and free to use FreeRTOS heap functions
 extern "C" void* malloc(size_t size) {
-    LogWarning("System heap allocation detected using 'malloc'. Will redirect to pvPortMalloc.");
-    LogWarning("Consider using static or stack allocation to avoid fragmentation.");
+    LogWarning("System heap allocation detected using 'malloc'. Will redirect to pvPortMalloc");
+    LogWarning("This is discouraged. Consider using static or stack allocation instead");
     return pvPortMalloc(size);
 }
 
