@@ -31,6 +31,7 @@
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
+typedef StaticTask_t osStaticThreadDef_t;
 /* USER CODE BEGIN PTD */
 
 /* USER CODE END PTD */
@@ -71,11 +72,16 @@ DMA_HandleTypeDef hdma_usart3_tx;
 DMA_HandleTypeDef hdma_usart6_rx;
 DMA_HandleTypeDef hdma_usart6_tx;
 
-/* Definitions for defaultTask */
-osThreadId_t defaultTaskHandle;
-const osThreadAttr_t defaultTask_attributes = {
-  .name = "defaultTask",
-  .stack_size = 128 * 4,
+/* Definitions for mainTask */
+osThreadId_t mainTaskHandle;
+uint32_t mainTaskBuffer[ 4096 ];
+osStaticThreadDef_t mainTaskControlBlock;
+const osThreadAttr_t mainTask_attributes = {
+  .name = "mainTask",
+  .cb_mem = &mainTaskControlBlock,
+  .cb_size = sizeof(mainTaskControlBlock),
+  .stack_mem = &mainTaskBuffer[0],
+  .stack_size = sizeof(mainTaskBuffer),
   .priority = (osPriority_t) osPriorityNormal,
 };
 /* USER CODE BEGIN PV */
@@ -100,7 +106,7 @@ static void MX_TIM3_Init(void);
 static void MX_USART6_UART_Init(void);
 static void MX_TIM4_Init(void);
 static void MX_TIM8_Init(void);
-void StartDefaultTask(void *argument);
+void StartMainTask(void *argument);
 
 /* USER CODE BEGIN PFP */
 
@@ -185,8 +191,8 @@ int main(void)
   /* USER CODE END RTOS_QUEUES */
 
   /* Create the thread(s) */
-  /* creation of defaultTask */
-  defaultTaskHandle = osThreadNew(StartDefaultTask, NULL, &defaultTask_attributes);
+  /* creation of mainTask */
+  mainTaskHandle = osThreadNew(StartMainTask, NULL, &mainTask_attributes);
 
   /* USER CODE BEGIN RTOS_THREADS */
 
@@ -1031,14 +1037,14 @@ static void MX_GPIO_Init(void)
 
 /* USER CODE END 4 */
 
-/* USER CODE BEGIN Header_StartDefaultTask */
+/* USER CODE BEGIN Header_StartMainTask */
 /**
-  * @brief  Function implementing the defaultTask thread.
+  * @brief  Function implementing the mainTask thread.
   * @param  argument: Not used
   * @retval None
   */
-/* USER CODE END Header_StartDefaultTask */
-void StartDefaultTask(void *argument)
+/* USER CODE END Header_StartMainTask */
+void StartMainTask(void *argument)
 {
   /* init code for USB_DEVICE */
   MX_USB_DEVICE_Init();
