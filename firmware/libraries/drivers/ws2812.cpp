@@ -121,6 +121,8 @@ bool WS2812Driver::init(const Config& config, const DMABuffer& dma_buffer) {
         setState(State::ERROR);
         return false;
     }
+    
+    setConnectionState(ConnectionState::CONNECTED);
 
     LogInfo("WS2812: Driver initialized for %lu LEDs", dma_buffer.led_count);
     return true;
