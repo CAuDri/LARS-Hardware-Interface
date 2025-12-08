@@ -58,15 +58,30 @@ bool SystemCheck::performCheck(Result& result) {
 
         // Non-critical drivers can only raise a warning and won't affect the overall system state
         if (status.system_critical) {
+            // Error in a critical driver results in overall system ERROR state
             if (status.state == Driver::State::ERROR) {
                 critical_error_found = true;
+                // Warning if not fully running
             } else if (status.state != Driver::State::RUNNING) {
                 warning_found = true;
             }
+
+            // Disconnected critical connections also raise an error
+            if (status.connection_state == Driver::ConnectionState::DISCONNECTED) {
+                critical_error_found = true;
+            // Warning for non-connected states
+            } else if (status.connection_state != Driver::ConnectionState::CONNECTED) {
+                warning_found = true;
+            }
         } else {
+            // Non-critical drivers can only raise warnings
             if (status.state == Driver::State::ERROR) {
                 warning_found = true;
             }
+            if (status.connection_state == Driver::ConnectionState::DISCONNECTED) {
+                warning_found = true;
+            }
+            // All other states are ignored for non-critical drivers
         }
     }
 
@@ -84,7 +99,7 @@ bool SystemCheck::performCheck(Result& result) {
 
 void SystemCheck::logResult(const Result& result) {
     LogResult(" ");
-    LogResult("-------- System Check Result --------");
+    LogResult("---------- System Check Result ----------");
     LogResult(" ");
     LogResult("System State:     %s",
               (result.system_state == SystemState::OK)        ? (LOG_COLOR_GREEN "OK" LOG_COLOR_RESET)
@@ -97,8 +112,8 @@ void SystemCheck::logResult(const Result& result) {
         LogResult(LOG_COLOR_YELLOW "No drivers registered for system check." LOG_COLOR_RESET);
         return;
     } else {
-        LogResult(LOG_COLOR_BLUE "  Driver          State        Connection" LOG_COLOR_RESET);
-        LogResult(LOG_COLOR_BLUE "-----------------------------------------" LOG_COLOR_RESET);
+        LogResult(LOG_COLOR_BLUE "  Driver           State        Connection" LOG_COLOR_RESET);
+        LogResult(LOG_COLOR_BLUE "------------------------------------------" LOG_COLOR_RESET);
         for (size_t i = 0; i < result.driver_count; i++) {
             logDriverStatus(result.driver_status[i]);
         }
@@ -156,5 +171,10 @@ void SystemCheck::logDriverStatus(const DriverStatus& status) {
             break;
     }
 
-    LogResult("%s    %s%s" LOG_COLOR_RESET "   %s%s" LOG_COLOR_RESET, status.name, state_color, state_str, connection_color, connection_str);
+    // Add a * to the name of system critical drivers
+    if (status.system_critical) {
+        LogResult("%s*   %s%s" LOG_COLOR_RESET "   %s%s" LOG_COLOR_RESET, status.name, state_color, state_str, connection_color, connection_str);
+    } else {
+        LogResult("%s    %s%s" LOG_COLOR_RESET "   %s%s" LOG_COLOR_RESET, status.name, state_color, state_str, connection_color, connection_str);
+    }
 }

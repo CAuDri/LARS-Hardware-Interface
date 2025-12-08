@@ -47,7 +47,7 @@ class SystemCheck {
      * @param driver_status Array of individual driver statuses
      */
     struct Result {
-        SystemState system_state = SystemState::OK;
+        SystemState system_state = SystemState::ERROR;
 
         bool rc_remote_connected = false;
         bool microros_connected = false;
