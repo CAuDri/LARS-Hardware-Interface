@@ -24,9 +24,14 @@
 $sshKeyPath = "$ENV:USERPROFILE\.ssh\id_rsa"
 
 $wslDistro = "Ubuntu-24.04"
-$udevBashScriptPath = ".devcontainer/scripts/add_udev_rules_host.sh"
+$udevBashScriptPath = "./.devcontainer/script/host_add_udev_rules.sh"
 
 $sshTestServer = "git@git.kitcar-team.de"
+
+# Elevate the script to run as Administrator if not already the case
+if (!([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")) { 
+    Start-Process powershell.exe "-NoProfile -ExecutionPolicy Bypass -File `"$PSCommandPath`"" -Verb RunAs; exit 
+}
 
 # Check if the script is running as Administrator
 if (-NOT ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
@@ -72,7 +77,8 @@ catch {
             Write-Host -ForegroundColor Yellow "Afterwards, please rerun the script.`n" 
             Write-Host -ForegroundColor Yellow "Start Docker-Desktop to complete the setup. Continue after the docker engine is running."
             Write-Host -ForegroundColor Red    "----------------------------------------------------------------------------------------------------------------"
-            Read-Host "Read the big yellow text? Press Enter to continue..."}
+            Read-Host "Read the big yellow text? Press Enter to continue..."
+        }
         catch {
             Write-Host -ForegroundColor DarkRed "Failed to install Docker, try installing manually."
             $setupSuccessful = $false
@@ -362,7 +368,8 @@ Set-Location -Path $repoRootPath
 # Add udev rules for serial devices to the WSL distro
 Write-Host -ForegroundColor DarkGreen "`nSetting up udev rules for serial devices..."
 try {
-    wsl bash -c "$udevBashScriptPath"
+    wsl -e $udevBashScriptPath
+    Write-Host -ForegroundColor Green "udev rules added successfully on the WSL."
 }
 catch {
     Write-Host -ForegroundColor DarkRed "Failed to add udev rules on the WSL."
