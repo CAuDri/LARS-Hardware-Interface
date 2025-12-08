@@ -103,7 +103,7 @@ bool DriveController::init(const Config& config, RCReceiver& rc_receiver, VESC& 
 
     // Register the Tracealyzer channel for drive mode logging
     if (xTraceStringRegister("Drive Mode", &drive_mode_channel) != TRC_SUCCESS) {
-        LogWarning("Drive Controller: Failed to register Tracealyzer channel for drive mode");
+        LogDebug("Drive Controller: Failed to register Tracealyzer channel for drive mode");
     }
 
     thread_attributes.name = "Drive Controller";
@@ -114,8 +114,14 @@ bool DriveController::init(const Config& config, RCReceiver& rc_receiver, VESC& 
     thread_attributes.cb_size = sizeof(thread_control_block);
 
     controller_thread = osThreadNew(
-        [](void* argument) { static_cast<DriveController*>(argument)->controllerThread(argument); }, this, &thread_attributes);
-
+        // Helper function for using a non-static method as the thread entry point
+        // The 'this' pointer is passed as the user argument to the lambda
+        [](void* arg) -> void {
+            auto* obj = static_cast<DriveController*>(arg);
+            obj->controllerThread(arg);
+        },
+        this,
+        &thread_attributes);
     if (controller_thread == nullptr) {
         LogError("Drive Controller: Failed to create controller thread");
         setState(NodeState::ERROR);
