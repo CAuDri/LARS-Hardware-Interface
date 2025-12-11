@@ -24,6 +24,9 @@ constexpr uint32_t SYSTEM_EVENT_ERROR_FLAG = 0x01;
 constexpr uint32_t SYSTEM_EVENT_WARNING_FLAG = 0x02;
 constexpr uint32_t SYSTEM_EVENT_OK_FLAG = 0x04;
 
+// Static instance pointer for global access
+SystemMonitor* SystemMonitor::instance = nullptr;
+
 /**
  * @brief Construct a new SystemMonitor
  */
@@ -149,6 +152,12 @@ bool SystemMonitor::getSystemCheckResult(SystemCheck::Result& result) {
     return true;
 }
 
+/**
+ * @brief Register a callback function to be called on system state changes
+ *
+ * @param callback The callback function to register
+ * @return true if the callback was successfully registered, false otherwise
+ */
 bool SystemMonitor::registerSystemStateCallback(SystemStateCallback callback) {
     if (callback == nullptr) {
         LogError("System Monitor: System state callback is null");
