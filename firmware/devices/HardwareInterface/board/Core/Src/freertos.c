@@ -55,7 +55,7 @@
 /* Hook prototypes */
 void configureTimerForRunTimeStats(void);
 unsigned long getRunTimeCounterValue(void);
-void vApplicationStackOverflowHook(TaskHandle_t xTask, signed char *pcTaskName);
+void vApplicationStackOverflowHook(xTaskHandle xTask, signed char *pcTaskName);
 void vApplicationMallocFailedHook(void);
 
 /* USER CODE BEGIN 1 */
