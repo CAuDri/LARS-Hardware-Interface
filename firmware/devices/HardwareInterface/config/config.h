@@ -9,10 +9,18 @@
 
 #pragma once
 
+#include "drive_controller.hpp"
 #include "main.h"
 #include "rc_receiver.hpp"
 #include "servo.hpp"
+#include "system_monitor.hpp"
 #include "vesc.hpp"
+#include "ws2812.hpp"
+
+// RC Channel Mapping
+constexpr crsf::Channel RC_THROTTLE_CHANNEL = crsf::CHANNEL_3;
+constexpr crsf::Channel RC_STEERING_CHANNEL = crsf::CHANNEL_1;
+constexpr crsf::Channel RC_MODE_SWITCH_CHANNEL = crsf::CHANNEL_7;
 
 RCReceiver::Config rc_config{
     .huart = &huart2,
@@ -39,4 +47,22 @@ Servo::Calibration servo_calibration{
     .min_pulse_us = 1100,
     .center_pulse_us = 1500,
     .max_pulse_us = 1900,
+};
+
+WS2812Driver::Config ws2812_config{
+    .htim = &htim4,
+    .tim_channel = TIM_CHANNEL_3,
+    .hdma = &hdma_tim4_ch3,
+};
+
+SystemMonitor::Config system_monitor_config{
+    .reset_gpio_port = PWR_EXT_ENABLE_GPIO_Port,
+    .reset_gpio_pin = PWR_EXT_ENABLE_Pin,
+    .check_interval_ms = 500,
+};
+
+DriveController::Config drive_controller_config{
+    .throttle_channel = RC_THROTTLE_CHANNEL,
+    .steering_channel = RC_STEERING_CHANNEL,
+    .mode_switch_channel = RC_MODE_SWITCH_CHANNEL,
 };

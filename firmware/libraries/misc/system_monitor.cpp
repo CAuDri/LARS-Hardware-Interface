@@ -114,11 +114,9 @@ bool SystemMonitor::start() {
     }
 
     // Signal the thread to start monitoring
-    if (osThreadFlagsSet(monitor_thread_id, THREAD_START_FLAG) != osOK) {
-        LogError("System Monitor: Failed to set start flag for monitor thread");
-        return false;
-    }
+    osThreadFlagsSet(monitor_thread_id, THREAD_START_FLAG);
 
+    LogInfo("System Monitor: Started");
     return true;
 }
 
@@ -236,8 +234,10 @@ bool SystemMonitor::resetPeripherals(uint32_t timeout_ms = DEFAULT_EXT_RESET_TIM
     }
 
     // Enable power for external components
-    HAL_GPIO_WritePin(port, pin, GPIO_PIN_RESET);
-    osDelay(timeout_ms);
+    if (timeout_ms != 0) {
+        HAL_GPIO_WritePin(port, pin, GPIO_PIN_RESET);
+        osDelay(timeout_ms);
+    }
     HAL_GPIO_WritePin(port, pin, GPIO_PIN_SET);
     osDelay(100);  // Wait a bit for peripherals to stabilize
 
@@ -299,7 +299,7 @@ void SystemMonitor::enterBootloader() {
     // Set bootloader vector table offset
     SCB->VTOR = 0x00000000;
 
-    // Switch to main stack pointer since we are probably already in thread mode
+    // Switch back to main stack pointer since we are probably already in thread mode
     __set_CONTROL(0);
     __DSB();
     __ISB();

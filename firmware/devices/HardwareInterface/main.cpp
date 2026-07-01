@@ -6,187 +6,144 @@
 
 #include "main.h"
 
-#include "config/config.h"
-#include "logger.h"
-
 #include <algorithm>
+#include <bitset>
 
-// CAuDri - This is necessary for OpenOCD to show the correct FreeRTOS task list
-// TODO: Find a better place for this (must be linked into the final binary)
-const volatile UBaseType_t uxTopUsedPriority = configMAX_PRIORITIES - 1;
-
-extern "C" void mainTask();
-
-RCReceiver rc_receiver;
-VESC motor("VESC Driver");
-Servo servo("Servo Front");
-
-static bool rc_control_enabled = false;
-
-// Callback for channel 5
-void remoteSwitchCallback(uint16_t value) {
-    if (value > 1500) {
-        HAL_GPIO_WritePin(DEBUG_LED_RED_GPIO_Port, DEBUG_LED_RED_Pin, GPIO_PIN_RESET);
-        HAL_GPIO_WritePin(DEBUG_LED_GREEN_GPIO_Port, DEBUG_LED_GREEN_Pin, GPIO_PIN_RESET);
-        HAL_GPIO_WritePin(DEBUG_LED_BLUE_GPIO_Port, DEBUG_LED_BLUE_Pin, GPIO_PIN_SET);
-        rc_control_enabled = false;
-    } else if (value > 900) {
-        HAL_GPIO_WritePin(DEBUG_LED_RED_GPIO_Port, DEBUG_LED_RED_Pin, GPIO_PIN_RESET);
-        HAL_GPIO_WritePin(DEBUG_LED_GREEN_GPIO_Port, DEBUG_LED_GREEN_Pin, GPIO_PIN_SET);
-        HAL_GPIO_WritePin(DEBUG_LED_BLUE_GPIO_Port, DEBUG_LED_BLUE_Pin, GPIO_PIN_RESET);
-        rc_control_enabled = true;
-    } else {
-        HAL_GPIO_WritePin(DEBUG_LED_RED_GPIO_Port, DEBUG_LED_RED_Pin, GPIO_PIN_SET);
-        HAL_GPIO_WritePin(DEBUG_LED_GREEN_GPIO_Port, DEBUG_LED_GREEN_Pin, GPIO_PIN_RESET);
-        HAL_GPIO_WritePin(DEBUG_LED_BLUE_GPIO_Port, DEBUG_LED_BLUE_Pin, GPIO_PIN_RESET);
-        motor.setRPM(0);
-        rc_control_enabled = false;
-    }
-}
-
-void motorChannelCallback(uint16_t value) {
-    if (!rc_control_enabled) {
-        // motor.setRPM(0);
-        return;
-    }
-
-    LogInfo("Motor Channel Value: %d", value);
-
-    if (value < 1050 && value > 950) {
-        // Deadband around center
-        motor.setRPM(0);
-        return;
-    }
-
-    // Map RC channel value (200-1800) to RPM ~(-3000 to 3000)
-    int32_t rpm = (static_cast<int32_t>(value) - 1000) * 3;
-
-    // Clamp RPM to [-3000, 3000]
-    if (rpm > 3000) {
-        rpm = 3000;
-    } else if (rpm < -3000) {
-        rpm = -3000;
-    }
-
-    LogInfo("Motor RPM: %d, value: %d", rpm, value);
-    motor.setRPM(rpm);
-}
-
-void steeringChannelCallback(uint16_t value) {
-    if (!rc_control_enabled) {
-        return;
-    }
-
-    // Map RC channel value (100-1900) to pulse width (1200-1800)
-    uint32_t pulse_width = (static_cast<uint32_t>(value) - 100) * 600 / 1800 + 1200;
-    LogInfo("Steering Pulse Width Command: %u", pulse_width);
-    servo.setPulseWidth(pulse_width);
-}
-
+// #include "blink_animation.hpp"
+#include "config/config.h"
+#include "gpio_light.hpp"
+#include "light_dispatcher.hpp"
+#include "logger.h"
+#include "thread_safe_adc.h"
+#include "ws2812_light.hpp"
+#include "pulse_animation.hpp"
 
 /**
- * @brief Main entry point called from the RTOS task in main.c
+ * Forward function declarations
+ */
+extern "C" void mainTask();
+void onSystemStateChange(SystemCheck::SystemState state);
+
+/**
+ * All global objects that can be statically initialized
+ */
+WS2812<13> ws2812_top("WS2812 Top");  // WS2812 driver for the top LED string
+
+RCReceiver rc_receiver;      // RC Receiver driver for handling remote control input
+VESC motor("VESC Driver");   // VESC driver for motor control
+Servo servo("Servo Front");  // Servo driver for steering control and feedback
+
+DriveController drive_controller;  // Drive controller for managing vehicle drive modes and high-level control
+
+SystemCheck system_check;      // System check utility for monitoring states of various drivers and components
+SystemMonitor system_monitor;  // System monitor for periodic system checks and handling system state changes
+
+WS2812Light<1> onboard_led_1(ws2812_top, 0);  // Onboard RGB LED 1
+WS2812Light<6> left_test_lights(ws2812_top, 1);
+WS2812Light<6> right_test_lights(ws2812_top, 7);
+
+GPIOLight debug_led_red(DEBUG_LED_RED_GPIO_Port, DEBUG_LED_RED_Pin, COLOR_RED);          // Onboard debug LED (red)
+GPIOLight debug_led_green(DEBUG_LED_GREEN_GPIO_Port, DEBUG_LED_GREEN_Pin, COLOR_GREEN);  // Onboard debug LED (green)
+GPIOLight debug_led_blue(DEBUG_LED_BLUE_GPIO_Port, DEBUG_LED_BLUE_Pin, COLOR_BLUE);      // Onboard debug LED (blue)
+
+LightDispatcher light_dispatcher("Light Dispatcher");
+
+/**
+ * @brief Main entry point called from the RTOS task in the auto-generated main.c
  */
 void mainTask() {
-    printf("Main Task: Starting up...\n");
+    /**
+     * Application-specific startup checks
+     */
+    LogClear();
+    LogInfo("Main: Starting...");
 
-    // Enable power for external components
-    osDelay(100);
-    HAL_GPIO_WritePin(PWR_EXT_ENABLE_GPIO_Port, PWR_EXT_ENABLE_Pin, GPIO_PIN_SET);
-    osDelay(100);
+    // Enter bootloader mode if the user button is pressed during startup
+    if (HAL_GPIO_ReadPin(USER_BUTTON_GPIO_Port, USER_BUTTON_Pin) == GPIO_PIN_RESET) {
+        LogWarning("Main: User button pressed during startup, entering bootloader...");
+        SystemMonitor::enterBootloader();
+    }
+
+    // On first power-up no hardware reset of the peripherals is necessary
+    if (SystemMonitor::getWakeupReason() != SystemWakeupReason::BROWN_OUT_RESET) {
+        LogInfo("Main: Resetting peripherals...");
+        SystemMonitor::resetPeripherals(500);
+    } else {
+        SystemMonitor::resetPeripherals(0);
+    }
+
+    /**
+     * Initialize all peripheral drivers
+     */
+    ws2812_top.init(ws2812_config);
+    ws2812_top.setColor(COLOR_GREEN);
 
     rc_receiver.init(rc_config);
+    rc_receiver.start();
 
     motor.init(vesc_config);
     motor.start();
 
     servo.init(servo_config, servo_calibration);
+    servo.start();
 
-    rc_receiver.registerChannelCallback(6, RCReceiver::ChannelCallback::from<&remoteSwitchCallback>(), true);
-    rc_receiver.registerChannelCallback(1, RCReceiver::ChannelCallback::from<&motorChannelCallback>(), true);
-    rc_receiver.registerChannelCallback(3, RCReceiver::ChannelCallback::from<&steeringChannelCallback>(), true);
-    rc_receiver.start();
+    /**
+     * Register components with the system check for monitoring
+     */
+    system_check.registerDriver(rc_receiver, true);
+    system_check.registerDriver(motor, true);
+    system_check.registerDriver(servo, false);
+    system_check.registerDriver(ws2812_top, false);
 
-    for (;;) {
-        osDelay(2000);
-        // static uint16_t angle = 0;
-        // angle += 10;
-        // if (angle > 180) {
-        //     angle = 0;
-        // }
-        // servo.setAngle(static_cast<float>(angle));
+    /**
+     * Initialize and start the system monitor and high-level drive control
+     */
+    drive_controller.init(drive_controller_config, rc_receiver, motor, servo, onboard_led_1);
 
-        // CAN_TxHeaderTypeDef tx_header{};
-        // uint8_t tx_data[8] = {0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88};
-        // uint32_t tx_mailbox;
-        // tx_header.StdId = 0x123;
-        // tx_header.ExtId = 0x123456;
-        // tx_header.IDE = CAN_ID_EXT;
-        // tx_header.RTR = CAN_RTR_DATA;
-        // tx_header.DLC = 8;
-        // HAL_CAN_AddTxMessage(&hcan1, &tx_header, tx_data, &tx_mailbox);
+    osDelay(500);
 
-        // HAL_GPIO_TogglePin(DEBUG_LED_BLUE_GPIO_Port, DEBUG_LED_BLUE_Pin);
+    system_monitor.init(system_check, system_monitor_config);
+    system_monitor.registerSystemStateCallback(onSystemStateChange);
+    system_monitor.start();
 
-        // auto can_state = HAL_CAN_GetState(&hcan1);
-        // switch (can_state) {
-        //     case HAL_CAN_STATE_RESET:
-        //         LogInfo("CAN1 State: RESET");
-        //         break;
-        //     case HAL_CAN_STATE_READY:
-        //         LogInfo("CAN1 State: READY");
-        //         break;
-        //     case HAL_CAN_STATE_LISTENING:
-        //         LogInfo("CAN1 State: LISTENING");
-        //         break;
-        //     case HAL_CAN_STATE_SLEEP_PENDING:
-        //         LogInfo("CAN1 State: SLEEP_PENDING");
-        //         break;
-        //     case HAL_CAN_STATE_SLEEP_ACTIVE:
-        //         LogInfo("CAN1 State: SLEEP_ACTIVE");
-        //         break;
-        //     case HAL_CAN_STATE_ERROR:
-        //         LogInfo("CAN1 State: ERROR");
-        //         break;
-        //     default:
-        //         LogInfo("CAN1 State: UNKNOWN, state value: %d", static_cast<int>(can_state));
-        //         break;
-        // }
+    LogInfo("Main: Initialization complete");
 
-        // auto can_error = HAL_CAN_GetError(&hcan1);
-        // LogInfo("CAN1 Error Code: 0x%08lX", can_error);
+    /**
+     * Main loop - nothing is actually done here, all functionality is handled in background tasks.
+     * Here you can add any additional code for debugging or testing purposes.
+     */
+    while (true) {
+        osDelay(1000);
+        debug_led_green.turnOn();
+        osDelay(100);
+        debug_led_green.turnOff();
+    }
+}
 
-        // CAN_RxHeaderTypeDef rx_header;
-        // uint8_t rx_data[8];
-        // if (HAL_CAN_GetRxFifoFillLevel(&hcan1, CAN_RX_FIFO0) > 0) {
-        //     auto rx_message = HAL_CAN_GetRxMessage(&hcan1, CAN_RX_FIFO0, &rx_header, rx_data);
-        //     if (rx_message == HAL_OK) {
-        //         LogInfo("CAN1 RX Message Pending: ID=0x%08lX, DLC=%u", rx_header.ExtId, rx_header.DLC);
-        //     } else {
-        //         LogInfo("CAN1 RX Message Pending: None");
-        //     }
-        // }
-
-        // bool tx0_pending = HAL_CAN_IsTxMessagePending(&hcan1, CAN_TX_MAILBOX0 );
-        // bool tx1_pending = HAL_CAN_IsTxMessagePending(&hcan1, CAN_TX_MAILBOX1 );
-        // bool tx2_pending = HAL_CAN_IsTxMessagePending(&hcan1, CAN_TX_MAILBOX2 );
-        // LogInfo("CAN1 TX Message Pending on Mailboxes: 0=%s, 1=%s, 2=%s",
-        //         tx0_pending ? "YES" : "NO",
-        //         tx1_pending ? "YES" : "NO",
-        //         tx2_pending ? "YES" : "NO");
-
-        // motor.setRPM(1000);
-
-        // crsf::ChannelData channels;
-        // if (rc_receiver.getChannelData(channels)) {
-        //     LogInfo("%u %u %u %u", channels[0], channels[1], channels[2], channels[3]);
-        //     LogInfo("%u %u %u %u", channels[4], channels[5], channels[6], channels[7]);
-        //     LogInfo("%u %u %u %u", channels[8], channels[9], channels[10], channels[11]);
-        //     LogInfo("%u %u %u %u", channels[12], channels[13], channels[14], channels[15]);
-
-        // } else {
-        //     LogWarning("Failed to get channel data");
-        // }
-        // LogInfo("Main task running...");
+/**
+ * @brief Callback function for system state changes
+ *
+ * Will be called by the SystemMonitor whenever the system check detects a change in overall system state.
+ * The possible states are:
+ * - OK: All components (drivers, nodes, etc.) are functioning properly
+ * - WARNING: One or more components are in a non-critical error state
+ * - ERROR: One or more components are in a critical error state, it is unsafe to operate the vehicle
+ *
+ * @param state The new system state
+ */
+void onSystemStateChange(SystemCheck::SystemState state) {
+    switch (state) {
+        case SystemCheck::SystemState::OK:
+            LogInfo("Main: System state OK, starting drive controller");
+            drive_controller.start();
+            break;
+        case SystemCheck::SystemState::WARNING:
+            LogWarning("Main: System state WARNING, disabling autonomous control");
+            // TODO: Implement behavior for WARNING state
+            break;
+        case SystemCheck::SystemState::ERROR:
+            LogError("Main: System state ERROR, stopping drive controller");
+            drive_controller.emergencyStop();
+            break;
     }
 }

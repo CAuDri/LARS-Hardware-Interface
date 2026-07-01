@@ -29,6 +29,7 @@ target_sources(${PROJECT_NAME} PRIVATE
     board/Middlewares/Third_Party/FreeRTOS/Source/portable/MemMang/heap_4.c
 
     # Common source files
+    ${LIB_DIR}/common/global_symbols.cpp
     ${LIB_DIR}/common/logger.c
     ${LIB_DIR}/common/thread_safe_can.c
     ${LIB_DIR}/common/thread_safe_i2c.c
@@ -46,6 +47,8 @@ target_sources(${PROJECT_NAME} PRIVATE
     ${LIB_DIR}/lights/animations/animation.cpp
 
     # Misc
+    ${LIB_DIR}/misc/system_check.cpp
+    ${LIB_DIR}/misc/system_monitor.cpp
     ${LIB_DIR}/misc/drive_controller.cpp
 )
 
