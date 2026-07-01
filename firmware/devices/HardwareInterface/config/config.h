@@ -31,6 +31,7 @@ RCReceiver::Config rc_config{
 VESC::Config vesc_config{
     .hcan = &hcan1,
     .vesc_id = 51,
+    .max_rpm = 10000,
 };
 
 Servo::Config servo_config{
