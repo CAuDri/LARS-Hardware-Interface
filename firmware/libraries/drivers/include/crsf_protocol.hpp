@@ -261,6 +261,51 @@ inline bool parseFrame(uint8_t* data, size_t length, ParseResult& result) {
     return true;
 }
 
+bool inline composeFrame(uint8_t* buffer, size_t& length, uint8_t frame_type,
+                                const uint8_t* payload, size_t payload_length,
+                                uint8_t source_address, uint8_t destination_address) {
+    if (buffer == nullptr) {
+        LogVerboseCRSF("CRSF Composer: Null buffer pointer");
+        return false;
+    }
+    if (payload_length > MAX_PAYLOAD_SIZE) {
+        LogVerboseCRSF("CRSF Composer: Payload length %u exceeds maximum %u", payload_length, MAX_PAYLOAD_SIZE);
+        return false;
+    }
+
+    size_t frame_length = 0;
+    size_t index = 0;
+
+    buffer[index++] = SYNC_BYTE;  // Sync byte
+
+    if (frame_type >= EXTENDED_FRAME_MIN_TYPE) {
+        // Extended frame
+        frame_length = 4 + payload_length;  // Type + Src + Dst + Payload
+        buffer[index++] = static_cast<uint8_t>(frame_length);
+        buffer[index++] = frame_type;
+        buffer[index++] = source_address;
+        buffer[index++] = destination_address;
+    } else {
+        // Standard frame
+        frame_length = 2 + payload_length;  // Type + Payload
+        buffer[index++] = static_cast<uint8_t>(frame_length);
+        buffer[index++] = frame_type;
+    }
+
+    // Copy payload
+    if (payload_length > 0 && payload != nullptr) {
+        std::copy(payload, payload + payload_length, &buffer[index]);
+        index += payload_length;
+    }
+
+    // Calculate and append CRC
+    uint8_t crc = calcCRC(&buffer[2], frame_length - 1);
+    buffer[index++] = crc;
+
+    length = index;  // Total length of the composed frame
+    return true;
+}
+
 /**
  * @brief Unpack 16 channels of 11-bit RC data from a packed byte array
  *
