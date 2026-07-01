@@ -72,7 +72,7 @@ BlinkAnimation::BlinkAnimation(uint32_t duration_ms, uint32_t blink_period_ms, f
  * This function will blink all lights on and off for a specified number of times
  * with a specified delay between states.
  *
- * @return true if the animation ran successfully, false if it encountered an error
+ * @return true if the animation ran successfully, false if it was stopped midway
  */
 bool BlinkAnimation::run() {
     uint32_t start_time = osKernelGetTickCount();
@@ -97,7 +97,7 @@ bool BlinkAnimation::run() {
             }
         }
         if (exitOnDelay(on_time)) {
-            break;
+            return false;
         }
 
         if (osKernelGetTickCount() - start_time >= duration_ms) {
@@ -109,7 +109,7 @@ bool BlinkAnimation::run() {
             lights[i]->turnOff();
         }
         if (exitOnDelay(off_time)) {
-            break;
+            return false;
         }
     }
 

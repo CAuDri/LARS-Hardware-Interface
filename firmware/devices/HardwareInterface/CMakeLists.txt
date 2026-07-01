@@ -38,6 +38,12 @@ target_sources(${PROJECT_NAME} PRIVATE
     ${LIB_DIR}/drivers/rc_receiver.cpp
     ${LIB_DIR}/drivers/vesc.cpp
     ${LIB_DIR}/drivers/servo.cpp
+    ${LIB_DIR}/drivers/ws2812.cpp
+
+    # Light implementations and helpers
+    ${LIB_DIR}/lights/gpio_light.cpp
+    ${LIB_DIR}/lights/light_dispatcher.cpp
+    ${LIB_DIR}/lights/animations/animation.cpp
 )
 
 ### Application includes
@@ -48,6 +54,8 @@ target_include_directories(${PROJECT_NAME} PRIVATE
     ${LIB_DIR}/common/include
     ${LIB_DIR}/drivers/include
     ${LIB_DIR}/drivers/interfaces
+    ${LIB_DIR}/lights/include
+    ${LIB_DIR}/lights/animations/include
 )
 
 # ---------------- TraceRecorder Library ----------------

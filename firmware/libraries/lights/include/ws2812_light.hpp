@@ -193,6 +193,7 @@ bool WS2812Light<LED_COUNT>::turnOff() {
 template <size_t LED_COUNT>
 bool WS2812Light<LED_COUNT>::setColor(const Color& color, bool turn_on) {
     if (isNotLockOwner() || error_flag) {
+        LogDebug("WS2812Light: setColor called but lock not owned or error flag set");
         return false;
     }
     frame_buffer.fill(color);

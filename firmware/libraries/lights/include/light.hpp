@@ -24,8 +24,8 @@ class Light {
     Light() = default;
     virtual ~Light() = default;
 
-    bool lock();
-    bool unlock();
+    bool lock(osThreadId_t owner = osThreadGetId());
+    bool unlock(osThreadId_t owner = osThreadGetId());
     bool isLocked() const;
 
     virtual uint32_t getLEDCount() const = 0;
@@ -61,13 +61,12 @@ class Light {
  *
  * @return true if the lock was acquired, false if already locked by another thread
  */
-inline bool Light::lock() {
-    osThreadId_t current_thread = osThreadGetId();
+inline bool Light::lock(osThreadId_t owner) {
     if (lock_owner == nullptr) {
-        lock_owner = current_thread;
+        lock_owner = owner;
         return true;
     }
-    return lock_owner == current_thread;
+    return lock_owner == owner;
 }
 
 /**
@@ -75,9 +74,11 @@ inline bool Light::lock() {
  *
  * @return true if the lock was released, false if not owned by current thread
  */
-inline bool Light::unlock() {
-    osThreadId_t current_thread = osThreadGetId();
-    if (lock_owner == current_thread) {
+inline bool Light::unlock(osThreadId_t owner) {
+    if (lock_owner == nullptr) {
+        return false;  // Not locked
+    }
+    if (lock_owner == owner) {
         lock_owner = nullptr;
         return true;
     }

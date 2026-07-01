@@ -68,7 +68,7 @@ class WS2812Driver : public Driver {
 
     bool init(const Config& config, const DMABuffer& dma_buffer);
 
-    uint32_t getLEDCount() const;
+    virtual uint32_t getLEDCount() const;
 
     bool setColor(Color color);
     bool setColor(uint32_t index, Color color);
@@ -119,6 +119,8 @@ class WS2812 : public WS2812Driver {
 
     bool init(const Config& config);
 
+    uint32_t getLEDCount() const override { return LEDCount; }
+
    private:
     std::array<TimerWordType, (WS2812_BITS_PER_LED * LEDCount) + WS2812_RESET_TICKS> dma_buffer{};  // Color Data + Reset signal
 };
@@ -141,6 +143,7 @@ bool WS2812<LEDCount, TimerWordType>::init(const Config& config) {
     dma_buffer_handle.buffer = dma_buffer.data();
     dma_buffer_handle.size = sizeof(dma_buffer);
     dma_buffer_handle.led_count = LEDCount;
+
     if constexpr (std::is_same_v<TimerWordType, uint16_t>) {
         dma_buffer_handle.timer_word_size = WS2812Driver::DMABuffer::TimerWordSize::SIZE_16BIT;
     } else if constexpr (std::is_same_v<TimerWordType, uint32_t>) {
@@ -149,5 +152,6 @@ bool WS2812<LEDCount, TimerWordType>::init(const Config& config) {
         LogError("WS2812: Unsupported TimerWordType");
         return false;
     }
+
     return WS2812Driver::init(config, dma_buffer_handle);
 }
