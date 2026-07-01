@@ -127,6 +127,12 @@ void SystemCheck::logDriverStatus(const DriverStatus& status) {
     const char* state_color = LOG_COLOR_RESET;
     const char* connection_color = LOG_COLOR_RESET;
 
+    // Prevent unused warnings when logging is disabled
+    (void)state_str;
+    (void)connection_str;
+    (void)state_color;
+    (void)connection_color;
+
     switch (status.state) {
         case Driver::State::ERROR:
             state_str = "    ERROR    ";

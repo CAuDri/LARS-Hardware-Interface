@@ -502,6 +502,7 @@ void CAN_TxCallbackHandler(CAN_HandleTypeDef* hcan) {
 
 void CAN_ErrorCallbackHandler(CAN_HandleTypeDef* hcan) {
     const char* preamble = "CAN: Error callback triggered for CAN%d - Error:";
+    (void)preamble; // Suppress unused variable warning when logging is disabled
     uint32_t error_code = HAL_CAN_GetError(hcan);
     switch (error_code) {
         case HAL_CAN_ERROR_NONE:
