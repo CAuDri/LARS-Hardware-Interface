@@ -32,6 +32,7 @@ target_sources(${PROJECT_NAME} PRIVATE
     ${LIB_DIR}/common/logger.c
     ${LIB_DIR}/common/thread_safe_can.c
     ${LIB_DIR}/common/thread_safe_i2c.c
+    ${LIB_DIR}/common/thread_safe_adc.c
 
     # Drivers
     ${LIB_DIR}/drivers/rc_receiver.cpp

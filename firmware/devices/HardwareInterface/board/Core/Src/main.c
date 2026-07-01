@@ -27,6 +27,7 @@
 #include "logger.h"
 #include "thread_safe_can.h"
 #include "thread_safe_i2c.h"
+#include "thread_safe_adc.h"
 
 /* USER CODE END Includes */
 
@@ -1131,6 +1132,9 @@ void StartMainTask(void *argument)
   }
   if (!CAN_Init()) {
       LogError("Main: Failed to initialize thread-safe CAN wrapper");
+  }
+  if (ADC_Init() != HAL_OK) {
+      LogError("Main: Failed to initialize thread-safe ADC wrapper");
   }
 
   osDelay(10);
