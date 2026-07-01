@@ -44,6 +44,9 @@ target_sources(${PROJECT_NAME} PRIVATE
     ${LIB_DIR}/lights/gpio_light.cpp
     ${LIB_DIR}/lights/light_dispatcher.cpp
     ${LIB_DIR}/lights/animations/animation.cpp
+
+    # Misc
+    ${LIB_DIR}/misc/drive_controller.cpp
 )
 
 ### Application includes
@@ -56,6 +59,7 @@ target_include_directories(${PROJECT_NAME} PRIVATE
     ${LIB_DIR}/drivers/interfaces
     ${LIB_DIR}/lights/include
     ${LIB_DIR}/lights/animations/include
+    ${LIB_DIR}/misc/include
 )
 
 # ---------------- TraceRecorder Library ----------------

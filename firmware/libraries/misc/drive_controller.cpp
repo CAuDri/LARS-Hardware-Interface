@@ -9,11 +9,12 @@
  * It ensures that the vehicle can be safely stopped in case of emergencies and will perform mandatory stops when
  * switching between drive modes as required by the CAuDri-Challenge regulations.
  *
- * This implementation is tightly coupled to the RCReceiver, VESC, and Servo drivers..
+ * This implementation is tightly coupled to the RCReceiver, VESC, and Servo drivers.
  * Driver interfaces could be used, if you want to make it more generic and reusable for other driver implementations.
  */
 #include "drive_controller.hpp"
 
+#include "blink_animation.hpp"
 #include "logger.h"
 
 static constexpr uint32_t MANDATORY_STOP_TIME_MS = 1000;  // Time to wait after switching to manual mode (CAuDri regulations)
@@ -52,9 +53,10 @@ DriveController::DriveController() {}
  * @param rc_receiver Reference to the RC receiver driver
  * @param vesc Reference to the VESC driver
  * @param servo Reference to the servo driver
+ * @param status_light Reference to the status light
  */
-DriveController::DriveController(const Config& config, RCReceiver& rc_receiver, VESC& vesc, Servo& servo) {
-    init(config, rc_receiver, vesc, servo);
+DriveController::DriveController(const Config& config, RCReceiver& rc_receiver, VESC& vesc, Servo& servo, Light& status_light) {
+    init(config, rc_receiver, vesc, servo, status_light);
 }
 
 /**
@@ -74,8 +76,9 @@ DriveController::~DriveController() {
  * @param rc_receiver Reference to the RC receiver driver
  * @param vesc Reference to the VESC driver
  * @param servo Reference to the servo driver
+ * @param status_light Reference to the status light
  */
-bool DriveController::init(const Config& config, RCReceiver& rc_receiver, VESC& vesc, Servo& servo) {
+bool DriveController::init(const Config& config, RCReceiver& rc_receiver, VESC& vesc, Servo& servo, Light& status_light) {
     if (state != NodeState::UNINITIALIZED) {
         return false;
     }
@@ -104,6 +107,11 @@ bool DriveController::init(const Config& config, RCReceiver& rc_receiver, VESC& 
     // Register the Tracealyzer channel for drive mode logging
     if (xTraceStringRegister("Drive Mode", &drive_mode_channel) != TRC_SUCCESS) {
         LogDebug("Drive Controller: Failed to register Tracealyzer channel for drive mode");
+    }
+
+    // Initialize the light dispatcher with the status light
+    if (!light_dispatcher.registerLight(status_light)) {
+        LogWarning("Drive Controller: Failed to register status light with light dispatcher");
     }
 
     thread_attributes.name = "Drive Controller";
@@ -447,6 +455,8 @@ void DriveController::controllerThread(void* arg) {
     // Wait for the start signal
     osThreadFlagsWait(START_THREAD_FLAG, osFlagsWaitAny, osWaitForever);
 
+    BlinkAnimation manual_mode_animation(osWaitForever, 1000, 0.5f, config->manual_mode_color);
+
     // Wait for the RC receiver to be connected, since this usually takes a bit longer
     if (!rc_receiver->isConnected()) {
         LogInfo("Drive Controller: Waiting for RC receiver to connect...");
@@ -479,32 +489,36 @@ void DriveController::controllerThread(void* arg) {
             emergencyStop();
         }
 
+        if (flags == osFlagsErrorTimeout) {
+            continue;
+        }
+
+        LogDebug("Drive Controller: Drive mode changed to %s",
+                 (current_drive_mode == DriveMode::IDLE)             ? "IDLE"
+                 : (current_drive_mode == DriveMode::MANUAL)         ? "MANUAL"
+                 : (current_drive_mode == DriveMode::AUTONOMOUS)     ? "AUTONOMOUS"
+                 : (current_drive_mode == DriveMode::MANDATORY_STOP) ? "MANDATORY_STOP"
+                 : (current_drive_mode == DriveMode::EMERGENCY_STOP) ? "EMERGENCY_STOP"
+                                                                     : "UNKNOWN");
+
         switch (current_drive_mode) {
             case DriveMode::IDLE:
-                HAL_GPIO_WritePin(DEBUG_LED_RED_GPIO_Port, DEBUG_LED_RED_Pin, GPIO_PIN_RESET);
-                HAL_GPIO_WritePin(DEBUG_LED_GREEN_GPIO_Port, DEBUG_LED_GREEN_Pin, GPIO_PIN_RESET);
-                HAL_GPIO_WritePin(DEBUG_LED_BLUE_GPIO_Port, DEBUG_LED_BLUE_Pin, GPIO_PIN_RESET);
+                light_dispatcher.turnOff();
                 break;
 
             case DriveMode::MANUAL:
-                HAL_GPIO_WritePin(DEBUG_LED_RED_GPIO_Port, DEBUG_LED_RED_Pin, GPIO_PIN_RESET);
-                HAL_GPIO_WritePin(DEBUG_LED_GREEN_GPIO_Port, DEBUG_LED_GREEN_Pin, GPIO_PIN_SET);
-                HAL_GPIO_WritePin(DEBUG_LED_BLUE_GPIO_Port, DEBUG_LED_BLUE_Pin, GPIO_PIN_RESET);
+                light_dispatcher.runAnimation(&manual_mode_animation);
                 // Blink the debug light every second to indicate manual mode
                 // This is mandatory for the CAuDri-Challenge
                 // TODO: Add light
                 break;
 
             case DriveMode::AUTONOMOUS:
-                HAL_GPIO_WritePin(DEBUG_LED_RED_GPIO_Port, DEBUG_LED_RED_Pin, GPIO_PIN_RESET);
-                HAL_GPIO_WritePin(DEBUG_LED_GREEN_GPIO_Port, DEBUG_LED_GREEN_Pin, GPIO_PIN_RESET);
-                HAL_GPIO_WritePin(DEBUG_LED_BLUE_GPIO_Port, DEBUG_LED_BLUE_Pin, GPIO_PIN_SET);
+                light_dispatcher.turnOn(config->autonomous_mode_color);
                 break;
 
             case DriveMode::MANDATORY_STOP:
-                HAL_GPIO_WritePin(DEBUG_LED_RED_GPIO_Port, DEBUG_LED_RED_Pin, GPIO_PIN_SET);
-                HAL_GPIO_WritePin(DEBUG_LED_GREEN_GPIO_Port, DEBUG_LED_GREEN_Pin, GPIO_PIN_SET);
-                HAL_GPIO_WritePin(DEBUG_LED_BLUE_GPIO_Port, DEBUG_LED_BLUE_Pin, GPIO_PIN_RESET);
+                light_dispatcher.turnOn(config->mandatory_stop_color);
 
                 // The breaking command has already been sent, we just wait for the timeout to expire
                 osDelay(MANDATORY_STOP_TIME_MS);
@@ -512,9 +526,7 @@ void DriveController::controllerThread(void* arg) {
                 break;
 
             case DriveMode::EMERGENCY_STOP:
-                HAL_GPIO_WritePin(DEBUG_LED_RED_GPIO_Port, DEBUG_LED_RED_Pin, GPIO_PIN_SET);
-                HAL_GPIO_WritePin(DEBUG_LED_GREEN_GPIO_Port, DEBUG_LED_GREEN_Pin, GPIO_PIN_RESET);
-                HAL_GPIO_WritePin(DEBUG_LED_BLUE_GPIO_Port, DEBUG_LED_BLUE_Pin, GPIO_PIN_RESET);
+                light_dispatcher.turnOn(config->emergency_stop_color);
                 if (!handleEmergencyStop()) {
                     setState(NodeState::ERROR);
                 } else {

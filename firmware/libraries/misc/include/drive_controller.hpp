@@ -10,6 +10,8 @@
 #include "servo.hpp"
 #include "trcRecorder.h"
 #include "vesc.hpp"
+#include "light.hpp"
+#include "light_dispatcher.hpp"
 
 constexpr size_t DRIVE_CONTROLLER_THREAD_STACK_SIZE = 1024;
 
@@ -34,14 +36,19 @@ class DriveController {
         // crsf::Channel deadman_switch_channel = crsf::INVALID_CHANNEL;
         crsf::Channel mode_switch_channel = crsf::INVALID_CHANNEL;
 
+        Color manual_mode_color = COLOR_BLUE;
+        Color autonomous_mode_color = Color(0, 100, 0);
+        Color mandatory_stop_color = COLOR_ORANGE;
+        Color emergency_stop_color = COLOR_RED;
+
         osPriority_t thread_priority = osPriorityNormal;
     };
 
     DriveController();
-    DriveController(const Config& config, RCReceiver& rc_receiver, VESC& vesc, Servo& servo);
+    DriveController(const Config& config, RCReceiver& rc_receiver, VESC& vesc, Servo& servo, Light& status_light);
     ~DriveController();
 
-    bool init(const Config& config, RCReceiver& rc_receiver, VESC& vesc, Servo& servo);
+    bool init(const Config& config, RCReceiver& rc_receiver, VESC& vesc, Servo& servo, Light& status_light);
     bool start();
     bool restart();
 
@@ -62,6 +69,8 @@ class DriveController {
 
     RCReceiver::ChannelCallback rc_callback;
     uint32_t last_rc_update_timestamp = 0;
+
+    LightDispatcher light_dispatcher{"Tower Light Dispatcher"};
 
     osThreadId_t controller_thread = nullptr;
     osThreadAttr_t thread_attributes{};
