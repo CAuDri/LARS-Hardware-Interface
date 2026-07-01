@@ -28,6 +28,8 @@ VESC::Config vesc_config{
 Servo::Config servo_config{
     .htim = &htim3,
     .tim_channel = TIM_CHANNEL_1,
+    .hadc = &hadc2,
+    .adc_channel = ADC_CHANNEL_4,
     .inverted = false,
 };
 
