@@ -9,7 +9,7 @@
 #include "main.h"
 #include "system_check.hpp"
 
-constexpr uint32_t SYSTEM_MONITOR_THREAD_STACK_SIZE = 1024;
+constexpr uint32_t SYSTEM_MONITOR_THREAD_STACK_SIZE = 2048;
 
 /**
  * @brief Possible reasons for system wakeup/reset
