@@ -99,6 +99,9 @@ void vApplicationStackOverflowHook(xTaskHandle xTask, signed char *pcTaskName)
     LogInline(" ");
 
     // Signalize error state by blinking the red onboard LED
+    HAL_GPIO_WritePin(DEBUG_LED_RED_GPIO_Port, DEBUG_LED_RED_Pin, GPIO_PIN_SET);
+    HAL_GPIO_WritePin(DEBUG_LED_GREEN_GPIO_Port, DEBUG_LED_GREEN_Pin, GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(DEBUG_LED_BLUE_GPIO_Port, DEBUG_LED_BLUE_Pin, GPIO_PIN_SET);
 
     HALT_IF_DEBUGGING();
 
@@ -153,6 +156,9 @@ void vApplicationMallocFailedHook(void)
     vTaskSuspendAll();
 
     // Signalize error state by blinking the blue onboard LED
+    HAL_GPIO_WritePin(DEBUG_LED_RED_GPIO_Port, DEBUG_LED_RED_Pin, GPIO_PIN_SET);
+    HAL_GPIO_WritePin(DEBUG_LED_GREEN_GPIO_Port, DEBUG_LED_GREEN_Pin, GPIO_PIN_SET);
+    HAL_GPIO_WritePin(DEBUG_LED_BLUE_GPIO_Port, DEBUG_LED_BLUE_Pin, GPIO_PIN_RESET);
 
     HALT_IF_DEBUGGING();
 
