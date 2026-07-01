@@ -16,7 +16,7 @@
 #include "usbd_cdc_if.h"
 
 // Thread configuration
-#define LOG_THREAD_STACK_SIZE 1024
+#define LOG_THREAD_STACK_SIZE 2048
 #define LOG_THREAD_PRIORITY osPriorityLow
 
 // Nr of messages that can be stored in the log message queue
@@ -32,7 +32,7 @@
 #define LOG_MAX_TX_TIMEOUT_MS 10
 
 #define LOG_USB_TX_RETRIES 100
-#define LOG_USB_TX_RETRY_DELAY_MS 20
+#define LOG_USB_TX_RETRY_DELAY_MS 5
 
 // Flags for the logger thread
 #define LOG_UART_TX_COMPLETE_FLAG 0x01
@@ -55,6 +55,9 @@ static UART_HandleTypeDef* huart = NULL;
 static USBD_HandleTypeDef* husb = NULL;
 
 static bool initialized = false;
+
+static bool log_error_flag = false;
+static const char* log_error_message = "Logger: Error occurred during logging, messages may be lost.";
 
 static void logger_uart_tx_complete(UART_HandleTypeDef* huart);
 static int8_t logger_usb_tx_complete(uint8_t* buf, uint32_t* len, uint8_t epnum);
@@ -194,6 +197,7 @@ void logger_log_message(uint32_t log_level, const char* message, ...) {
     // Fallback in case the log thread is not running
     if (!logger_thread_running) {
         LogInline(message);
+        log_error_flag = true;
         return;
     }
 
@@ -226,7 +230,7 @@ void logger_log_message(uint32_t log_level, const char* message, ...) {
     if (status != osOK && DEBUG_LOG_LEVEL >= LOG_LEVEL_DEBUG) {
         // TODO: Find a better way to report dropped log messages that won't interfere with system performance
         // LogInline("Logger: Log Queue full, dropping message, status: %d", status);
-        return;
+        log_error_flag = true;
     }
 }
 
@@ -393,6 +397,15 @@ static void logger_thread_func(void* argument) {
         if (status != osOK) {
             LogInline("Logger: Queue get failed, status: %d", status);
             continue;
+        }
+        if (log_error_flag) {
+            // Notify about previous logging errors
+            log_error_flag = false;
+            log_message_t error_msg = {0};
+            error_msg.level = LOG_LEVEL_ERROR;
+            error_msg.timestamp = HAL_GetTick();
+            error_msg.format_string = log_error_message;
+            logger_parse_message(&error_msg);
         }
         logger_parse_message(&msg);
     }
