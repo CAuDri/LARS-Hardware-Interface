@@ -10,10 +10,37 @@
 
 #include "logger.h"
 
+#include <stdarg.h>
+#include <stdio.h>
+
+#include <cmsis_os.h>
+#include <rmw_microros/rmw_microros.h>
+#include <stm32f4xx_hal.h>
 #include <trcRecorder.h>
 
+#include "logger_format.h"
 #include "usb_device.h"
 #include "usbd_cdc_if.h"
+
+extern UART_HandleTypeDef huart3;
+extern USBD_HandleTypeDef hUsbDeviceFS;
+extern USBD_HandleTypeDef hUsbDeviceHS;
+
+#ifndef DEBUG_LOG_HANDLE
+#if DEBUG_LOG_OUTPUT == LOG_OUTPUT_UART || DEBUG_LOG_OUTPUT == LOG_OUTPUT_UART_INLINE
+#define DEBUG_LOG_HANDLE huart3
+#elif DEBUG_LOG_OUTPUT == LOG_OUTPUT_USB_CDC
+#define DEBUG_LOG_HANDLE hUsbDeviceFS
+#endif
+#endif
+
+#ifndef LOG_PRINTF_HANDLE
+#if DEBUG_LOG_OUTPUT == LOG_OUTPUT_UART || DEBUG_LOG_OUTPUT == LOG_OUTPUT_UART_INLINE
+#define LOG_PRINTF_HANDLE DEBUG_LOG_HANDLE
+#else
+#define LOG_PRINTF_HANDLE huart3
+#endif
+#endif
 
 // Thread configuration
 #define LOG_THREAD_STACK_SIZE 2048
@@ -98,6 +125,7 @@ int __io_putchar(int ch) {
  */
 typedef struct {
     uint32_t level;
+    bool success;
     uint32_t timestamp;
     const char* format_string;
     uint32_t arg_buffer[LOG_ARG_BUFFER_SIZE];
@@ -192,35 +220,113 @@ bool logger_init(void) {
  * @param message:   Format string for the message
  * @param ...:       Arguments for the format string (same as printf)
  */
-void logger_log_message(uint32_t log_level, const char* message, ...) {
+static uint32_t logger_get_timestamp(void) {
+    if (DEBUG_LOG_TIMESTAMP == LOG_TIMESTAMP_SYS) {
+        return HAL_GetTick();
+    }
+    if (DEBUG_LOG_TIMESTAMP == LOG_TIMESTAMP_ROS) {
+        return (uint32_t)rmw_uros_epoch_millis();
+    }
+    return 0;
+}
+
+static void logger_print_inline_v(uint32_t level, bool success, const char* message, va_list args) {
+    const char* level_text = "[UNKNOWN]";
+    const char* color = "";
+
+    if (success) {
+        level_text = "[INFO]";
+        color = LOG_COLOR_GREEN;
+    } else {
+        switch (level) {
+            case LOG_LEVEL_ERROR:
+                level_text = "[ERROR]";
+                color = LOG_COLOR_RED;
+                break;
+            case LOG_LEVEL_WARNING:
+                level_text = "[WARN]";
+                color = LOG_COLOR_YELLOW;
+                break;
+            case LOG_LEVEL_INFO:
+                level_text = "[INFO]";
+                break;
+            case LOG_LEVEL_DEBUG:
+                level_text = "[DEBUG]";
+                color = LOG_COLOR_BLUE;
+                break;
+            default:
+                break;
+        }
+    }
+
+    printf("%s[%08lu]%-7s ", color, (unsigned long)logger_get_timestamp(), level_text);
+    vprintf(message, args);
+    printf("%s\n", LOG_COLOR_RESET);
+}
+
+void logger_log_inline(uint32_t level, bool success, const char* message, ...) {
+    va_list args;
+    va_start(args, message);
+
+#if DEBUG_LOG_OUTPUT == LOG_OUTPUT_TRACE
+    TraceStringHandle_t channel = success                 ? logger_info_channel
+                                  : level == LOG_LEVEL_ERROR   ? logger_error_channel
+                                  : level == LOG_LEVEL_WARNING ? logger_warning_channel
+                                  : level == LOG_LEVEL_DEBUG   ? logger_debug_channel
+                                                               : logger_info_channel;
+    xTraceVPrintF(channel, message, &args);
+#elif DEBUG_LOG_OUTPUT == LOG_OUTPUT_UART || DEBUG_LOG_OUTPUT == LOG_OUTPUT_UART_INLINE || \
+    DEBUG_LOG_OUTPUT == LOG_OUTPUT_USB_CDC
+    logger_print_inline_v(level, success, message, args);
+#else
+    (void)level;
+    (void)success;
+    (void)message;
+#endif
+
+    va_end(args);
+}
+
+void logger_log_message(uint32_t log_level, bool success, const char* message, ...) {
+    va_list args;
+    va_start(args, message);
+
+#if DEBUG_LOG_OUTPUT == LOG_OUTPUT_TRACE
+    TraceStringHandle_t channel = success                     ? logger_info_channel
+                                  : log_level == LOG_LEVEL_ERROR   ? logger_error_channel
+                                  : log_level == LOG_LEVEL_WARNING ? logger_warning_channel
+                                  : log_level == LOG_LEVEL_DEBUG   ? logger_debug_channel
+                                                                   : logger_info_channel;
+    xTraceVPrintF(channel, message, &args);
+    va_end(args);
+    return;
+#elif DEBUG_LOG_OUTPUT == LOG_OUTPUT_UART_INLINE
+    logger_print_inline_v(log_level, success, message, args);
+    va_end(args);
+    return;
+#elif DEBUG_LOG_OUTPUT != LOG_OUTPUT_UART && DEBUG_LOG_OUTPUT != LOG_OUTPUT_USB_CDC
+    (void)log_level;
+    (void)success;
+    (void)message;
+    va_end(args);
+    return;
+#endif
+
     // Fallback before the queue has been created. Once it exists, messages can
     // safely be queued even if the logger task has not been scheduled yet.
     if (logger_queue == NULL) {
-        va_list args;
-        va_start(args, message);
-        printf(LOG_COLOR_RED "[%08ld]", HAL_GetTick());
-        vprintf(message, args);
-        printf("%s\n", LOG_COLOR_RESET);
+        logger_print_inline_v(log_level, success, message, args);
         va_end(args);
         return;
     }
 
     log_message_t msg = {0};
     msg.level = log_level;
+    msg.success = success;
     msg.format_string = message;
-
-    if (DEBUG_LOG_TIMESTAMP == LOG_TIMESTAMP_SYS) {
-        // Milliseconds since boot
-        msg.timestamp = HAL_GetTick();
-    } else if (DEBUG_LOG_TIMESTAMP == LOG_TIMESTAMP_ROS) {
-        // Syncronized time with ROS
-        msg.timestamp = (uint32_t)rmw_uros_epoch_millis();
-    }
+    msg.timestamp = logger_get_timestamp();
 
     // Extract the variadic arguments and store them in the log message buffer
-    va_list args;
-    va_start(args, message);
-
     for (uint32_t i = 0; i < LOG_ARG_BUFFER_SIZE; i++) {
         msg.arg_buffer[i] = va_arg(args, uint32_t);
     }
@@ -241,7 +347,13 @@ void logger_log_message(uint32_t log_level, const char* message, ...) {
  * This function is wrapped by the LogClear() macro and should not be called directly.
  * It is only used when using the LOG_OUTPUT_UART option.
  */
-void logger_clear_terminal(void) { logger_log_message(LOG_LEVEL_ERROR, "\033[2J\033[H"); }
+void logger_clear_terminal(void) {
+#if DEBUG_LOG_OUTPUT == LOG_OUTPUT_UART_INLINE
+    printf(LOG_CLEAR_SCREEN LOG_COLOR_RESET);
+#elif DEBUG_LOG_OUTPUT == LOG_OUTPUT_UART || DEBUG_LOG_OUTPUT == LOG_OUTPUT_USB_CDC
+    logger_log_message(LOG_LEVEL_ERROR, false, LOG_CLEAR_SCREEN);
+#endif
+}
 
 /**
  * @brief Wrapper for vsnprintf with forced 16-byte stack alignment.
@@ -311,7 +423,10 @@ static void logger_parse_message(const log_message_t* msg) {
     const char* log_level_str = "";
     const char* log_color_str = "";
 
-    switch (msg->level) {
+    if (msg->success) {
+        log_level_str = "[INFO]";
+        log_color_str = LOG_COLOR_GREEN;
+    } else switch (msg->level) {
         case LOG_LEVEL_ERROR:
             log_level_str = "[ERROR]";
             log_color_str = LOG_COLOR_RED;
@@ -326,10 +441,6 @@ static void logger_parse_message(const log_message_t* msg) {
         case LOG_LEVEL_DEBUG:
             log_level_str = "[DEBUG]";
             log_color_str = LOG_COLOR_BLUE;
-            break;
-        case LOG_LEVEL_SUCCESS:
-            log_level_str = "[INFO]";
-            log_color_str = LOG_COLOR_GREEN;
             break;
         default:
             log_level_str = "[UNKNOWN]";
@@ -403,7 +514,7 @@ static void logger_thread_func(void* argument) {
             // Notify about previous logging errors
             log_message_t error_msg = {0};
             error_msg.level = LOG_LEVEL_ERROR;
-            error_msg.timestamp = HAL_GetTick();
+            error_msg.timestamp = logger_get_timestamp();
             error_msg.format_string = log_error_message;
             logger_parse_message(&error_msg);
         }

@@ -8,20 +8,23 @@
 
 #pragma once
 
-#include "main.h"
-#include "usbd_def.h"
-
-extern UART_HandleTypeDef huart2;  
-extern UART_HandleTypeDef huart3;
-extern USBD_HandleTypeDef hUsbDeviceFS;  // Host USB port
-extern USBD_HandleTypeDef hUsbDeviceHS;  // Debug USB port
-
 /* ------ Logger Configuration ------ */
 
-#define DEBUG_LOG_LEVEL LOG_LEVEL_DEBUG        // Set the log level
-#define DEBUG_LOG_OUTPUT LOG_OUTPUT_USB_CDC    // Set the log output
-#define DEBUG_LOG_HANDLE hUsbDeviceHS          // Set the handle for the log output (e.g., huartX)
-#define DEBUG_LOG_TIMESTAMP LOG_TIMESTAMP_SYS  // Set the log timestamp
+#ifndef DEBUG_LOG_LEVEL
+#define DEBUG_LOG_LEVEL LOG_LEVEL_DEBUG  // Set the minimum compiled log level
+#endif
+
+#ifndef DEBUG_LOG_OUTPUT
+#define DEBUG_LOG_OUTPUT LOG_OUTPUT_USB_CDC  // Select the logging backend
+#endif
+
+#ifndef DEBUG_LOG_HANDLE
+#define DEBUG_LOG_HANDLE hUsbDeviceHS  // Backend handle (e.g. huartX or hUsbDeviceX)
+#endif
+
+#ifndef DEBUG_LOG_TIMESTAMP
+#define DEBUG_LOG_TIMESTAMP LOG_TIMESTAMP_SYS  // Select the timestamp source
+#endif
 
 /* ------ Trace Recorder Configuration ------ */
 
