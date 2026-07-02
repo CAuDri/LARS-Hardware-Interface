@@ -18,7 +18,6 @@
 #include <stm32f4xx_hal.h>
 #include <trcRecorder.h>
 
-#include "logger_format.h"
 #include "usb_device.h"
 #include "usbd_cdc_if.h"
 

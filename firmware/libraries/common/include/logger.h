@@ -31,6 +31,14 @@
 #define LOG_TIMESTAMP_ROS 1
 #define LOG_TIMESTAMP_SYS 2
 
+/* ANSI formatting constants for log messages that need inline styling. */
+#define LOG_COLOR_RED "\x1B[31m"
+#define LOG_COLOR_YELLOW "\x1B[33m"
+#define LOG_COLOR_BLUE "\x1B[34m"
+#define LOG_COLOR_GREEN "\x1B[32m"
+#define LOG_COLOR_RESET "\x1B[0m"
+#define LOG_CLEAR_SCREEN "\033[H\033[J"
+
 /* Device-specific DEBUG_LOG_* definitions. */
 #include "debug_config.h"
 
