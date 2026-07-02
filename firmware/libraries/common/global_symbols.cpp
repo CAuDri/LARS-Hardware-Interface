@@ -30,17 +30,3 @@ extern "C" void* malloc(size_t size) {
 }
 
 extern "C" void free(void* ptr) { vPortFree(ptr); }
-
-// Provide HAL_Delay implementation using FreeRTOS tick count
-extern "C" void HAL_Delay(uint32_t delay) {
-    uint32_t tickstart = osKernelGetTickCount();
-    uint32_t wait = delay;
-
-    /* Add a freq to guarantee minimum wait */
-    if (wait < HAL_MAX_DELAY) {
-        wait += (uint32_t)(uwTickFreq);
-    }
-
-    while ((osKernelGetTickCount() - tickstart) < wait) {
-    }
-}
