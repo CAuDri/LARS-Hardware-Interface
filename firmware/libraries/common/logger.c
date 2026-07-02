@@ -37,13 +37,13 @@
 // Flags for the logger thread
 #define LOG_UART_TX_COMPLETE_FLAG 0x01
 #define LOG_USB_TX_COMPLETE_FLAG 0x02
+#define LOG_ERROR_PENDING_FLAG 0x04
 
 static osMessageQueueId_t logger_queue = NULL;
 static osMessageQueueAttr_t logger_queue_attr = {0};
 
 static osThreadId_t logger_thread = NULL;
 static osThreadAttr_t logger_thread_attr = {0};
-static bool logger_thread_running = false;
 
 // Buffer to store the format string
 static char string_buffer[256] = {0};
@@ -56,7 +56,6 @@ static USBD_HandleTypeDef* husb = NULL;
 
 static bool initialized = false;
 
-static bool log_error_flag = false;
 static const char* log_error_message = "Logger: Error occurred during logging, messages may be lost.";
 
 static void logger_uart_tx_complete(UART_HandleTypeDef* huart);
@@ -117,7 +116,7 @@ bool logger_init(void) {
         return true;
     }
 
-    if (logger_thread_running) {
+    if (logger_thread != NULL) {
         LogError("Logger: Thread already running");
         return false;
     }
@@ -194,17 +193,21 @@ bool logger_init(void) {
  * @param ...:       Arguments for the format string (same as printf)
  */
 void logger_log_message(uint32_t log_level, const char* message, ...) {
-    // Fallback in case the log thread is not running
-    if (!logger_thread_running) {
-        LogInline(message);
-        log_error_flag = true;
+    // Fallback before the queue has been created. Once it exists, messages can
+    // safely be queued even if the logger task has not been scheduled yet.
+    if (logger_queue == NULL) {
+        va_list args;
+        va_start(args, message);
+        printf(LOG_COLOR_RED "[%08ld]", HAL_GetTick());
+        vprintf(message, args);
+        printf("%s\n", LOG_COLOR_RESET);
+        va_end(args);
         return;
     }
 
     log_message_t msg = {0};
     msg.level = log_level;
     msg.format_string = message;
-
 
     if (DEBUG_LOG_TIMESTAMP == LOG_TIMESTAMP_SYS) {
         // Milliseconds since boot
@@ -228,9 +231,7 @@ void logger_log_message(uint32_t log_level, const char* message, ...) {
     osStatus_t status = osMessageQueuePut(logger_queue, &msg, 0, 0);
 
     if (status != osOK && DEBUG_LOG_LEVEL >= LOG_LEVEL_DEBUG) {
-        // TODO: Find a better way to report dropped log messages that won't interfere with system performance
-        // LogInline("Logger: Log Queue full, dropping message, status: %d", status);
-        log_error_flag = true;
+        osThreadFlagsSet(logger_thread, LOG_ERROR_PENDING_FLAG);
     }
 }
 
@@ -378,7 +379,6 @@ static void logger_parse_message(const log_message_t* msg) {
  * @param argument: Pointer to the thread argument (not used)
  */
 static void logger_thread_func(void* argument) {
-    logger_thread_running = true;
     log_message_t msg;
 
     #if DEBUG_LOG_OUTPUT == LOG_OUTPUT_USB_CDC
@@ -398,9 +398,9 @@ static void logger_thread_func(void* argument) {
             LogInline("Logger: Queue get failed, status: %d", status);
             continue;
         }
-        if (log_error_flag) {
+        uint32_t flags = osThreadFlagsWait(LOG_ERROR_PENDING_FLAG, osFlagsWaitAny, 0);
+        if ((flags & LOG_ERROR_PENDING_FLAG) != 0) {
             // Notify about previous logging errors
-            log_error_flag = false;
             log_message_t error_msg = {0};
             error_msg.level = LOG_LEVEL_ERROR;
             error_msg.timestamp = HAL_GetTick();
