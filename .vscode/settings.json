@@ -5,16 +5,6 @@
         "reloadButton": null,
         "commands": [
             {
-                "name": "$(debug-disconnect) Connect micro-ROS Agent",
-                "tooltip": "Select a connected serial device and start the micro-ROS agent",
-                "color": "orange",
-                "useVsCodeApi": true,
-                "command": "workbench.action.tasks.runTask",
-                "args": [
-                    "Connect micro-ROS Agent"
-                ],
-            },
-            {
                 "name": "$(debug-alt) Start Debugger",
                 "tooltip": "Start a debugging session with a connected device",
                 "color": "lightgreen",
@@ -27,6 +17,26 @@
                 "color": "lightgrey",
                 "useVsCodeApi": true,
                 "command": "workbench.view.extension.vscode-serial-monitor-tools"
+            },
+            {
+                "name": "$(debug-disconnect) Micro-ROS Agent",
+                "tooltip": "Select a connected serial device and start the micro-ROS agent",
+                "color": "orange",
+                "useVsCodeApi": true,
+                "command": "workbench.action.tasks.runTask",
+                "args": [
+                    "Connect micro-ROS Agent"
+                ],
+            },
+            {
+                "name": "$(symbol-misc) STM32 CubeMX",
+                "tooltip": "Select a device configuration and open it in STM32CubeMX",
+                "color": "#32A9DC",
+                "useVsCodeApi": true,
+                "command": "workbench.action.tasks.runTask",
+                "args": [
+                    "Open STM32CubeMX"
+                ]
             },
             // {
             //     "name": "$(preview) Launch RViz",

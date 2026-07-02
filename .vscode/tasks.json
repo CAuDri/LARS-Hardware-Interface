@@ -2,6 +2,27 @@
     "version": "2.0.0",
     "tasks": [
         {
+            "label": "Open STM32CubeMX",
+            "type": "shell",
+            "command": "${workspaceFolder}/.devcontainer/script/container_open_cubemx.sh",
+            "args": [
+                "--device",
+                "${input:cubemxDevice}"
+            ],
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": true,
+                "panel": "dedicated",
+                "clear": true,
+                "close": false
+            },
+            "problemMatcher": [],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            }
+        },
+        {
             "label": "Connect micro-ROS Agent",
             "type": "shell",
             "command": "${workspaceFolder}/.devcontainer/script/container_start_microros_agent.sh",
@@ -17,6 +38,17 @@
             "options": {
                 "cwd": "${workspaceFolder}"
             }
+        }
+    ],
+    "inputs": [
+        {
+            "id": "cubemxDevice",
+            "type": "pickString",
+            "description": "Select the device configuration to open in STM32CubeMX:",
+            "options": [
+                "HardwareInterface"
+            ],
+            "default": "HardwareInterface"
         }
     ]
 }
