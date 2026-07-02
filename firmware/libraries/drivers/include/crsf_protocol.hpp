@@ -261,11 +261,30 @@ inline bool parseFrame(uint8_t* data, size_t length, ParseResult& result) {
     return true;
 }
 
-bool inline composeFrame(uint8_t* buffer, size_t& length, uint8_t frame_type,
-                                const uint8_t* payload, size_t payload_length,
-                                uint8_t source_address, uint8_t destination_address) {
+/**
+ * @brief Compose a complete CRSF frame.
+ *
+ * @param buffer Output buffer for the encoded frame
+ * @param buffer_capacity Size of the output buffer in bytes
+ * @param length Receives the encoded frame size, or zero on failure
+ * @param frame_type CRSF frame type
+ * @param payload Payload bytes; may be null only when payload_length is zero
+ * @param payload_length Number of payload bytes
+ * @param source_address Source address used by extended frames
+ * @param destination_address Destination address used by extended frames
+ * @return true when the frame was composed successfully
+ */
+inline bool composeFrame(uint8_t* buffer, size_t buffer_capacity, size_t& length, uint8_t frame_type,
+                         const uint8_t* payload, size_t payload_length, uint8_t source_address,
+                         uint8_t destination_address) {
+    length = 0;
+
     if (buffer == nullptr) {
         LogVerboseCRSF("CRSF Composer: Null buffer pointer");
+        return false;
+    }
+    if (payload == nullptr && payload_length != 0) {
+        LogVerboseCRSF("CRSF Composer: Null payload pointer with nonzero length");
         return false;
     }
     if (payload_length > MAX_PAYLOAD_SIZE) {
@@ -273,27 +292,32 @@ bool inline composeFrame(uint8_t* buffer, size_t& length, uint8_t frame_type,
         return false;
     }
 
-    size_t frame_length = 0;
+    const bool extended = frame_type >= EXTENDED_FRAME_MIN_TYPE;
+    const size_t frame_length = (extended ? 4U : 2U) + payload_length;
+    const size_t total_length = frame_length + 2U;
+    if (total_length > buffer_capacity) {
+        LogVerboseCRSF("CRSF Composer: Output buffer is too small");
+        return false;
+    }
+
     size_t index = 0;
 
     buffer[index++] = SYNC_BYTE;  // Sync byte
 
-    if (frame_type >= EXTENDED_FRAME_MIN_TYPE) {
+    if (extended) {
         // Extended frame
-        frame_length = 4 + payload_length;  // Type + Src + Dst + Payload
         buffer[index++] = static_cast<uint8_t>(frame_length);
         buffer[index++] = frame_type;
         buffer[index++] = source_address;
         buffer[index++] = destination_address;
     } else {
         // Standard frame
-        frame_length = 2 + payload_length;  // Type + Payload
         buffer[index++] = static_cast<uint8_t>(frame_length);
         buffer[index++] = frame_type;
     }
 
     // Copy payload
-    if (payload_length > 0 && payload != nullptr) {
+    if (payload_length > 0) {
         std::copy(payload, payload + payload_length, &buffer[index]);
         index += payload_length;
     }
@@ -302,7 +326,7 @@ bool inline composeFrame(uint8_t* buffer, size_t& length, uint8_t frame_type,
     uint8_t crc = calcCRC(&buffer[2], frame_length - 1);
     buffer[index++] = crc;
 
-    length = index;  // Total length of the composed frame
+    length = index;
     return true;
 }
 
