@@ -9,6 +9,10 @@
 #include "logger.h"
 #include "main.h"
 
+#include "FreeRTOS.h"
+#include "cmsis_os2.h"
+#include "task.h"
+
 // This is necessary for OpenOCD to show the correct FreeRTOS task list
 // The variable must be declared globally and volatile to prevent optimization
 const volatile UBaseType_t uxTopUsedPriority = configMAX_PRIORITIES - 1;

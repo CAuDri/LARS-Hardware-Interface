@@ -11,16 +11,6 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-/*
- * Temporary compatibility includes for existing consumers. These are removed
- * in the follow-up dependency-cleanup commit once consumers include what they
- * use directly.
- */
-#include <cmsis_os.h>
-
-#include "logger_format.h"
-#include "main.h"
-
 /* Severity values used by DEBUG_LOG_LEVEL. */
 #define LOG_LEVEL_NONE 0
 #define LOG_LEVEL_ERROR 1

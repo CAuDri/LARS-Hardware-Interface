@@ -14,6 +14,7 @@
  */
 #include "thread_safe_can.h"
 
+#include <FreeRTOS.h>
 #include <cmsis_os2.h>
 #include <logger.h>
 
@@ -34,6 +35,7 @@
 
 // TODO: Don't be as dumb as before and do this properly
 // __weak CAN_HandleTypeDef hcan1 = {0};
+extern CAN_HandleTypeDef hcan1;
 __weak CAN_HandleTypeDef hcan2 = {0};
 
 /**

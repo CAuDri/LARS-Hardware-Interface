@@ -9,9 +9,10 @@
  */
 #pragma once
 
-#include "light.hpp"
+#include "FreeRTOS.h"
 #include "animation.hpp"
 #include "cmsis_os2.h"
+#include "light.hpp"
 
 #define LIGHT_DISPATCHER_MAX_LIGHTS 4
 

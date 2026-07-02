@@ -6,6 +6,7 @@
 #include "system_check.hpp"
 
 #include "logger.h"
+#include "logger_format.h"
 
 #define LogResult(...) LogInfo(__VA_ARGS__)
 
