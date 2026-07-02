@@ -5,6 +5,10 @@
  * Calls below DEBUG_LOG_LEVEL, or all calls when DEBUG_LOG_OUTPUT is
  * LOG_OUTPUT_NONE, compile to no-ops. Their arguments are not evaluated and
  * their format strings are not referenced by the resulting binary.
+ *
+ * Queued backends defer formatting to a background task. Prefer string literals or other
+ * long-lived format strings and arguments. If referenced data expires before
+ * the logger task formats it, the resulting message is undefined.
  */
 #pragma once
 
@@ -29,7 +33,8 @@
 /* Timestamp values used by DEBUG_LOG_TIMESTAMP. */
 #define LOG_TIMESTAMP_NONE 0
 #define LOG_TIMESTAMP_ROS 1
-#define LOG_TIMESTAMP_SYS 2
+#define LOG_TIMESTAMP_HAL 2
+#define LOG_TIMESTAMP_SYS 3
 
 /* ANSI formatting constants for log messages that need inline styling. */
 #define LOG_COLOR_RED "\x1B[31m"
@@ -107,7 +112,7 @@ void logger_clear_terminal(void);
 #define LogSuccess(...) \
     do { logger_log_message(LOG_LEVEL_INFO, true, __VA_ARGS__); } while (0)
 #define LogEmpty() \
-    do { logger_log_message(LOG_LEVEL_INFO, false, ""); } while (0)
+    do { logger_log_message(LOG_LEVEL_INFO, false, "%s", ""); } while (0)
 #else
 #define LogInfo(...) ((void)0)
 #define LogSuccess(...) ((void)0)

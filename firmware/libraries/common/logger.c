@@ -13,6 +13,7 @@
 #include <stdarg.h>
 #include <stdio.h>
 
+#include <FreeRTOS.h>
 #include <cmsis_os.h>
 #include <rmw_microros/rmw_microros.h>
 #include <stm32f4xx_hal.h>
@@ -66,10 +67,7 @@ extern USBD_HandleTypeDef hUsbDeviceHS;
 #define LOG_ERROR_PENDING_FLAG 0x04
 
 static osMessageQueueId_t logger_queue = NULL;
-static osMessageQueueAttr_t logger_queue_attr = {0};
-
 static osThreadId_t logger_thread = NULL;
-static osThreadAttr_t logger_thread_attr = {0};
 
 // Buffer to store the format string
 static char string_buffer[256] = {0};
@@ -79,14 +77,19 @@ static char tx_buffer[256] = {0};
 
 static UART_HandleTypeDef* huart = NULL;
 static USBD_HandleTypeDef* husb = NULL;
-
-static bool initialized = false;
+static bool transmission_pending = false;
 
 static const char* log_error_message = "Logger: Error occurred during logging, messages may be lost.";
 
 static void logger_uart_tx_complete(UART_HandleTypeDef* huart);
 static int8_t logger_usb_tx_complete(uint8_t* buf, uint32_t* len, uint8_t epnum);
 static void logger_thread_func(void* argument);
+
+static void logger_mark_error(void) {
+    if (logger_thread != NULL) {
+        osThreadFlagsSet(logger_thread, LOG_ERROR_PENDING_FLAG);
+    }
+}
 
 // Initialize TraceRecorder channels if using TraceRecorder output
 #if DEBUG_LOG_OUTPUT == LOG_OUTPUT_TRACE
@@ -130,6 +133,28 @@ typedef struct {
     uint32_t arg_buffer[LOG_ARG_BUFFER_SIZE];
 } log_message_t;
 
+static StaticQueue_t logger_queue_control_block;
+static uint32_t logger_queue_storage[(LOG_MESSAGE_QUEUE_SIZE * sizeof(log_message_t) + sizeof(uint32_t) - 1U) /
+                                     sizeof(uint32_t)];
+static const osMessageQueueAttr_t logger_queue_attributes = {
+    .name = "LogQueue",
+    .cb_mem = &logger_queue_control_block,
+    .cb_size = sizeof(logger_queue_control_block),
+    .mq_mem = logger_queue_storage,
+    .mq_size = sizeof(logger_queue_storage),
+};
+
+static StaticTask_t logger_thread_control_block;
+static uint64_t logger_thread_stack[LOG_THREAD_STACK_SIZE / sizeof(uint64_t)];
+static const osThreadAttr_t logger_thread_attributes = {
+    .name = "Logger",
+    .cb_mem = &logger_thread_control_block,
+    .cb_size = sizeof(logger_thread_control_block),
+    .stack_mem = logger_thread_stack,
+    .stack_size = sizeof(logger_thread_stack),
+    .priority = LOG_THREAD_PRIORITY,
+};
+
 /**
  * @brief Initialize the logger thread for logging messages over UART.
  *
@@ -165,41 +190,29 @@ bool logger_init(void) {
         // This is a bit hacky and might only work with certain versions of the USB stack/CubeMX
         USBD_CDC_ItfTypeDef* cdc_interface = (USBD_CDC_ItfTypeDef*)husb->pUserData[husb->classId];
         if (cdc_interface == NULL) {
-            LogInline("Logger: Error retrieving CDC interface, will not use callbacks");
-        } else {
-            cdc_interface->TransmitCplt = logger_usb_tx_complete;
+            LogInline("Logger: Error retrieving CDC interface");
+            return false;
         }
+        cdc_interface->TransmitCplt = logger_usb_tx_complete;
     } else {
         LogInline("Logger: No valid output handle");
         return false;
     }
 
-    // The logger queue and thread will be allocated dynamically for now
-    logger_queue_attr.name = "LogQueue";
-    logger_queue = osMessageQueueNew(LOG_MESSAGE_QUEUE_SIZE, sizeof(log_message_t), &logger_queue_attr);
+    logger_queue = osMessageQueueNew(LOG_MESSAGE_QUEUE_SIZE, sizeof(log_message_t), &logger_queue_attributes);
     if (logger_queue == NULL) {
         LogInline("Logger: Queue creation failed");
         return false;
     }
 
-    logger_thread_attr.name = "Logger";
-    logger_thread_attr.priority = LOG_THREAD_PRIORITY;
-    logger_thread_attr.stack_size = LOG_THREAD_STACK_SIZE;
-
-    logger_thread = osThreadNew(logger_thread_func, NULL, &logger_thread_attr);
+    logger_thread = osThreadNew(logger_thread_func, NULL, &logger_thread_attributes);
 
     if (logger_thread == NULL) {
         LogInline("Logger: Thread creation failed");
+        osMessageQueueDelete(logger_queue);
+        logger_queue = NULL;
         return false;
     }
-
-    uint32_t flags = osThreadFlagsSet(logger_thread, LOG_UART_TX_COMPLETE_FLAG);
-    if (flags != LOG_UART_TX_COMPLETE_FLAG) {
-        LogInline("Logger: Thread flags set failed");
-        return false;
-    }
-
-    initialized = true;
     return true;
 }
 
@@ -220,8 +233,11 @@ bool logger_init(void) {
  * @param ...:       Arguments for the format string (same as printf)
  */
 static uint32_t logger_get_timestamp(void) {
-    if (DEBUG_LOG_TIMESTAMP == LOG_TIMESTAMP_SYS) {
+    if (DEBUG_LOG_TIMESTAMP == LOG_TIMESTAMP_HAL) {
         return HAL_GetTick();
+    }
+    if (DEBUG_LOG_TIMESTAMP == LOG_TIMESTAMP_SYS) {
+        return osKernelGetTickCount();
     }
     if (DEBUG_LOG_TIMESTAMP == LOG_TIMESTAMP_ROS) {
         return (uint32_t)rmw_uros_epoch_millis();
@@ -332,11 +348,16 @@ void logger_log_message(uint32_t log_level, bool success, const char* message, .
 
     va_end(args);
 
-    // Log Messages will be saved in the log queue and later retrieved by the log thread
+    // Keep a bounded sliding window while the logger task is unavailable. Queue
+    // operations are non-blocking; eviction only happens when the queue is full.
     osStatus_t status = osMessageQueuePut(logger_queue, &msg, 0, 0);
-
-    if (status != osOK && DEBUG_LOG_LEVEL >= LOG_LEVEL_DEBUG) {
-        osThreadFlagsSet(logger_thread, LOG_ERROR_PENDING_FLAG);
+    if (status == osErrorResource) {
+        log_message_t discarded_message;
+        osMessageQueueGet(logger_queue, &discarded_message, NULL, 0);
+        status = osMessageQueuePut(logger_queue, &msg, 0, 0);
+        logger_mark_error();
+    } else if (status != osOK) {
+        logger_mark_error();
     }
 }
 
@@ -362,34 +383,53 @@ void logger_clear_terminal(void) {
  * 16-byte by default and should work on most ARM architectures.
  */
 // __attribute__((force_align_arg_pointer, aligned(16)))
-static uint32_t logger_parse_arguments(char* src_buffer, uint32_t mock_arg, ...) {
+static int logger_parse_arguments(char* src_buffer, uint32_t mock_arg, ...) {
     va_list args;
     va_start(args, mock_arg);
 
     // The variadic arguments should have the same memory layout as the arguments in the logger_log_message function.
     // This is architecture and compiler dependent and might not work on other platforms.
-    uint32_t length = vsnprintf(tx_buffer, sizeof(tx_buffer), src_buffer, args);
+    int length = vsnprintf(tx_buffer, sizeof(tx_buffer), src_buffer, args);
 
     va_end(args);
     return length;
 }
 
-static void logger_transmit_message(char* buffer, uint32_t length) {
+static bool logger_wait_for_transmission(void) {
+    if (!transmission_pending) {
+        return true;
+    }
+
+    uint32_t completion_flag = huart != NULL ? LOG_UART_TX_COMPLETE_FLAG : LOG_USB_TX_COMPLETE_FLAG;
+    uint32_t flags = osThreadFlagsWait(completion_flag, osFlagsWaitAny, LOG_MAX_TX_TIMEOUT_MS);
+    if ((flags & completion_flag) == 0U) {
+        return false;
+    }
+
+    transmission_pending = false;
+    return true;
+}
+
+static bool logger_transmit_message(char* buffer, uint32_t length) {
     if (huart) {
         // Send the formatted message over UART using DMA transfer
         HAL_StatusTypeDef status = HAL_UART_Transmit_DMA(huart, (uint8_t*)buffer, length);
 
         if (status != HAL_OK) {
             LogInline("Logger: UART DMA transmit failed, status: %d", status);
-            return;
+            return false;
         }
     } else if (husb) {
+        if (husb->dev_state != USBD_STATE_CONFIGURED) {
+            return false;
+        }
+
         // Send the formatted message over USB CDC
         uint32_t status = USBD_CDC_SetTxBuffer(husb, (uint8_t*)buffer, length);
 
         if (status != USBD_OK) {
             LogInline("Logger: USB CDC set TX buffer failed, status: %lu", status);
-            return;
+            return false;
         }
 
         for (uint32_t i = 0; i < LOG_USB_TX_RETRIES; i++) {
@@ -401,13 +441,16 @@ static void logger_transmit_message(char* buffer, uint32_t length) {
         }
         if (status != USBD_OK) {
             LogInline("Logger: USB CDC transmit packet failed, status: %lu", status);
-            return;
+            return false;
         }
     } else {
         // Shouldn't happen
         LogInline("Logger: No valid output handle");
-        return;
+        return false;
     }
+
+    transmission_pending = true;
+    return true;
 }
 
 /**
@@ -419,6 +462,12 @@ static void logger_transmit_message(char* buffer, uint32_t length) {
  * @param msg: Pointer to the log message to be processed
  */
 static void logger_parse_message(const log_message_t* msg) {
+    // The transfer backend may still own tx_buffer. Never format another
+    // message into it until completion has been observed.
+    if (!logger_wait_for_transmission()) {
+        return;
+    }
+
     const char* log_level_str = "";
     const char* log_color_str = "";
 
@@ -456,28 +505,29 @@ static void logger_parse_message(const log_message_t* msg) {
              msg->format_string,
              LOG_COLOR_RESET);
 
-    // Wait for UART/USB transmission to complete
-    // If the previous transmission did not complete within the timeout, we will start the next one anyway
-    osThreadFlagsWait(LOG_UART_TX_COMPLETE_FLAG | LOG_USB_TX_COMPLETE_FLAG, osFlagsWaitAny, LOG_MAX_TX_TIMEOUT_MS);
-
     // Arguments need to be passed manually to properly reconstruct the variadic arguments
-    uint32_t length = logger_parse_arguments(string_buffer,
-                                             0,
-                                             msg->arg_buffer[0],
-                                             msg->arg_buffer[1],
-                                             msg->arg_buffer[2],
-                                             msg->arg_buffer[3],
-                                             msg->arg_buffer[4],
-                                             msg->arg_buffer[5],
-                                             msg->arg_buffer[6],
-                                             msg->arg_buffer[7]);
+    int length = logger_parse_arguments(string_buffer,
+                                        0,
+                                        msg->arg_buffer[0],
+                                        msg->arg_buffer[1],
+                                        msg->arg_buffer[2],
+                                        msg->arg_buffer[3],
+                                        msg->arg_buffer[4],
+                                        msg->arg_buffer[5],
+                                        msg->arg_buffer[6],
+                                        msg->arg_buffer[7]);
 
-    logger_transmit_message(tx_buffer, length);
-
-    // Check for truncation errors during formatting
-    if (length >= sizeof(tx_buffer)) {
-        logger_transmit_message("\x1B[31m --- LOG MESSAGE TRUNCATED --- \x1B[0m\n", 40);
+    if (length < 0) {
+        return;
     }
+
+    uint32_t transmit_length = (uint32_t)length;
+    if (transmit_length >= sizeof(tx_buffer)) {
+        transmit_length = sizeof(tx_buffer) - 1U;
+        logger_mark_error();
+    }
+
+    (void)logger_transmit_message(tx_buffer, transmit_length);
 }
 
 /**
@@ -491,16 +541,14 @@ static void logger_parse_message(const log_message_t* msg) {
 static void logger_thread_func(void* argument) {
     log_message_t msg;
 
-    #if DEBUG_LOG_OUTPUT == LOG_OUTPUT_USB_CDC
-    // We will wait until the USB connection is established before processing log messages
-    // This will decrease the chance of losing log messages during startup
-    while (husb->dev_state != USBD_STATE_CONFIGURED) {
-        osDelay(100);
-    }
-    osDelay(1000);
-    #endif
-
     while (1) {
+#if DEBUG_LOG_OUTPUT == LOG_OUTPUT_USB_CDC
+        // Preserve a sliding window of recent messages while disconnected.
+        while (husb->dev_state != USBD_STATE_CONFIGURED) {
+            osDelay(100);
+        }
+#endif
+
         // Wait for new log messages in the queue
         osStatus_t status = osMessageQueueGet(logger_queue, &msg, NULL, osWaitForever);
 
