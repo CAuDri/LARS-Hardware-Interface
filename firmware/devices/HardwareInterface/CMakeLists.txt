@@ -8,6 +8,10 @@ cmake_minimum_required(VERSION 3.22)
 
 project(HardwareInterface LANGUAGES C CXX ASM)
 
+# Apply the board selection to every target created below, including auxiliary
+# libraries such as TraceRecorder that include STM32 device headers directly.
+add_compile_definitions(USE_HAL_DRIVER STM32F429xx)
+
 add_executable(${PROJECT_NAME})
 
 # Include the common CMake configuration for all devices
@@ -15,9 +19,6 @@ include("../../toolchain/firmware_common.cmake")
 
 # Include the CubeMX-generated CMake configuration
 add_subdirectory("board/cmake/stm32cubemx" "${CMAKE_BINARY_DIR}/stm32cubemx")
-
-# Define the microcontroller name for the STM32 HAL
-target_compile_definitions(${PROJECT_NAME} PUBLIC STM32F429XX)
 
 # ---------------- Device specific includes ----------------
 
