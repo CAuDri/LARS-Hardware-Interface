@@ -32,9 +32,9 @@
 
 /* Timestamp values used by DEBUG_LOG_TIMESTAMP. */
 #define LOG_TIMESTAMP_NONE 0
-#define LOG_TIMESTAMP_ROS 1
-#define LOG_TIMESTAMP_HAL 2
-#define LOG_TIMESTAMP_SYS 3
+#define LOG_TIMESTAMP_ROS 1  /* micro-ROS synchronized epoch time */
+#define LOG_TIMESTAMP_HAL 2  /* HAL_GetTick() */
+#define LOG_TIMESTAMP_SYS 3  /* FreeRTOS kernel tick */
 
 /* ANSI formatting constants for log messages that need inline styling. */
 #define LOG_COLOR_RED "\x1B[31m"

@@ -3,9 +3,8 @@
  *
  * @brief CAuDri - Logger implementation for the Hardware Interface
  *
- * Contains the implementation of the UART logger output using DMA and a dedicated logging thread.
- * Log messages are sent to a message queue and processed by the logger thread in the background.
- * This allows for non-blocking logging and reduces the impact on real-time performance.
+ * Queued UART and USB backends send records to a dedicated background task.
+ * Inline and Tracealyzer backends bypass that queue.
  */
 
 #include "logger.h"
@@ -42,20 +41,18 @@ extern USBD_HandleTypeDef hUsbDeviceHS;
 #endif
 #endif
 
-// Thread configuration
+// Logger task configuration
 #define LOG_THREAD_STACK_SIZE 2048
 #define LOG_THREAD_PRIORITY osPriorityLow
 
-// Nr of messages that can be stored in the log message queue
-// If this number is too low, log messages might be dropped on high system load
+// Number of recent records retained while the consumer is unavailable.
 #define LOG_MESSAGE_QUEUE_SIZE 48
 
 // Buffer size for the log message arguments (32-bit words)
 // When increasing this value, the call to logger_parse_arguments() needs to be adjusted manually
 #define LOG_ARG_BUFFER_SIZE 8
 
-// Timeout for UART/USB transmissions
-// A new transmission will be started if the previous one did not complete within this time
+// Maximum time the logger task waits before checking a pending transfer again.
 #define LOG_MAX_TX_TIMEOUT_MS 10
 
 #define LOG_USB_TX_RETRIES 100
@@ -79,7 +76,7 @@ static UART_HandleTypeDef* huart = NULL;
 static USBD_HandleTypeDef* husb = NULL;
 static bool transmission_pending = false;
 
-static const char* log_error_message = "Logger: Error occurred during logging, messages may be lost.";
+static const char log_error_message[] = "Logger: Error occurred during logging, messages may be lost.";
 
 static void logger_uart_tx_complete(UART_HandleTypeDef* huart);
 static int8_t logger_usb_tx_complete(uint8_t* buf, uint32_t* len, uint8_t epnum);
@@ -156,12 +153,9 @@ static const osThreadAttr_t logger_thread_attributes = {
 };
 
 /**
- * @brief Initialize the logger thread for logging messages over UART.
+ * @brief Initialize the queued UART or USB logger backend.
  *
- * Calling this function is only necessary when using the LOG_OUTPUT_UART option.
- * Log messages will be stored in a message queue and processed by the logger thread in the background.
- *
- * @param config: Configuration struct for the logger thread
+ * Inline, Tracealyzer, disabled, and reserved backends require no logger task.
  */
 bool logger_init(void) {
     if (DEBUG_LOG_OUTPUT != LOG_OUTPUT_UART && DEBUG_LOG_OUTPUT != LOG_OUTPUT_USB_CDC) {
@@ -220,11 +214,11 @@ bool logger_init(void) {
  * @brief Log a message with a specific log level.
  *
  * This function is wrapped by the LogError(), LogWarning(), LogInfo() and LogDebug() macros and should not be called directly.
- * It is only used when using the LOG_OUTPUT_UART option.
+ * Queued backends return after a non-blocking queue operation.
  *
  * Some types will be promoted when being passed to a variadic function. (e.g. float to double)
  * The stack pointer needs to be 64-bit memory aligned when the function is called.
- * This is neccessary to properly reconstruct the variadic arguments in the logger thread.
+ * This is necessary to reconstruct the variadic arguments in the logger thread.
  *
  * The compiler will throw a warning if the provided arguments do not match the format specifiers in the format string.
  *
@@ -362,10 +356,7 @@ void logger_log_message(uint32_t log_level, bool success, const char* message, .
 }
 
 /**
- * @brief Clear the terminal screen.
- *
- * This function is wrapped by the LogClear() macro and should not be called directly.
- * It is only used when using the LOG_OUTPUT_UART option.
+ * @brief Clear the terminal for backends that support ANSI output.
  */
 void logger_clear_terminal(void) {
 #if DEBUG_LOG_OUTPUT == LOG_OUTPUT_UART_INLINE
@@ -383,7 +374,7 @@ void logger_clear_terminal(void) {
  * 16-byte by default and should work on most ARM architectures.
  */
 // __attribute__((force_align_arg_pointer, aligned(16)))
-static int logger_parse_arguments(char* src_buffer, uint32_t mock_arg, ...) {
+static int logger_parse_arguments(const char* src_buffer, uint32_t mock_arg, ...) {
     va_list args;
     va_start(args, mock_arg);
 
@@ -454,12 +445,9 @@ static bool logger_transmit_message(char* buffer, uint32_t length) {
 }
 
 /**
- * @brief Parse and format a log message and send it over UART using DMA.
+ * @brief Format and transmit one queued log record.
  *
- * This function is called by the logger thread to process log messages from the queue.
- * It formats the log message with timestamp, log level and color codes, then sends it over UART using DMA.
- *
- * @param msg: Pointer to the log message to be processed
+ * @param msg Pointer to the record to process
  */
 static void logger_parse_message(const log_message_t* msg) {
     // The transfer backend may still own tx_buffer. Never format another
@@ -498,9 +486,9 @@ static void logger_parse_message(const log_message_t* msg) {
     // Format the log message with timestamp, log level and color
     snprintf(string_buffer,
              sizeof(string_buffer),
-             "%s[%08ld]%-7s %s%s\n",
+             "%s[%08lu]%-7s %s%s\n",
              log_color_str,
-             msg->timestamp,
+             (unsigned long)msg->timestamp,
              log_level_str,
              msg->format_string,
              LOG_COLOR_RESET);
@@ -539,12 +527,17 @@ static void logger_parse_message(const log_message_t* msg) {
  * @param argument: Pointer to the thread argument (not used)
  */
 static void logger_thread_func(void* argument) {
+    (void)argument;
     log_message_t msg;
 
     while (1) {
 #if DEBUG_LOG_OUTPUT == LOG_OUTPUT_USB_CDC
         // Preserve a sliding window of recent messages while disconnected.
         while (husb->dev_state != USBD_STATE_CONFIGURED) {
+            // USB reset/disconnect cancels ownership of the previous endpoint
+            // buffer and does not necessarily invoke TransmitCplt.
+            transmission_pending = false;
+            (void)osThreadFlagsClear(LOG_USB_TX_COMPLETE_FLAG);
             osDelay(100);
         }
 #endif
@@ -584,6 +577,9 @@ static void logger_uart_tx_complete(UART_HandleTypeDef* huart) {
  * @brief USB CDC transmission complete callback
  */
 static int8_t logger_usb_tx_complete(uint8_t* buf, uint32_t* len, uint8_t epnum) {
+    (void)buf;
+    (void)len;
+    (void)epnum;
     // Notify the log thread that the USB CDC transfer is complete
     osThreadFlagsSet(logger_thread, LOG_USB_TX_COMPLETE_FLAG);
     return USBD_OK;
