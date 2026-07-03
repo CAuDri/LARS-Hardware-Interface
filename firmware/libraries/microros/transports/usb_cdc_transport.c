@@ -45,6 +45,7 @@ static osThreadId_t transmit_thread = NULL;
 static uint8_t line_coding[7] = {0x00, 0xC2, 0x01, 0x00, 0x00, 0x00, 0x08};
 
 static bool validate_config(const usb_cdc_transport_config_t* config);
+static bool dma_interrupt_enabled(const DMA_HandleTypeDef* dma);
 static void resume_reception_if_paused(void);
 static int8_t cdc_control(uint8_t command, uint8_t* buffer, uint16_t length);
 static int8_t cdc_receive_complete(uint8_t* buffer, uint32_t* length);
@@ -282,7 +283,32 @@ static bool validate_config(const usb_cdc_transport_config_t* config) {
            config->rx_dma->Init.MemInc == DMA_MINC_ENABLE &&
            config->rx_dma->Init.PeriphDataAlignment == DMA_PDATAALIGN_BYTE &&
            config->rx_dma->Init.MemDataAlignment == DMA_MDATAALIGN_BYTE &&
-           config->rx_dma->Init.Mode == DMA_NORMAL && config->rx_dma->State == HAL_DMA_STATE_READY;
+           config->rx_dma->Init.Mode == DMA_NORMAL && config->rx_dma->State == HAL_DMA_STATE_READY &&
+           dma_interrupt_enabled(config->rx_dma);
+}
+
+static bool dma_interrupt_enabled(const DMA_HandleTypeDef* dma) {
+    IRQn_Type interrupt;
+
+    if (dma->Instance == DMA1_Stream0) interrupt = DMA1_Stream0_IRQn;
+    else if (dma->Instance == DMA1_Stream1) interrupt = DMA1_Stream1_IRQn;
+    else if (dma->Instance == DMA1_Stream2) interrupt = DMA1_Stream2_IRQn;
+    else if (dma->Instance == DMA1_Stream3) interrupt = DMA1_Stream3_IRQn;
+    else if (dma->Instance == DMA1_Stream4) interrupt = DMA1_Stream4_IRQn;
+    else if (dma->Instance == DMA1_Stream5) interrupt = DMA1_Stream5_IRQn;
+    else if (dma->Instance == DMA1_Stream6) interrupt = DMA1_Stream6_IRQn;
+    else if (dma->Instance == DMA1_Stream7) interrupt = DMA1_Stream7_IRQn;
+    else if (dma->Instance == DMA2_Stream0) interrupt = DMA2_Stream0_IRQn;
+    else if (dma->Instance == DMA2_Stream1) interrupt = DMA2_Stream1_IRQn;
+    else if (dma->Instance == DMA2_Stream2) interrupt = DMA2_Stream2_IRQn;
+    else if (dma->Instance == DMA2_Stream3) interrupt = DMA2_Stream3_IRQn;
+    else if (dma->Instance == DMA2_Stream4) interrupt = DMA2_Stream4_IRQn;
+    else if (dma->Instance == DMA2_Stream5) interrupt = DMA2_Stream5_IRQn;
+    else if (dma->Instance == DMA2_Stream6) interrupt = DMA2_Stream6_IRQn;
+    else if (dma->Instance == DMA2_Stream7) interrupt = DMA2_Stream7_IRQn;
+    else return false;
+
+    return NVIC_GetEnableIRQ(interrupt) != 0U;
 }
 
 static void resume_reception_if_paused(void) {
