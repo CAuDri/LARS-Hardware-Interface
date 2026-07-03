@@ -5,6 +5,7 @@
  */
 #pragma once
 
+#include <builtin_interfaces/msg/time.h>
 #include <cmsis_os2.h>
 #include <rclc/rclc.h>
 #include <rmw_microros/custom_transport.h>
@@ -24,6 +25,8 @@ constexpr uint32_t ROS_CONNECTION_RETRY_INTERVAL_MS = 1000;
 constexpr uint32_t ROS_CONNECTION_HEALTH_INTERVAL_MS = 1000;
 constexpr int ROS_AGENT_PING_TIMEOUT_MS = 50;
 constexpr uint8_t ROS_AGENT_PING_ATTEMPTS = 1;
+constexpr uint32_t ROS_TIME_SYNC_INTERVAL_MS = 30000;
+constexpr int ROS_TIME_SYNC_TIMEOUT_MS = 50;
 
 constexpr uint32_t ROS_CONNECTION_ESTABLISHED_FLAG = 0x01U;
 constexpr uint32_t ROS_CONNECTION_LOST_FLAG = 0x02U;
@@ -111,6 +114,9 @@ class Client {
     rcl_ret_t getLastError() const;
 
     bool isConnected() const;
+    bool isTimeSynchronized() const;
+    rmw_ret_t getLastTimeSyncError() const;
+    builtin_interfaces__msg__Time getRosTime() const;
     bool waitForConnection(uint32_t timeout_ms = 0) const;
     bool waitForDisconnect(uint32_t timeout_ms = 0) const;
     void signalPossibleDisconnect(rcl_ret_t error);
@@ -133,6 +139,11 @@ class Client {
     volatile ConnectionState connection_state = ConnectionState::UNKNOWN;
     volatile bool stop_requested = false;
     rcl_ret_t last_error = RCL_RET_OK;
+    volatile bool time_synchronized = false;
+    rmw_ret_t last_time_sync_error = RMW_RET_ERROR;
+    int64_t synchronized_epoch_ns = 0;
+    int64_t synchronized_monotonic_ns = 0;
+    uint32_t last_time_sync_attempt_ms = 0;
 
     rcl_allocator_t allocator{};
     rclc_support_t support{};
@@ -165,10 +176,13 @@ class Client {
     size_t service_client_count = 0;
 
     static void executorError(void* context, rcl_ret_t error);
+    static int64_t getMonotonicTimeNs();
     void thread();
     rcl_ret_t connectSession();
     rcl_ret_t disconnectSession(bool agent_available);
     bool pingAgent();
+    bool synchronizeTime();
+    void clearSynchronizedTime();
     void publishConnectionState(ConnectionState new_state);
     bool validateConfig(const Config& client_config) const;
     void cleanupInitFailure(rcl_ret_t error);

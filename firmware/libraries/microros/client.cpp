@@ -8,12 +8,28 @@
 
 #include <rmw_microros/rmw_microros.h>
 
+#include <climits>
+
 #include "logger.h"
 #include "microros_allocator.h"
 
 namespace ros {
 
+constexpr int64_t NANOSECONDS_PER_SECOND = 1000000000LL;
+
 Client* Client::instance = nullptr;
+
+int64_t Client::getMonotonicTimeNs() {
+    TimeOut_t current_time{};
+    vTaskSetTimeOutState(&current_time);
+
+    // Include the FreeRTOS overflow counter so ROS time remains monotonic
+    // across the native TickType_t wraparound.
+    const uint64_t ticks =
+        (static_cast<uint64_t>(current_time.xOverflowCount) << (sizeof(TickType_t) * CHAR_BIT)) + current_time.xTimeOnEntering;
+    return static_cast<int64_t>(ticks / configTICK_RATE_HZ) * NANOSECONDS_PER_SECOND +
+           static_cast<int64_t>(ticks % configTICK_RATE_HZ) * NANOSECONDS_PER_SECOND / configTICK_RATE_HZ;
+}
 
 /**
  * @brief Construct an uninitialized micro-ROS client.
@@ -184,6 +200,47 @@ rcl_ret_t Client::getLastError() const { return last_error; }
 /** @return True while a complete micro-ROS session is active. */
 bool Client::isConnected() const { return connection_state == ConnectionState::CONNECTED; }
 
+/** @return True after the latest agent time synchronization succeeded. */
+bool Client::isTimeSynchronized() const { return time_synchronized; }
+
+/** @return Result of the latest micro-ROS time synchronization attempt. */
+rmw_ret_t Client::getLastTimeSyncError() const { return last_time_sync_error; }
+
+/**
+ * @brief Read the current synchronized ROS epoch time without locking the session.
+ * @return ROS time, or a zero timestamp while the agent time is unsynchronized.
+ */
+builtin_interfaces__msg__Time Client::getRosTime() const {
+    builtin_interfaces__msg__Time ros_time{};
+    int64_t epoch_ns = 0;
+    int64_t monotonic_ns = 0;
+    bool synchronized = false;
+
+    // Copy the two 64-bit values atomically with respect to the connection
+    // thread. Cortex-M4 cannot copy int64_t atomically.
+    taskENTER_CRITICAL();
+    synchronized = time_synchronized;
+    epoch_ns = synchronized_epoch_ns;
+    monotonic_ns = synchronized_monotonic_ns;
+    taskEXIT_CRITICAL();
+
+    if (!synchronized) {
+        return ros_time;
+    }
+
+    const int64_t now_ns = getMonotonicTimeNs();
+    const int64_t current_epoch_ns = epoch_ns + (now_ns - monotonic_ns);
+    if (current_epoch_ns <= 0) {
+        return ros_time;
+    }
+
+    // ROS Time stores only the sub-second remainder in nanosec. The KITcar
+    // implementation returned the complete epoch nanoseconds in that field.
+    ros_time.sec = static_cast<int32_t>(current_epoch_ns / NANOSECONDS_PER_SECOND);
+    ros_time.nanosec = static_cast<uint32_t>(current_epoch_ns % NANOSECONDS_PER_SECOND);
+    return ros_time;
+}
+
 /**
  * @brief Wait until a micro-ROS session is connected.
  * @param timeout_ms Maximum wait in milliseconds; zero performs an immediate check.
@@ -272,7 +329,17 @@ void Client::thread() {
                     break;
                 }
 
-                if (!pingAgent()) {
+                bool agent_available = true;
+                if (osKernelGetTickCount() - last_time_sync_attempt_ms >= ROS_TIME_SYNC_INTERVAL_MS) {
+                    // A successful NTP exchange already proves that the agent
+                    // answered. If it fails, distinguish clock trouble from a
+                    // lost session with the normal lightweight ping.
+                    agent_available = synchronizeTime() || pingAgent();
+                } else {
+                    agent_available = pingAgent();
+                }
+
+                if (!agent_available) {
                     LogWarning("micro-ROS Client: Agent health check failed");
                     result = RCL_RET_ERROR;
                     break;
@@ -331,6 +398,14 @@ rcl_ret_t Client::connectSession() {
         support_active = support.context.impl != nullptr;
     }
     if (result == RCL_RET_OK) {
+        // Synchronization is mandatory for ROS timestamps, but a clock sync
+        // failure alone must not discard an otherwise healthy session. Verify
+        // connectivity and keep retrying periodically when the ping succeeds.
+        if (!synchronizeTime() && !pingAgent()) {
+            result = RCL_RET_ERROR;
+        }
+    }
+    if (result == RCL_RET_OK) {
         result = executor.nativeInit(&support.context, &allocator);
     }
     if (result == RCL_RET_OK) {
@@ -355,6 +430,7 @@ rcl_ret_t Client::connectSession() {
 
 rcl_ret_t Client::disconnectSession(bool agent_available) {
     // Stop executor access before destroying any native session resources.
+    clearSynchronizedTime();
     executor.requestStop();
     rcl_ret_t result = executor.waitForStop(osWaitForever);
     if (osMutexAcquire(session_mutex, osWaitForever) != osOK) {
@@ -400,6 +476,55 @@ bool Client::pingAgent() {
     const bool connected = rmw_uros_ping_agent(config->ping_timeout_ms, config->ping_attempts) == RMW_RET_OK;
     (void)osMutexRelease(session_mutex);
     return connected;
+}
+
+bool Client::synchronizeTime() {
+    const bool mutex_owned = osMutexGetOwner(session_mutex) == osThreadGetId();
+    if (!mutex_owned && osMutexAcquire(session_mutex, osWaitForever) != osOK) {
+        last_time_sync_error = RMW_RET_ERROR;
+        clearSynchronizedTime();
+        LogError("micro-ROS Client: Failed to lock the session for time synchronization");
+        return false;
+    }
+
+    last_time_sync_attempt_ms = osKernelGetTickCount();
+    const rmw_ret_t result = rmw_uros_sync_session(ROS_TIME_SYNC_TIMEOUT_MS);
+    const bool synchronized = result == RMW_RET_OK && rmw_uros_epoch_synchronized();
+    if (synchronized) {
+        const int64_t epoch_ns = rmw_uros_epoch_nanos();
+        const int64_t monotonic_ns = getMonotonicTimeNs();
+
+        // Store a self-contained clock snapshot. Readers extrapolate it from
+        // the local monotonic clock and therefore never touch mutable session
+        // memory or contend with executor/session operations.
+        taskENTER_CRITICAL();
+        synchronized_epoch_ns = epoch_ns;
+        synchronized_monotonic_ns = monotonic_ns;
+        time_synchronized = true;
+        taskEXIT_CRITICAL();
+    } else {
+        clearSynchronizedTime();
+    }
+    last_time_sync_error = synchronized ? RMW_RET_OK : (result == RMW_RET_OK ? RMW_RET_ERROR : result);
+
+    if (!mutex_owned) {
+        (void)osMutexRelease(session_mutex);
+    }
+
+    if (synchronized) {
+        LogDebug("micro-ROS Client: Time synchronized with agent");
+    } else {
+        LogWarning("micro-ROS Client: Time synchronization with agent failed: %d", (int)last_time_sync_error);
+    }
+    return synchronized;
+}
+
+void Client::clearSynchronizedTime() {
+    taskENTER_CRITICAL();
+    time_synchronized = false;
+    synchronized_epoch_ns = 0;
+    synchronized_monotonic_ns = 0;
+    taskEXIT_CRITICAL();
 }
 
 void Client::publishConnectionState(ConnectionState new_state) {
