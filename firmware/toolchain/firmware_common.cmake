@@ -18,6 +18,9 @@ endif()
 message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+# The device CMake files create their firmware target before including this
+# common configuration, so enable export explicitly on that existing target.
+set_property(TARGET ${PROJECT_NAME} PROPERTY EXPORT_COMPILE_COMMANDS ON)
 
 # FIRMWARE_DIR: absolute path to firmware/
 # LIB_DIR:      absolute path to firmware/libraries/

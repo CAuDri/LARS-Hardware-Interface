@@ -49,6 +49,7 @@ target_sources(${PROJECT_NAME} PRIVATE
 
     # micro-ROS wrapper
     ${LIB_DIR}/microros/microros_allocator.c
+    ${LIB_DIR}/microros/transports/usb_cdc_transport.c
 
     # Misc
     ${LIB_DIR}/misc/system_check.cpp
@@ -67,6 +68,7 @@ target_include_directories(${PROJECT_NAME} PRIVATE
     ${LIB_DIR}/lights/include
     ${LIB_DIR}/lights/animations/include
     ${LIB_DIR}/microros/include
+    ${LIB_DIR}/microros/include/transports
     ${LIB_DIR}/misc/include
 )
 

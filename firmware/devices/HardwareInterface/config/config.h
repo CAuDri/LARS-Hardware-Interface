@@ -9,6 +9,7 @@
 
 #pragma once
 
+#include "client.hpp"
 #include "drive_controller.hpp"
 #include "main.h"
 #include "rc_receiver.hpp"
