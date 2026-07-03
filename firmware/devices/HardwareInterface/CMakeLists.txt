@@ -27,7 +27,7 @@ target_sources(${PROJECT_NAME} PRIVATE
     main.cpp
 
     # FreeRTOS source files
-    board/Middlewares/Third_Party/FreeRTOS/Source/portable/MemMang/heap_4.c
+    ${LIB_DIR}/common/custom_heap_4.c
 
     # Common source files
     ${LIB_DIR}/common/global_symbols.cpp
@@ -47,6 +47,9 @@ target_sources(${PROJECT_NAME} PRIVATE
     ${LIB_DIR}/lights/light_dispatcher.cpp
     ${LIB_DIR}/lights/animations/animation.cpp
 
+    # micro-ROS wrapper
+    ${LIB_DIR}/microros/microros_allocator.c
+
     # Misc
     ${LIB_DIR}/misc/system_check.cpp
     ${LIB_DIR}/misc/system_monitor.cpp
@@ -63,6 +66,7 @@ target_include_directories(${PROJECT_NAME} PRIVATE
     ${LIB_DIR}/drivers/interfaces
     ${LIB_DIR}/lights/include
     ${LIB_DIR}/lights/animations/include
+    ${LIB_DIR}/microros/include
     ${LIB_DIR}/misc/include
 )
 
