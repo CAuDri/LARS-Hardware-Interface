@@ -5,22 +5,38 @@
  */
 #pragma once
 
+#include <cmsis_os2.h>
+#include <rclc/rclc.h>
+#include <rmw_microros/custom_transport.h>
+
+#include <array>
 #include <cstddef>
 #include <cstdint>
 
-#include <cmsis_os2.h>
-#include <rmw_microros/custom_transport.h>
+#include "FreeRTOS.h"
+#include "event_groups.h"
+#include "executor.hpp"
+#include "semphr.h"
+#include "task.h"
 
 constexpr uint32_t ROS_CLIENT_THREAD_STACK_SIZE = 4096;
-constexpr uint32_t ROS_EXECUTOR_THREAD_STACK_SIZE = 8192;
+constexpr uint32_t ROS_CONNECTION_RETRY_INTERVAL_MS = 1000;
+constexpr uint32_t ROS_CONNECTION_HEALTH_INTERVAL_MS = 1000;
+constexpr int ROS_AGENT_PING_TIMEOUT_MS = 50;
+constexpr uint8_t ROS_AGENT_PING_ATTEMPTS = 1;
+
+constexpr uint32_t ROS_CONNECTION_ESTABLISHED_FLAG = 0x01U;
+constexpr uint32_t ROS_CONNECTION_LOST_FLAG = 0x02U;
+constexpr uint32_t ROS_TEST_CONNECTION_FLAG = 0x04U;
+constexpr uint32_t ROS_STOP_CLIENT_FLAG = 0x08U;
+constexpr uint32_t ROS_CLIENT_STOPPED_FLAG = 0x10U;
 
 constexpr size_t ROS_MAX_NODES = 15;
 constexpr size_t ROS_MAX_PUBLISHERS = 40;
 constexpr size_t ROS_MAX_SUBSCRIPTIONS = 30;
 constexpr size_t ROS_MAX_SERVICES = 1;
 constexpr size_t ROS_MAX_SERVICE_CLIENTS = 1;
-constexpr size_t ROS_EXECUTOR_HANDLE_CAPACITY =
-    ROS_MAX_SUBSCRIPTIONS + ROS_MAX_SERVICES + ROS_MAX_SERVICE_CLIENTS;
+constexpr size_t ROS_EXECUTOR_HANDLE_CAPACITY = ROS_MAX_SUBSCRIPTIONS + ROS_MAX_SERVICES + ROS_MAX_SERVICE_CLIENTS;
 
 static_assert(ROS_MAX_NODES <= RMW_UXRCE_MAX_NODES);
 static_assert(ROS_MAX_PUBLISHERS <= RMW_UXRCE_MAX_PUBLISHERS);
@@ -30,11 +46,21 @@ static_assert(ROS_MAX_SERVICE_CLIENTS <= RMW_UXRCE_MAX_CLIENTS);
 
 namespace ros {
 
+class BaseNode;
+class BasePublisher;
+class BaseSubscriber;
+class BaseService;
+class BaseServiceClient;
+
+enum class ConnectionState { UNKNOWN, CONNECTING, CONNECTED, DISCONNECTED };
+
 /**
  * @brief Owns the micro-ROS support/session lifecycle and executor
  */
 class Client {
    public:
+    enum class State { ERROR, UNINITIALIZED, INITIALIZED, CONNECTING, CONNECTED, DISCONNECTED, STOPPING, STOPPED };
+
     /**
      * @brief Non-owning custom transport configuration
      *
@@ -53,12 +79,100 @@ class Client {
 
     /**
      * @brief Device-specific client configuration
+     * 
+     * @param transport Non-owning custom transport configuration
+     * @param client_task_priority Priority of the client task (default: osPriorityNormal1)
+     * @param executor_task_priority Priority of the executor task (default: osPriorityRealtime)
+     * @param connection_retry_interval_ms Interval between connection attempts (default: 1000 ms)
+     * @param connection_health_interval_ms Interval between connection health checks (default: 1000 ms)
+     * @param ping_timeout_ms Timeout for pinging the agent (default: 50 ms)
+     * @param ping_attempts Number of ping attempts before considering the agent unavailable (default: 1)
      */
     struct Config {
         Transport transport{};
         osPriority_t client_task_priority = osPriorityNormal1;
         osPriority_t executor_task_priority = osPriorityRealtime;
+        uint32_t connection_retry_interval_ms = ROS_CONNECTION_RETRY_INTERVAL_MS;
+        uint32_t connection_health_interval_ms = ROS_CONNECTION_HEALTH_INTERVAL_MS;
+        int ping_timeout_ms = ROS_AGENT_PING_TIMEOUT_MS;
+        uint8_t ping_attempts = ROS_AGENT_PING_ATTEMPTS;
     };
+
+    Client();
+    ~Client() = default;
+    Client(const Client&) = delete;
+    Client& operator=(const Client&) = delete;
+
+    rcl_ret_t init(const Config& client_config);
+    rcl_ret_t fini(uint32_t timeout_ms = osWaitForever);
+
+    State getState() const { return state; }
+    ConnectionState getConnectionState() const { return connection_state; }
+    rcl_ret_t getLastError() const { return last_error; }
+
+    bool isConnected() const { return connection_state == ConnectionState::CONNECTED; }
+    bool waitForConnection(uint32_t timeout_ms = 0) const;
+    bool waitForDisconnect(uint32_t timeout_ms = 0) const;
+    void signalPossibleDisconnect(rcl_ret_t error);
+
+    Executor& getExecutor() { return executor; }
+    const Executor& getExecutor() const { return executor; }
+
+   private:
+    friend class Executor;
+    friend class BaseNode;
+    friend class BasePublisher;
+    friend class BaseSubscriber;
+    friend class BaseService;
+    friend class BaseServiceClient;
+
+    static Client* instance;
+
+    const Config* config = nullptr;
+    volatile State state = State::UNINITIALIZED;
+    volatile ConnectionState connection_state = ConnectionState::UNKNOWN;
+    volatile bool stop_requested = false;
+    rcl_ret_t last_error = RCL_RET_OK;
+
+    rcl_allocator_t allocator{};
+    rclc_support_t support{};
+    bool support_active = false;
+
+    Executor executor{};
+
+    osMutexId_t session_mutex = nullptr;
+    osMutexAttr_t mutex_attributes{};
+    StaticSemaphore_t mutex_control_block{};
+
+    osEventFlagsId_t connection_events = nullptr;
+    osEventFlagsAttr_t event_attributes{};
+    StaticEventGroup_t event_control_block{};
+
+    osThreadId_t thread_id = nullptr;
+    osThreadAttr_t thread_attributes{};
+    StaticTask_t thread_control_block{};
+    uint32_t thread_stack[ROS_CLIENT_THREAD_STACK_SIZE / sizeof(uint32_t)]{};
+
+    std::array<BaseNode*, ROS_MAX_NODES> nodes{};
+    std::array<BasePublisher*, ROS_MAX_PUBLISHERS> publishers{};
+    std::array<BaseSubscriber*, ROS_MAX_SUBSCRIPTIONS> subscriptions{};
+    std::array<BaseService*, ROS_MAX_SERVICES> services{};
+    std::array<BaseServiceClient*, ROS_MAX_SERVICE_CLIENTS> service_clients{};
+    size_t node_count = 0;
+    size_t publisher_count = 0;
+    size_t subscription_count = 0;
+    size_t service_count = 0;
+    size_t service_client_count = 0;
+
+    static void threadEntry(void* argument);
+    static void executorError(void* context, rcl_ret_t error);
+    void thread();
+    rcl_ret_t connectSession();
+    rcl_ret_t disconnectSession(bool agent_available);
+    bool pingAgent();
+    void publishConnectionState(ConnectionState new_state);
+    bool validateConfig(const Config& client_config) const;
+    void cleanupInitFailure();
 };
 
 }  // namespace ros

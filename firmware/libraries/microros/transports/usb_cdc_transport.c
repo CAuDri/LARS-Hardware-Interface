@@ -11,8 +11,8 @@
 
 #include <string.h>
 
-#include "cmsis_os2.h"
 #include "FreeRTOS.h"
+#include "cmsis_os2.h"
 #include "task.h"
 
 enum {
@@ -63,8 +63,7 @@ bool usb_cdc_transport_open(struct uxrCustomTransport* transport) {
         return active_config == config;
     }
 
-    USBD_CDC_ItfTypeDef* interface =
-        (USBD_CDC_ItfTypeDef*)config->usb_device->pUserData[config->usb_device->classId];
+    USBD_CDC_ItfTypeDef* interface = (USBD_CDC_ItfTypeDef*)config->usb_device->pUserData[config->usb_device->classId];
     if (interface == NULL) {
         return false;
     }
@@ -72,8 +71,7 @@ bool usb_cdc_transport_open(struct uxrCustomTransport* transport) {
     const uint8_t endpoint = CDC_OUT_EP & 0x0FU;
     size_t packet_size = config->usb_device->ep_out[endpoint].maxpacket;
     if (packet_size == 0U) {
-        packet_size = config->usb_device->dev_speed == USBD_SPEED_HIGH ? CDC_DATA_HS_MAX_PACKET_SIZE
-                                                                       : CDC_DATA_FS_MAX_PACKET_SIZE;
+        packet_size = config->usb_device->dev_speed == USBD_SPEED_HIGH ? CDC_DATA_HS_MAX_PACKET_SIZE : CDC_DATA_FS_MAX_PACKET_SIZE;
     }
     if (packet_size > USB_CDC_RX_BUFFER_PADDING) {
         return false;
@@ -147,13 +145,13 @@ bool usb_cdc_transport_close(struct uxrCustomTransport* transport) {
     return true;
 }
 
-size_t usb_cdc_transport_write(
-    struct uxrCustomTransport* transport, const uint8_t* buffer, size_t length, uint8_t* error) {
+size_t usb_cdc_transport_write(struct uxrCustomTransport* transport, const uint8_t* buffer, size_t length, uint8_t* error) {
     if (error != NULL) {
         *error = TRANSPORT_ERROR_NONE;
     }
     if (transport == NULL || transport->args != active_config || buffer == NULL || error == NULL) {
-        if (error != NULL) *error = TRANSPORT_ERROR_INVALID_CONFIG;
+        if (error != NULL)
+            *error = TRANSPORT_ERROR_INVALID_CONFIG;
         return 0;
     }
 
@@ -169,9 +167,8 @@ size_t usb_cdc_transport_write(
             return 0;
         }
         if (result == USBD_OK) {
-            const uint32_t flags =
-                osThreadFlagsWait(USB_CDC_TX_COMPLETE_FLAG, osFlagsWaitAny, USB_CDC_WRITE_TIMEOUT_MS);
-            if ((flags & USB_CDC_TX_COMPLETE_FLAG) != 0U) {
+            const uint32_t flags = osThreadFlagsWait(USB_CDC_TX_COMPLETE_FLAG, osFlagsWaitAny, USB_CDC_WRITE_TIMEOUT_MS);
+            if ((flags & osFlagsError) == 0U && (flags & USB_CDC_TX_COMPLETE_FLAG) != 0U) {
                 return length;
             }
             *error = TRANSPORT_ERROR_TIMEOUT;
@@ -183,13 +180,13 @@ size_t usb_cdc_transport_write(
     return 0;
 }
 
-size_t usb_cdc_transport_read(
-    struct uxrCustomTransport* transport, uint8_t* buffer, size_t length, int timeout_ms, uint8_t* error) {
+size_t usb_cdc_transport_read(struct uxrCustomTransport* transport, uint8_t* buffer, size_t length, int timeout_ms, uint8_t* error) {
     if (error != NULL) {
         *error = TRANSPORT_ERROR_NONE;
     }
     if (transport == NULL || transport->args != active_config || buffer == NULL || error == NULL) {
-        if (error != NULL) *error = TRANSPORT_ERROR_INVALID_CONFIG;
+        if (error != NULL)
+            *error = TRANSPORT_ERROR_INVALID_CONFIG;
         return 0;
     }
     if (length == 0U) {
@@ -205,7 +202,7 @@ size_t usb_cdc_transport_read(
         if (rx_head == rx_tail) {
             const uint32_t timeout = timeout_ms > 0 ? (uint32_t)timeout_ms : 0U;
             const uint32_t flags = osThreadFlagsWait(USB_CDC_RX_COMPLETE_FLAG, osFlagsWaitAny, timeout);
-            if ((flags & USB_CDC_RX_COMPLETE_FLAG) == 0U) {
+            if ((flags & osFlagsError) != 0U || (flags & USB_CDC_RX_COMPLETE_FLAG) == 0U) {
                 *error = TRANSPORT_ERROR_TIMEOUT;
                 return 0;
             }
@@ -240,9 +237,10 @@ size_t usb_cdc_transport_read(
 
     dma_failed = false;
     (void)osThreadFlagsClear(USB_CDC_DMA_COMPLETE_FLAG);
-    if (HAL_DMA_Start_IT(
-            active_config->rx_dma, (uint32_t)(uintptr_t)&rx_buffer[dma_tail],
-            (uint32_t)(uintptr_t)(buffer + cpu_length), (uint32_t)dma_length) != HAL_OK) {
+    if (HAL_DMA_Start_IT(active_config->rx_dma,
+                         (uint32_t)(uintptr_t)&rx_buffer[dma_tail],
+                         (uint32_t)(uintptr_t)(buffer + cpu_length),
+                         (uint32_t)dma_length) != HAL_OK) {
         *error = TRANSPORT_ERROR_IO;
         return 0;
     }
@@ -253,7 +251,7 @@ size_t usb_cdc_transport_read(
 
     const uint32_t timeout = timeout_ms > 0 ? (uint32_t)timeout_ms : 0U;
     const uint32_t flags = osThreadFlagsWait(USB_CDC_DMA_COMPLETE_FLAG, osFlagsWaitAny, timeout);
-    if ((flags & USB_CDC_DMA_COMPLETE_FLAG) == 0U || dma_failed) {
+    if ((flags & osFlagsError) != 0U || (flags & USB_CDC_DMA_COMPLETE_FLAG) == 0U || dma_failed) {
         *error = dma_failed ? TRANSPORT_ERROR_IO : TRANSPORT_ERROR_TIMEOUT;
         if (!dma_failed) {
             (void)HAL_DMA_Abort(active_config->rx_dma);
@@ -278,35 +276,49 @@ static bool validate_config(const usb_cdc_transport_config_t* config) {
         return false;
     }
 
-    return config->rx_dma->Init.Direction == DMA_MEMORY_TO_MEMORY &&
-           config->rx_dma->Init.PeriphInc == DMA_PINC_ENABLE &&
-           config->rx_dma->Init.MemInc == DMA_MINC_ENABLE &&
-           config->rx_dma->Init.PeriphDataAlignment == DMA_PDATAALIGN_BYTE &&
-           config->rx_dma->Init.MemDataAlignment == DMA_MDATAALIGN_BYTE &&
-           config->rx_dma->Init.Mode == DMA_NORMAL && config->rx_dma->State == HAL_DMA_STATE_READY &&
-           dma_interrupt_enabled(config->rx_dma);
+    return config->rx_dma->Init.Direction == DMA_MEMORY_TO_MEMORY && config->rx_dma->Init.PeriphInc == DMA_PINC_ENABLE &&
+           config->rx_dma->Init.MemInc == DMA_MINC_ENABLE && config->rx_dma->Init.PeriphDataAlignment == DMA_PDATAALIGN_BYTE &&
+           config->rx_dma->Init.MemDataAlignment == DMA_MDATAALIGN_BYTE && config->rx_dma->Init.Mode == DMA_NORMAL &&
+           config->rx_dma->State == HAL_DMA_STATE_READY && dma_interrupt_enabled(config->rx_dma);
 }
 
 static bool dma_interrupt_enabled(const DMA_HandleTypeDef* dma) {
     IRQn_Type interrupt;
 
-    if (dma->Instance == DMA1_Stream0) interrupt = DMA1_Stream0_IRQn;
-    else if (dma->Instance == DMA1_Stream1) interrupt = DMA1_Stream1_IRQn;
-    else if (dma->Instance == DMA1_Stream2) interrupt = DMA1_Stream2_IRQn;
-    else if (dma->Instance == DMA1_Stream3) interrupt = DMA1_Stream3_IRQn;
-    else if (dma->Instance == DMA1_Stream4) interrupt = DMA1_Stream4_IRQn;
-    else if (dma->Instance == DMA1_Stream5) interrupt = DMA1_Stream5_IRQn;
-    else if (dma->Instance == DMA1_Stream6) interrupt = DMA1_Stream6_IRQn;
-    else if (dma->Instance == DMA1_Stream7) interrupt = DMA1_Stream7_IRQn;
-    else if (dma->Instance == DMA2_Stream0) interrupt = DMA2_Stream0_IRQn;
-    else if (dma->Instance == DMA2_Stream1) interrupt = DMA2_Stream1_IRQn;
-    else if (dma->Instance == DMA2_Stream2) interrupt = DMA2_Stream2_IRQn;
-    else if (dma->Instance == DMA2_Stream3) interrupt = DMA2_Stream3_IRQn;
-    else if (dma->Instance == DMA2_Stream4) interrupt = DMA2_Stream4_IRQn;
-    else if (dma->Instance == DMA2_Stream5) interrupt = DMA2_Stream5_IRQn;
-    else if (dma->Instance == DMA2_Stream6) interrupt = DMA2_Stream6_IRQn;
-    else if (dma->Instance == DMA2_Stream7) interrupt = DMA2_Stream7_IRQn;
-    else return false;
+    if (dma->Instance == DMA1_Stream0)
+        interrupt = DMA1_Stream0_IRQn;
+    else if (dma->Instance == DMA1_Stream1)
+        interrupt = DMA1_Stream1_IRQn;
+    else if (dma->Instance == DMA1_Stream2)
+        interrupt = DMA1_Stream2_IRQn;
+    else if (dma->Instance == DMA1_Stream3)
+        interrupt = DMA1_Stream3_IRQn;
+    else if (dma->Instance == DMA1_Stream4)
+        interrupt = DMA1_Stream4_IRQn;
+    else if (dma->Instance == DMA1_Stream5)
+        interrupt = DMA1_Stream5_IRQn;
+    else if (dma->Instance == DMA1_Stream6)
+        interrupt = DMA1_Stream6_IRQn;
+    else if (dma->Instance == DMA1_Stream7)
+        interrupt = DMA1_Stream7_IRQn;
+    else if (dma->Instance == DMA2_Stream0)
+        interrupt = DMA2_Stream0_IRQn;
+    else if (dma->Instance == DMA2_Stream1)
+        interrupt = DMA2_Stream1_IRQn;
+    else if (dma->Instance == DMA2_Stream2)
+        interrupt = DMA2_Stream2_IRQn;
+    else if (dma->Instance == DMA2_Stream3)
+        interrupt = DMA2_Stream3_IRQn;
+    else if (dma->Instance == DMA2_Stream4)
+        interrupt = DMA2_Stream4_IRQn;
+    else if (dma->Instance == DMA2_Stream5)
+        interrupt = DMA2_Stream5_IRQn;
+    else if (dma->Instance == DMA2_Stream6)
+        interrupt = DMA2_Stream6_IRQn;
+    else if (dma->Instance == DMA2_Stream7)
+        interrupt = DMA2_Stream7_IRQn;
+    else
+        return false;
 
     return NVIC_GetEnableIRQ(interrupt) != 0U;
 }
@@ -351,8 +363,7 @@ static int8_t cdc_receive_complete(uint8_t* buffer, uint32_t* length) {
 
     /* Stop re-arming USB before its next maximum-sized packet could overwrite
      * unread data. The reader resumes reception after advancing rx_tail. */
-    if ((next_head <= rx_tail && next_head + active_packet_size >= rx_tail) ||
-        (next_head == 0U && rx_tail == 0U)) {
+    if ((next_head <= rx_tail && next_head + active_packet_size >= rx_tail) || (next_head == 0U && rx_tail == 0U)) {
         rx_paused = true;
         taskEXIT_CRITICAL_FROM_ISR(interrupt_state);
         return USBD_BUSY;
