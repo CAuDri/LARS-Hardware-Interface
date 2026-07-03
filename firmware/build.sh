@@ -9,6 +9,7 @@
 #       Options:
 #         -c, --clean   Clean build artifacts before building.
 #         -a, --all     Clean all build artifacts including the micro-ROS library.
+#         -w, --clean-workspace  Recreate the micro-ROS workspace.
 #
 #   flash [--clean] [--all] <DeviceName>
 #       Build and flash the firmware to a specific device.
@@ -16,6 +17,7 @@
 #       Options:
 #         -c, --clean   Clean build artifacts before flashing.
 #         -a, --all     Clean all build artifacts including the micro-ROS library.
+#         -w, --clean-workspace  Recreate the micro-ROS workspace.
 #
 #   clean [--all] [--global] <DeviceName>
 #       Clean build artifacts for a specific device.
@@ -71,20 +73,22 @@ _clean_all_devices() {
 }
 
 _show_build_help() {
-    echo "Usage: build [--clean] [--all] <DeviceName>"
+    echo "Usage: build [--clean] [--all] [--clean-workspace] <DeviceName>"
     echo "Build the Firmware for a specific device"
     echo "Options:"
     echo "  -c, --clean: Clean build artifacts before building"
     echo "  -a, --all: Clean all build artifacts including the micro-ROS library"
+    echo "  -w, --clean-workspace: Recreate the micro-ROS workspace before building"
 }
 
 _show_flash_help() {
-    echo "Usage: flash [--clean] [--all] <DeviceName>"
+    echo "Usage: flash [--clean] [--all] [--clean-workspace] <DeviceName>"
     echo "Flash the Firmware to a specific device"
     echo "The device must be connected to the computer via a ST-Link"
     echo "Options:"
     echo "  -c, --clean: Clean build artifacts before flashing"
     echo "  -a, --all: Clean all build artifacts including the micro-ROS library"
+    echo "  -w, --clean-workspace: Recreate the micro-ROS workspace before building"
 }
 
 _show_clean_help() {
@@ -101,7 +105,11 @@ _show_clean_help() {
 _build_microros() {
     echo "Building micro-ROS library for ${DEVICE_NAME}"
     pushd "${BASE_DIR}/firmware/libraries/microros/static_library" >/dev/null
-    bash generate_lib.sh "${DEVICE_NAME}"
+    local args=("${DEVICE_NAME}")
+    if $CLEAN_MICROROS_WORKSPACE; then
+        args=(--clean-workspace "${args[@]}")
+    fi
+    bash generate_lib.sh "${args[@]}"
     if [ $? -ne 0 ]; then
         echo "Failed to build micro-ROS library for ${DEVICE_NAME}"
         popd >/dev/null
@@ -123,6 +131,7 @@ _build_microros() {
 build() {
     local CLEAN=false
     local CLEAN_ALL=false
+    local CLEAN_MICROROS_WORKSPACE=false
 
     # Parse command line arguments
     while [[ $# -gt 0 ]]; do
@@ -134,6 +143,12 @@ build() {
         -a | --all)
             CLEAN=true
             CLEAN_ALL=true
+            shift
+            ;;
+        -w | --clean-workspace)
+            CLEAN=true
+            CLEAN_ALL=true
+            CLEAN_MICROROS_WORKSPACE=true
             shift
             ;;
         -*)
@@ -214,6 +229,7 @@ build() {
 flash() {
     local CLEAN=false
     local CLEAN_ALL=false
+    local CLEAN_MICROROS_WORKSPACE=false
 
     # Parse command line arguments
     while [[ $# -gt 0 ]]; do
@@ -225,6 +241,12 @@ flash() {
         -a | --all)
             CLEAN=true
             CLEAN_ALL=true
+            shift
+            ;;
+        -w | --clean-workspace)
+            CLEAN=true
+            CLEAN_ALL=true
+            CLEAN_MICROROS_WORKSPACE=true
             shift
             ;;
         -*)
@@ -263,7 +285,11 @@ flash() {
     fi
 
     # Build the firmware before flashing
-    build "$DEVICE_NAME"
+    local build_args=("$DEVICE_NAME")
+    if $CLEAN_MICROROS_WORKSPACE; then
+        build_args=(--clean-workspace "${build_args[@]}")
+    fi
+    build "${build_args[@]}"
 
     if [ $? -ne 0 ]; then
         echo "Build failed. Flash aborted."

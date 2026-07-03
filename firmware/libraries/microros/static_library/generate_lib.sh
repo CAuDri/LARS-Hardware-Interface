@@ -1,133 +1,134 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
-# CAuDri - Bash script for generating the static micro-ROS library
-# Requires a sourced micro-ros-setup installation
-# The first argument needs to be the device name (name of subdirectory in devices/)
+# CAuDri - Generate a device-specific libmicroros.a using a sourced micro-ROS setup.
+#
+# Usage:
+#   ./generate_lib.sh [--clean-workspace] <DeviceName>
+#
+# The generated micro-ROS workspace is retained between builds. Pass
+# --clean-workspace to recreate it before building.
 
-# Path to GNU ARM toolchain
-export TOOLCHAIN_PREFIX=/usr/bin/arm-none-eabi-
+set -Eeuo pipefail
 
-# Set the RMW implementation for micro-ROS (will currently be set automatically)
-unset RMW_IMPLEMENTATION
+readonly SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+readonly FIRMWARE_DIR="$(cd -- "${SCRIPT_DIR}/../../.." && pwd)"
+readonly WORKSPACE_DIR="${SCRIPT_DIR}/firmware"
+readonly TOOLCHAIN_FILE="${SCRIPT_DIR}/toolchain.cmake"
 
-#### Init ####
-set -e
+CLEAN_WORKSPACE=false
+DEVICE_NAME=""
 
-# Get the absolute path of the bash script
-DIR="$( dirname -- "${BASH_SOURCE[0]}"; )";
-DIR="$( realpath -e -- "$DIR"; )";
+usage() {
+    printf 'Usage: %s [--clean-workspace] <DeviceName>\n' "$(basename -- "$0")"
+}
 
-# Get the absolute path of the firmware directory (TODO find a more flexible solution)
-export FIRMWARE_PATH=$(cd ${DIR} && cd ../../.. && pwd)
-
-pushd ${DIR} > /dev/null
-
-# List all available devices
 list_devices() {
-    echo "Available devices are:"
-    for dir in ${FIRMWARE_PATH}/devices/*/ ; do
-        echo "    $(basename $dir)"
+    printf 'Available devices:\n'
+    local device_dir
+    for device_dir in "${FIRMWARE_DIR}"/devices/*/; do
+        [ -d "${device_dir}" ] || continue
+        printf '  %s\n' "$(basename -- "${device_dir}")"
     done
 }
 
-# Check if a device name argument was passed
-if [ -z "$1" ]; then
-    echo "Error: No device name provided."
-    echo "Usage: $0 [device_name]"
-    list_devices
+fail() {
+    printf 'Error: %s\n' "$*" >&2
     exit 1
+}
+
+require_command() {
+    command -v "$1" >/dev/null 2>&1 || fail "Required command not found: $1"
+}
+
+while [ "$#" -gt 0 ]; do
+    case "$1" in
+        --clean-workspace)
+            CLEAN_WORKSPACE=true
+            ;;
+        -h|--help)
+            usage
+            list_devices
+            exit 0
+            ;;
+        -*)
+            usage >&2
+            fail "Unknown option: $1"
+            ;;
+        *)
+            [ -z "${DEVICE_NAME}" ] || fail "Only one device may be specified"
+            DEVICE_NAME="$1"
+            ;;
+    esac
+    shift
+done
+
+if [ -z "${DEVICE_NAME}" ]; then
+    usage >&2
+    list_devices >&2
+    fail "No device specified"
 fi
 
-export DEVICE_PATH="${FIRMWARE_PATH}/devices/$1"
+[ -n "${ROS_DISTRO:-}" ] || fail 'ROS_DISTRO is not set; source the ROS 2 and micro-ROS setup first'
 
-TOOLCHAIN_FILE="${DEVICE_PATH}/board/cmake/gcc-arm-none-eabi.cmake"
-COLCON_META_FILE="${DEVICE_PATH}/config/colcon.meta"
+require_command ros2
+require_command colcon
+require_command cmake
 
-# Check if the device directory exists
-if ! [ -d "$DEVICE_PATH" ]; then
-    echo "Error: Device directory not found: $DEVICE_PATH"
-    list_devices
-    exit 1
+readonly DEVICE_DIR="${FIRMWARE_DIR}/devices/${DEVICE_NAME}"
+readonly DEVICE_TOOLCHAIN="${DEVICE_DIR}/board/cmake/gcc-arm-none-eabi.cmake"
+readonly COLCON_META_FILE="${DEVICE_DIR}/config/colcon.meta"
+readonly OUTPUT_DIR="${DEVICE_DIR}/microros_lib"
+readonly STAGING_DIR="${DEVICE_DIR}/microros_lib.tmp"
+
+[ -d "${DEVICE_DIR}" ] || {
+    list_devices >&2
+    fail "Unknown device: ${DEVICE_NAME}"
+}
+[ -f "${DEVICE_TOOLCHAIN}" ] || fail "Device toolchain not found: ${DEVICE_TOOLCHAIN}"
+[ -f "${COLCON_META_FILE}" ] || fail "micro-ROS configuration not found: ${COLCON_META_FILE}"
+[ -f "${TOOLCHAIN_FILE}" ] || fail "micro-ROS toolchain not found: ${TOOLCHAIN_FILE}"
+
+export TOOLCHAIN_PREFIX="${TOOLCHAIN_PREFIX:-/usr/bin/arm-none-eabi-}"
+export DEVICE_PATH="${DEVICE_DIR}"
+unset RMW_IMPLEMENTATION
+
+if [ "${CLEAN_WORKSPACE}" = true ] && [ -d "${WORKSPACE_DIR}" ]; then
+    printf 'Removing micro-ROS workspace: %s\n' "${WORKSPACE_DIR}"
+    rm -rf -- "${WORKSPACE_DIR}"
 fi
 
-# Check if a Cube-MX generated toolchain file is present
-if ! [ -f "$TOOLCHAIN_FILE" ]; then
-    echo "Error: No toolchain file could be found at $TOOLCHAIN_FILE"
-    exit 1
-fi
+cd -- "${SCRIPT_DIR}"
 
-#### Build static library ####
-
-LIB_PATH="${DEVICE_PATH}/microros_lib"
-
-# Somehow the build process for some ROS packages will fail due to CRLF line endings in certain files.
-# This happend after a recent update of the micro-ros-setup package and hopefully won't persist in the future.
-# This is a temporary workaround to fix the issue, it will start a background process automatically fixing line endings.
-# If you should ever stumble upon this, please uncomment the following code block and test if the build succeeds. If so just remove it.
-echo "Starting temporary line-ending watcher..."
-WATCH_DIR="firmware/dev_ws/"
-timeout 100s bash -lc '
-  stamp=$(mktemp); touch "$stamp"
-
-  while :; do
-    if [ -d firmware/dev_ws ]; then
-      # Only consider files newer than last pass
-      find firmware/dev_ws -type f \( -name "*.sh" -o -name "*.bash" \) -newer "$stamp" -print0 \
-        | xargs -0 -r dos2unix >/dev/null 2>&1 || true
-      touch "$stamp"
-    fi
-    sleep 0.1
-  done
-' &
-
-# Generate workspace if no firmware directory is present
-if [ ! -d "firmware" ]; then
-    echo -e "\nGenerating micro-ROS workspace\n"
-    sudo apt update && rosdep update --rosdistro $ROS_DISTRO
-
+if [ ! -d "${WORKSPACE_DIR}" ]; then
+    printf 'Creating micro-ROS %s static-library workspace\n' "${ROS_DISTRO}"
     ros2 run micro_ros_setup create_firmware_ws.sh generate_lib
 fi
 
-# # Copy the kitcar_interfaces submodule to the workspace
-# if [ -d "firmware/mcu_ws/src/kitcar-interfaces" ]; then
-#     rm -rf firmware/mcu_ws/src/kitcar-interfaces/*
-# else
-#     mkdir -p firmware/mcu_ws/src/kitcar-interfaces
-# fi
-# echo -e "\nCopying kitcar_interfaces \n"
-# cp -R "$REPO_PATH/libraries/kitcar-interfaces" ./firmware/mcu_ws/src/
+printf 'Building micro-ROS for %s using ROS_DISTRO=%s\n' "${DEVICE_NAME}" "${ROS_DISTRO}"
+ros2 run micro_ros_setup build_firmware.sh "${TOOLCHAIN_FILE}" "${COLCON_META_FILE}"
 
-# Remove the existing library in the device directory if present
-if [ -d "${LIB_PATH}" ]; then
-    rm -rf $LIB_PATH
-fi
+readonly BUILD_OUTPUT="${WORKSPACE_DIR}/build"
+[ -f "${BUILD_OUTPUT}/libmicroros.a" ] || fail "Build completed without producing libmicroros.a"
+[ -d "${BUILD_OUTPUT}/include" ] || fail "Build completed without producing include files"
 
-# Build micro-ROS library
-echo -e "\nBuilding micro-ROS library\n"
-export DEVICE_PATH="${FIRMWARE_PATH}/devices/$1"
-ros2 run micro_ros_setup build_firmware.sh $FIRMWARE_PATH/libraries/microros/static_library/toolchain.cmake $DEVICE_PATH/config/colcon.meta
+rm -rf -- "${STAGING_DIR}"
+mkdir -p -- "${STAGING_DIR}/inc"
+cp -a -- "${BUILD_OUTPUT}/include/." "${STAGING_DIR}/inc/"
+cp -- "${BUILD_OUTPUT}/libmicroros.a" "${STAGING_DIR}/libmicroros.a"
 
-# Copy micro-ROS library to device directory
-echo -e "\nCopying micro-ROS library to device directory\n"
-mkdir -p $LIB_PATH/inc
-cp -R firmware/build/include/* $LIB_PATH/inc
-cp -R firmware/build/libmicroros.a $LIB_PATH
-
-# Fix nested include paths
-pushd firmware/mcu_ws > /dev/null
-    INCLUDE_ROS2_PACKAGES=$(colcon list | awk '{print $1}' | awk -v d=" " '{s=(NR==1?s:s d)$0}END{print s}')
-popd > /dev/null
-for var in ${INCLUDE_ROS2_PACKAGES}; do
-    if [ -d "$LIB_PATH/inc/${var}/${var}" ]; then
-        rsync -r $LIB_PATH/inc/${var}/${var}/* $LIB_PATH/inc/${var}
-        rm -rf $LIB_PATH/inc/${var}/${var}
+# Some generated packages install headers as <package>/<package>/... . Flatten
+# those directories so application includes match the ROS-generated paths.
+for package_dir in "${STAGING_DIR}"/inc/*/; do
+    [ -d "${package_dir}" ] || continue
+    package_name="$(basename -- "${package_dir}")"
+    nested_include="${package_dir}/${package_name}"
+    if [ -d "${nested_include}" ]; then
+        cp -a -- "${nested_include}/." "${package_dir}/"
+        rm -rf -- "${nested_include}"
     fi
 done
 
-# Remove build directory
-if [ -d "firmware/build" ]; then
-    rm -rf firmware/build
-fi
+rm -rf -- "${OUTPUT_DIR}"
+mv -- "${STAGING_DIR}" "${OUTPUT_DIR}"
 
-echo -e "\nMicro-ROS static library built sucessfully"
-echo -e "Copied to ${LIB_PATH}"
+printf 'micro-ROS library generated successfully: %s\n' "${OUTPUT_DIR}"
