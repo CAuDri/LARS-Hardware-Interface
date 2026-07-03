@@ -25,7 +25,7 @@ namespace ros {
 class Client;
 
 /**
- * @brief Owns the native rclc executor and its persistent RTOS task
+ * @brief Owns the native rclc executor and its persistent RTOS thread
  */
 class Executor {
    public:
@@ -35,8 +35,8 @@ class Executor {
     Executor(const Executor&) = delete;
     Executor& operator=(const Executor&) = delete;
 
-    State getState() const { return state; }
-    rcl_ret_t getLastError() const { return last_error; }
+    State getState() const;
+    rcl_ret_t getLastError() const;
 
    private:
     friend class Client;
@@ -52,17 +52,17 @@ class Executor {
     ErrorCallback error_callback = nullptr;
     void* error_context = nullptr;
 
-    osThreadId_t task_id = nullptr;
-    osThreadAttr_t task_attributes{};
-    StaticTask_t task_control_block{};
-    uint32_t task_stack[ROS_EXECUTOR_THREAD_STACK_SIZE / sizeof(uint32_t)]{};
+    osThreadId_t thread_id = nullptr;
+    osThreadAttr_t thread_attributes{};
+    StaticTask_t thread_control_block{};
+    uint32_t thread_stack[ROS_EXECUTOR_THREAD_STACK_SIZE / sizeof(uint32_t)]{};
 
     osEventFlagsId_t state_events = nullptr;
     osEventFlagsAttr_t event_attributes{};
     StaticEventGroup_t event_control_block{};
 
-    rcl_ret_t createTask(osPriority_t priority, osMutexId_t mutex, ErrorCallback callback, void* callback_context);
-    rcl_ret_t destroyTask();
+    rcl_ret_t createThread(osPriority_t priority, osMutexId_t mutex, ErrorCallback callback, void* callback_context);
+    rcl_ret_t destroyThread();
     rcl_ret_t nativeInit(rcl_context_t* context, const rcl_allocator_t* allocator);
     rcl_ret_t prepare();
     rcl_ret_t startSpinning();
@@ -70,8 +70,7 @@ class Executor {
     rcl_ret_t waitForStop(uint32_t timeout_ms);
     rcl_ret_t nativeFini();
 
-    static void threadEntry(void* argument);
-    void task();
+    void thread();
     void setError(rcl_ret_t error);
 };
 

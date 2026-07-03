@@ -2,9 +2,9 @@
  * @file microros_allocator.c
  *
  * @brief CAuDri - rcl allocator adapter for the shared FreeRTOS heap
- * 
+ *
  * This file provides an implementation of the rcl_allocator_t interface using the FreeRTOS memory management functions. It allows micro-ROS to use the FreeRTOS heap for dynamic memory allocation.
- * 
+ *
  * A custom heap implementation (custom_heap_4.h) is used to provide realloc and calloc functionality, which are not available in the standard FreeRTOS memory management API.
  */
 

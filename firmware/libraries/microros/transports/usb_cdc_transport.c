@@ -36,6 +36,7 @@ static uint8_t rx_buffer[USB_CDC_RX_BUFFER_SIZE + USB_CDC_RX_BUFFER_PADDING] __a
 static volatile size_t rx_head = 0;
 static volatile size_t rx_tail = 0;
 static volatile size_t rx_wrap = 0;
+static volatile bool rx_full = false;
 static volatile bool rx_paused = false;
 static volatile bool dma_failed = false;
 
@@ -46,6 +47,7 @@ static uint8_t line_coding[7] = {0x00, 0xC2, 0x01, 0x00, 0x00, 0x00, 0x08};
 
 static bool validate_config(const usb_cdc_transport_config_t* config);
 static bool dma_interrupt_enabled(const DMA_HandleTypeDef* dma);
+static bool reception_has_packet_space(void);
 static void resume_reception_if_paused(void);
 static int8_t cdc_control(uint8_t command, uint8_t* buffer, uint16_t length);
 static int8_t cdc_receive_complete(uint8_t* buffer, uint32_t* length);
@@ -53,6 +55,18 @@ static int8_t cdc_transmit_complete(uint8_t* buffer, uint32_t* length, uint8_t e
 static void dma_receive_complete(DMA_HandleTypeDef* dma);
 static void dma_receive_error(DMA_HandleTypeDef* dma);
 
+/**
+ * @brief Take ownership of one configured USB CDC interface.
+ *
+ * The function installs the transport's CDC callbacks, registers the DMA
+ * completion callbacks and arms USB reception into the private ring buffer.
+ * STM32's CDC callbacks do not carry a user context, therefore only one USB
+ * CDC transport may be active at a time.
+ *
+ * @param transport micro-XRCE-DDS transport containing a
+ * usb_cdc_transport_config_t in its args member.
+ * @return true when the interface is ready, otherwise false.
+ */
 bool usb_cdc_transport_open(struct uxrCustomTransport* transport) {
     if (transport == NULL || !validate_config((usb_cdc_transport_config_t*)transport->args)) {
         return false;
@@ -92,6 +106,7 @@ bool usb_cdc_transport_open(struct uxrCustomTransport* transport) {
     rx_head = 0;
     rx_tail = 0;
     rx_wrap = USB_CDC_RX_BUFFER_SIZE;
+    rx_full = false;
     rx_paused = false;
     dma_failed = false;
     receive_thread = NULL;
@@ -111,6 +126,11 @@ bool usb_cdc_transport_open(struct uxrCustomTransport* transport) {
     return true;
 }
 
+/**
+ * @brief Release the active USB CDC interface and restore its old callbacks.
+ * @param transport Transport previously passed to usb_cdc_transport_open().
+ * @return true on success, false when another transport owns the interface.
+ */
 bool usb_cdc_transport_close(struct uxrCustomTransport* transport) {
     if (transport == NULL || transport->args == NULL) {
         return false;
@@ -145,6 +165,18 @@ bool usb_cdc_transport_close(struct uxrCustomTransport* transport) {
     return true;
 }
 
+/**
+ * @brief Send one micro-XRCE-DDS byte sequence over USB CDC.
+ *
+ * USB may temporarily report BUSY. The operation retries a bounded number of
+ * times and then waits for the CDC transmit-complete callback.
+ *
+ * @param transport Open custom transport.
+ * @param buffer Bytes to transmit.
+ * @param length Number of bytes to transmit.
+ * @param error Receives a transport-specific error code.
+ * @return Number of transmitted bytes, or zero on failure.
+ */
 size_t usb_cdc_transport_write(struct uxrCustomTransport* transport, const uint8_t* buffer, size_t length, uint8_t* error) {
     if (error != NULL) {
         *error = TRANSPORT_ERROR_NONE;
@@ -180,6 +212,20 @@ size_t usb_cdc_transport_write(struct uxrCustomTransport* transport, const uint8
     return 0;
 }
 
+/**
+ * @brief Read available bytes from the USB CDC ring buffer.
+ *
+ * The read waits only when the ring is empty. Data is copied with the
+ * configured memory-to-memory DMA stream; a wrapped transfer overlaps DMA and
+ * a short CPU copy to avoid starting DMA twice.
+ *
+ * @param transport Open custom transport.
+ * @param buffer Destination supplied by micro-XRCE-DDS.
+ * @param length Maximum number of bytes to read.
+ * @param timeout_ms Maximum wait in milliseconds; zero is non-blocking.
+ * @param error Receives a transport-specific error code.
+ * @return Number of bytes copied into buffer, or zero when no data was read.
+ */
 size_t usb_cdc_transport_read(struct uxrCustomTransport* transport, uint8_t* buffer, size_t length, int timeout_ms, uint8_t* error) {
     if (error != NULL) {
         *error = TRANSPORT_ERROR_NONE;
@@ -194,12 +240,12 @@ size_t usb_cdc_transport_read(struct uxrCustomTransport* transport, uint8_t* buf
     }
 
     receive_thread = osThreadGetId();
-    if (rx_head == rx_tail) {
+    if (rx_head == rx_tail && !rx_full) {
         /* Discard an old notification, then recheck the ring before blocking.
          * A packet arriving after the clear either changes rx_head or sets a
          * fresh flag, so this sequence cannot lose the wakeup. */
         (void)osThreadFlagsClear(USB_CDC_RX_COMPLETE_FLAG);
-        if (rx_head == rx_tail) {
+        if (rx_head == rx_tail && !rx_full) {
             const uint32_t timeout = timeout_ms > 0 ? (uint32_t)timeout_ms : 0U;
             const uint32_t flags = osThreadFlagsWait(USB_CDC_RX_COMPLETE_FLAG, osFlagsWaitAny, timeout);
             if ((flags & osFlagsError) != 0U || (flags & USB_CDC_RX_COMPLETE_FLAG) == 0U) {
@@ -213,9 +259,10 @@ size_t usb_cdc_transport_read(struct uxrCustomTransport* transport, uint8_t* buf
     const size_t head = rx_head;
     size_t tail = rx_tail;
     const size_t wrap = rx_wrap;
+    const bool full = rx_full;
     taskEXIT_CRITICAL();
 
-    const bool wrapped = head < tail;
+    const bool wrapped = full || head < tail;
     const size_t available = wrapped ? wrap - tail + head : head - tail;
     const size_t to_read = length < available ? length : available;
     if (to_read == 0U) {
@@ -258,6 +305,7 @@ size_t usb_cdc_transport_read(struct uxrCustomTransport* transport, uint8_t* buf
         }
         taskENTER_CRITICAL();
         rx_tail = cpu_length > 0U ? 0U : tail;
+        rx_full = false;
         taskEXIT_CRITICAL();
         resume_reception_if_paused();
         return cpu_length;
@@ -265,6 +313,7 @@ size_t usb_cdc_transport_read(struct uxrCustomTransport* transport, uint8_t* buf
 
     taskENTER_CRITICAL();
     rx_tail = dma_tail + dma_length;
+    rx_full = false;
     taskEXIT_CRITICAL();
     resume_reception_if_paused();
     return to_read;
@@ -323,9 +372,19 @@ static bool dma_interrupt_enabled(const DMA_HandleTypeDef* dma) {
     return NVIC_GetEnableIRQ(interrupt) != 0U;
 }
 
+static bool reception_has_packet_space(void) {
+    if (rx_full) {
+        return false;
+    }
+    if (rx_head < rx_tail) {
+        return rx_tail - rx_head >= active_packet_size;
+    }
+    return USB_CDC_RX_BUFFER_SIZE - rx_head >= active_packet_size;
+}
+
 static void resume_reception_if_paused(void) {
     taskENTER_CRITICAL();
-    const bool should_resume = rx_paused;
+    const bool should_resume = rx_paused && reception_has_packet_space();
     if (should_resume) {
         rx_paused = false;
         USBD_CDC_SetRxBuffer(active_config->usb_device, &rx_buffer[rx_head]);
@@ -353,23 +412,30 @@ static int8_t cdc_receive_complete(uint8_t* buffer, uint32_t* length) {
     const size_t size = USB_CDC_RX_BUFFER_SIZE;
     size_t next_head = rx_head + *length;
 
-    /* Keep a whole USB packet available after the head. Near the logical end,
-     * rx_wrap records the exclusive end of valid data and the next packet is
-     * directed to index zero. The physical padding protects the final write. */
-    if (next_head >= size || next_head + active_packet_size >= size) {
-        rx_wrap = next_head < size ? next_head : size;
+    /* The USB stack has already written this packet into rx_buffer. Commit it
+     * before deciding whether another packet fits; the callback return value
+     * is ignored by ST's USBD_CDC_DataOut(), so returning BUSY cannot ask the
+     * host to retry an uncommitted packet. */
+    if (next_head >= size || next_head + active_packet_size > size) {
+        rx_wrap = next_head <= size ? next_head : size;
         next_head = 0U;
     }
+    rx_head = next_head;
+    /* A zero-length USB packet carries no data and must not turn an empty ring
+     * into a falsely full one. */
+    rx_full = *length > 0U && rx_head == rx_tail;
 
-    /* Stop re-arming USB before its next maximum-sized packet could overwrite
-     * unread data. The reader resumes reception after advancing rx_tail. */
-    if ((next_head <= rx_tail && next_head + active_packet_size >= rx_tail) || (next_head == 0U && rx_tail == 0U)) {
+    /* NAK further OUT traffic when a complete maximum-sized packet no longer
+     * fits. A later read re-arms reception only after freeing enough space. */
+    if (!reception_has_packet_space()) {
         rx_paused = true;
         taskEXIT_CRITICAL_FROM_ISR(interrupt_state);
-        return USBD_BUSY;
+        if (receive_thread != NULL) {
+            (void)osThreadFlagsSet(receive_thread, USB_CDC_RX_COMPLETE_FLAG);
+        }
+        return USBD_OK;
     }
 
-    rx_head = next_head;
     USBD_CDC_SetRxBuffer(active_config->usb_device, &rx_buffer[rx_head]);
     taskEXIT_CRITICAL_FROM_ISR(interrupt_state);
 

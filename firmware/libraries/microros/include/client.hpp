@@ -79,10 +79,10 @@ class Client {
 
     /**
      * @brief Device-specific client configuration
-     * 
+     *
      * @param transport Non-owning custom transport configuration
-     * @param client_task_priority Priority of the client task (default: osPriorityNormal1)
-     * @param executor_task_priority Priority of the executor task (default: osPriorityRealtime)
+     * @param client_thread_priority Priority of the connection thread (default: osPriorityNormal1)
+     * @param executor_thread_priority Priority of the executor thread (default: osPriorityRealtime)
      * @param connection_retry_interval_ms Interval between connection attempts (default: 1000 ms)
      * @param connection_health_interval_ms Interval between connection health checks (default: 1000 ms)
      * @param ping_timeout_ms Timeout for pinging the agent (default: 50 ms)
@@ -90,8 +90,8 @@ class Client {
      */
     struct Config {
         Transport transport{};
-        osPriority_t client_task_priority = osPriorityNormal1;
-        osPriority_t executor_task_priority = osPriorityRealtime;
+        osPriority_t client_thread_priority = osPriorityNormal1;
+        osPriority_t executor_thread_priority = osPriorityRealtime;
         uint32_t connection_retry_interval_ms = ROS_CONNECTION_RETRY_INTERVAL_MS;
         uint32_t connection_health_interval_ms = ROS_CONNECTION_HEALTH_INTERVAL_MS;
         int ping_timeout_ms = ROS_AGENT_PING_TIMEOUT_MS;
@@ -106,17 +106,17 @@ class Client {
     rcl_ret_t init(const Config& client_config);
     rcl_ret_t fini(uint32_t timeout_ms = osWaitForever);
 
-    State getState() const { return state; }
-    ConnectionState getConnectionState() const { return connection_state; }
-    rcl_ret_t getLastError() const { return last_error; }
+    State getState() const;
+    ConnectionState getConnectionState() const;
+    rcl_ret_t getLastError() const;
 
-    bool isConnected() const { return connection_state == ConnectionState::CONNECTED; }
+    bool isConnected() const;
     bool waitForConnection(uint32_t timeout_ms = 0) const;
     bool waitForDisconnect(uint32_t timeout_ms = 0) const;
     void signalPossibleDisconnect(rcl_ret_t error);
 
-    Executor& getExecutor() { return executor; }
-    const Executor& getExecutor() const { return executor; }
+    Executor& getExecutor();
+    const Executor& getExecutor() const;
 
    private:
     friend class Executor;
@@ -164,7 +164,6 @@ class Client {
     size_t service_count = 0;
     size_t service_client_count = 0;
 
-    static void threadEntry(void* argument);
     static void executorError(void* context, rcl_ret_t error);
     void thread();
     rcl_ret_t connectSession();
@@ -172,7 +171,7 @@ class Client {
     bool pingAgent();
     void publishConnectionState(ConnectionState new_state);
     bool validateConfig(const Config& client_config) const;
-    void cleanupInitFailure();
+    void cleanupInitFailure(rcl_ret_t error);
 };
 
 }  // namespace ros

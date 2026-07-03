@@ -39,8 +39,8 @@ ros::Client::Config microros_client_config{
             .write = usb_cdc_transport_write,
             .read = usb_cdc_transport_read,
         },
-    .client_task_priority = osPriorityNormal1,
-    .executor_task_priority = osPriorityRealtime,
+    .client_thread_priority = osPriorityNormal1,
+    .executor_thread_priority = osPriorityRealtime,
 };
 
 RCReceiver::Config rc_config{
