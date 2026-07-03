@@ -48,5 +48,6 @@
             //     "singleInstance": true
             // }
         ]
-    }
+    },
+    "C_Cpp.default.compilerPath": "/usr/bin/arm-none-eabi-g++"
 }
