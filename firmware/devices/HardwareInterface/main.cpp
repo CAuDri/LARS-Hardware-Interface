@@ -14,9 +14,9 @@
 #include "gpio_light.hpp"
 #include "light_dispatcher.hpp"
 #include "logger.h"
+#include "pulse_animation.hpp"
 #include "thread_safe_adc.h"
 #include "ws2812_light.hpp"
-#include "pulse_animation.hpp"
 
 /**
  * Forward function declarations
@@ -47,6 +47,8 @@ GPIOLight debug_led_green(DEBUG_LED_GREEN_GPIO_Port, DEBUG_LED_GREEN_Pin, COLOR_
 GPIOLight debug_led_blue(DEBUG_LED_BLUE_GPIO_Port, DEBUG_LED_BLUE_Pin, COLOR_BLUE);      // Onboard debug LED (blue)
 
 LightDispatcher light_dispatcher("Light Dispatcher");
+
+ros::Client microros_client;
 
 /**
  * @brief Main entry point called from the RTOS task in the auto-generated main.c
@@ -86,6 +88,11 @@ void mainTask() {
 
     servo.init(servo_config, servo_calibration);
     servo.start();
+
+    const rcl_ret_t microros_result = microros_client.init(microros_client_config);
+    if (microros_result != RCL_RET_OK) {
+        LogError("Main: Failed to initialize micro-ROS client: %d", static_cast<int>(microros_result));
+    }
 
     /**
      * Register components with the system check for monitoring

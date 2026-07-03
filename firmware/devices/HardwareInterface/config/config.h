@@ -15,6 +15,7 @@
 #include "rc_receiver.hpp"
 #include "servo.hpp"
 #include "system_monitor.hpp"
+#include "usb_cdc_transport.h"
 #include "vesc.hpp"
 #include "ws2812.hpp"
 
@@ -22,6 +23,25 @@
 constexpr crsf::Channel RC_THROTTLE_CHANNEL = crsf::CHANNEL_3;
 constexpr crsf::Channel RC_STEERING_CHANNEL = crsf::CHANNEL_1;
 constexpr crsf::Channel RC_MODE_SWITCH_CHANNEL = crsf::CHANNEL_7;
+
+usb_cdc_transport_config_t microros_usb_transport_config{
+    .usb_device = &hUsbDeviceFS,
+    .rx_dma = &hdma_memtomem_dma2_stream3,
+};
+
+ros::Client::Config microros_client_config{
+    .transport =
+        {
+            .framing = true,
+            .context = &microros_usb_transport_config,
+            .open = usb_cdc_transport_open,
+            .close = usb_cdc_transport_close,
+            .write = usb_cdc_transport_write,
+            .read = usb_cdc_transport_read,
+        },
+    .client_task_priority = osPriorityNormal1,
+    .executor_task_priority = osPriorityRealtime,
+};
 
 RCReceiver::Config rc_config{
     .huart = &huart2,
