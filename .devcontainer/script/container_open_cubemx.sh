@@ -76,7 +76,12 @@ install_flatpak() {
 }
 
 ensure_dbus() {
-    if [[ -S /run/dbus/system_bus_socket ]]; then
+    # A socket can survive after its daemon has exited (for example when a dev
+    # container is stopped abruptly). Probe the bus instead of trusting that
+    # the socket exists, otherwise Flatpak fails with "Connection refused".
+    if dbus-send --system --type=method_call --print-reply \
+        --dest=org.freedesktop.DBus / org.freedesktop.DBus.ListNames \
+        >/dev/null 2>&1; then
         return 0
     fi
 
@@ -91,11 +96,22 @@ ensure_dbus() {
 
     print_info "Starting an isolated D-Bus system bus inside the dev container..."
     sudo mkdir -p /run/dbus
-    sudo dbus-daemon --system --fork
+    sudo rm -f /run/dbus/system_bus_socket /run/dbus/pid
+    sudo dbus-daemon --system --fork || return 1
+
+    if ! dbus-send --system --type=method_call --print-reply \
+        --dest=org.freedesktop.DBus / org.freedesktop.DBus.ListNames \
+        >/dev/null 2>&1; then
+        print_error "the D-Bus system bus did not become available."
+        return 1
+    fi
 }
 
 run_flatpak() {
-    if [[ -n "${DBUS_SESSION_BUS_ADDRESS:-}" ]]; then
+    if [[ -n "${DBUS_SESSION_BUS_ADDRESS:-}" ]] && \
+       dbus-send --session --type=method_call --print-reply \
+           --dest=org.freedesktop.DBus / org.freedesktop.DBus.ListNames \
+           >/dev/null 2>&1; then
         flatpak "$@"
         return $?
     fi
