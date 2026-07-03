@@ -1,5 +1,8 @@
-# CAuDri - Common CMake configuration for all devices
-# Offers common language settings and helper functions. Should be included from the top-level CMakeLists.txt of each device.
+# CAuDri - Common CMake configuration for all firmware devices
+#
+# Provides shared language settings, firmware library include paths, compiler
+# options, linker options, post-build artifacts, and small helper functions.
+# Include this file after creating the device's executable target.
 
 enable_language(C CXX ASM)
 
@@ -64,3 +67,17 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
 
 # Workaround: Remove bogus ob lib when using C++ (recommended by CubeMX)
 list(REMOVE_ITEM CMAKE_C_IMPLICIT_LINK_LIBRARIES ob)
+
+# Suppress known warnings in a generated source without weakening warning
+# settings for the rest of the firmware target.
+function(caudri_suppress_generated_source_warnings target source)
+    if(NOT TARGET ${target})
+        message(FATAL_ERROR "Unknown firmware target: ${target}")
+    endif()
+
+    set_source_files_properties(
+        "${source}"
+        TARGET_DIRECTORY ${target}
+        PROPERTIES COMPILE_OPTIONS "${ARGN}"
+    )
+endfunction()

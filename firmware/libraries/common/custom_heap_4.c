@@ -43,6 +43,12 @@ static const size_t heap_struct_size =
 static void initialize_heap(void);
 static void insert_free_block(BlockLink_t *block);
 
+/**
+ * @brief Allocate an aligned block from the shared FreeRTOS heap.
+ *
+ * @param wanted_size Requested payload size in bytes.
+ * @return Pointer to the allocated payload, or NULL when allocation fails.
+ */
 void *pvPortMalloc(size_t wanted_size) {
     BlockLink_t *block;
     BlockLink_t *previous;
@@ -110,6 +116,11 @@ void *pvPortMalloc(size_t wanted_size) {
     return result;
 }
 
+/**
+ * @brief Return a previously allocated block to the shared FreeRTOS heap.
+ *
+ * @param pointer Allocation returned by pvPortMalloc(), or NULL.
+ */
 void vPortFree(void *pointer) {
     if (pointer == NULL) {
         return;
@@ -132,6 +143,16 @@ void vPortFree(void *pointer) {
     }
 }
 
+/**
+ * @brief Resize an allocation while preserving its existing contents.
+ *
+ * The current heap implementation allocates a replacement block, copies the
+ * overlapping payload, and then releases the original block.
+ *
+ * @param pointer Existing allocation, or NULL to perform a new allocation.
+ * @param size Requested payload size; zero frees the existing allocation.
+ * @return Pointer to the resized allocation, or NULL when allocation fails.
+ */
 void *pvPortRealloc(void *pointer, size_t size) {
     if (pointer == NULL) {
         return pvPortMalloc(size);
@@ -153,6 +174,13 @@ void *pvPortRealloc(void *pointer, size_t size) {
     return replacement;
 }
 
+/**
+ * @brief Allocate a zero-initialized array from the shared FreeRTOS heap.
+ *
+ * @param number_of_elements Number of array elements.
+ * @param element_size Size of one element in bytes.
+ * @return Pointer to zeroed storage, or NULL on overflow/allocation failure.
+ */
 void *pvPortCalloc(size_t number_of_elements, size_t element_size) {
     if (element_size != 0U && number_of_elements > SIZE_MAX / element_size) {
         return NULL;
@@ -165,10 +193,25 @@ void *pvPortCalloc(size_t number_of_elements, size_t element_size) {
     return pointer;
 }
 
+/**
+ * @brief Read the currently available heap capacity.
+ *
+ * @return Number of free bytes remaining.
+ */
 size_t xPortGetFreeHeapSize(void) { return free_bytes; }
 
+/**
+ * @brief Read the lowest free heap capacity observed since initialization.
+ *
+ * @return Minimum number of free bytes observed.
+ */
 size_t xPortGetMinimumEverFreeHeapSize(void) { return minimum_free_bytes; }
 
+/**
+ * @brief Compatibility hook for heap schemes that support explicit reset.
+ *
+ * heap_4 initializes lazily and therefore requires no action here.
+ */
 void vPortInitialiseBlocks(void) {}
 
 static void initialize_heap(void) {
@@ -221,6 +264,11 @@ static void insert_free_block(BlockLink_t *block) {
 }
 
 #if (configUSE_HEAP_SCHEME == 4) || defined(USE_FreeRTOS_HEAP_4)
+/**
+ * @brief Collect current allocation and free-list statistics.
+ *
+ * @param stats Destination populated with the current heap statistics.
+ */
 void vPortGetHeapStats(HeapStats_t *stats) {
     size_t blocks = 0U;
     size_t largest = 0U;

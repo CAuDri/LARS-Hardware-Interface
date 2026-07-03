@@ -35,6 +35,12 @@ static void *zero_allocate(size_t number_of_elements, size_t element_size, void 
     return pvPortCalloc(number_of_elements, element_size);
 }
 
+/**
+ * @brief Create an rcl allocator backed by the shared FreeRTOS heap.
+ *
+ * @return Fully configured allocator using pvPortMalloc(), vPortFree(),
+ *         pvPortRealloc(), and pvPortCalloc().
+ */
 rcl_allocator_t microros_get_allocator(void) {
     rcl_allocator_t allocator = {
         .allocate = allocate,
@@ -46,6 +52,12 @@ rcl_allocator_t microros_get_allocator(void) {
     return allocator;
 }
 
+/**
+ * @brief Make the shared FreeRTOS allocator the rcutils process-wide default.
+ *
+ * @return RCL_RET_OK when rcutils accepts the allocator, otherwise
+ *         RCL_RET_ERROR.
+ */
 rcl_ret_t microros_set_default_allocator(void) {
     rcl_allocator_t allocator = microros_get_allocator();
     return rcutils_set_default_allocator(&allocator) ? RCL_RET_OK : RCL_RET_ERROR;

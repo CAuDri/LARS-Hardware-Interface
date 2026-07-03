@@ -28,6 +28,8 @@
 #include "thread_safe_can.h"
 #include "thread_safe_i2c.h"
 #include "thread_safe_adc.h"
+#include "usb_serial_descriptor.h"
+#include "usbd_desc.h"
 
 /* USER CODE END Includes */
 
@@ -170,6 +172,9 @@ int main(void)
   MX_TIM8_Init();
   MX_TIM5_Init();
   /* USER CODE BEGIN 2 */
+
+  // CAuDri - Replace CubeMX's occasionally broken generated USB serial callback
+  usb_serial_descriptor_install(&FS_Desc, &HS_Desc);
 
   // CAuDri - Initialize the trace recorder for debugging with Tracealyzer
   #ifdef DEBUG_USE_TRACE_RECORDER
