@@ -25,8 +25,10 @@ constexpr uint32_t ROS_CONNECTION_RETRY_INTERVAL_MS = 1000;
 constexpr uint32_t ROS_CONNECTION_HEALTH_INTERVAL_MS = 1000;
 constexpr int ROS_AGENT_PING_TIMEOUT_MS = 50;
 constexpr uint8_t ROS_AGENT_PING_ATTEMPTS = 1;
+constexpr uint32_t ROS_INITIAL_TIME_SYNC_RETRY_INTERVAL_MS = 1000;
 constexpr uint32_t ROS_TIME_SYNC_INTERVAL_MS = 30000;
 constexpr int ROS_TIME_SYNC_TIMEOUT_MS = 50;
+constexpr uint8_t ROS_TIME_SYNC_FAILURE_RECONNECT_THRESHOLD = 3;
 
 constexpr uint32_t ROS_CONNECTION_ESTABLISHED_FLAG = 0x01U;
 constexpr uint32_t ROS_CONNECTION_LOST_FLAG = 0x02U;
@@ -87,7 +89,7 @@ class Client {
      * @param client_thread_priority Priority of the connection thread (default: osPriorityNormal1)
      * @param executor_thread_priority Priority of the executor thread (default: osPriorityRealtime)
      * @param connection_retry_interval_ms Interval between connection attempts (default: 1000 ms)
-     * @param connection_health_interval_ms Interval between connection health checks (default: 1000 ms)
+     * @param connection_health_interval_ms Connected-state wake interval for event and time-sync checks (default: 1000 ms)
      * @param ping_timeout_ms Timeout for pinging the agent (default: 50 ms)
      * @param ping_attempts Number of ping attempts before considering the agent unavailable (default: 1)
      */
@@ -144,6 +146,7 @@ class Client {
     int64_t synchronized_epoch_ns = 0;
     int64_t synchronized_monotonic_ns = 0;
     uint32_t last_time_sync_attempt_ms = 0;
+    uint8_t consecutive_time_sync_failures = 0;
 
     rcl_allocator_t allocator{};
     rclc_support_t support{};

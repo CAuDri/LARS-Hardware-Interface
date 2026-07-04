@@ -14,25 +14,24 @@
 #include "task.h"
 
 #define NANOSECONDS_PER_SECOND 1000000000ULL
-#define MICROROS_CLOCK_MONOTONIC ((clockid_t)0)
-
 /**
  * @brief Read monotonic time since firmware startup.
  *
  * micro-ROS uses this clock to measure durations and calculate the synchronized
  * agent epoch offset. It must remain independent of ROS connectivity.
  *
- * Only the monotonic clock identifier used to compile the micro-ROS static
- * library is supported because the firmware has no independent wall clock.
- * ROS epoch time is provided separately by ros::Client after it synchronizes
- * with the agent.
+ * The firmware has no independent Unix wall clock, so all POSIX clock ids used
+ * by linked middleware are mapped to the same monotonic FreeRTOS tick clock.
+ * ROS epoch time is provided separately after synchronization with the agent.
  *
- * @param clock_id POSIX clock identifier; must be the micro-ROS monotonic ID.
+ * @param clock_id POSIX clock identifier; ignored on this bare-metal target.
  * @param time Destination for elapsed seconds and nanoseconds.
  * @return 0 on success or -1 with errno set to EINVAL for unsupported input.
  */
 int clock_gettime(clockid_t clock_id, struct timespec* time) {
-    if (clock_id != MICROROS_CLOCK_MONOTONIC || time == NULL) {
+    (void)clock_id;
+
+    if (time == NULL) {
         errno = EINVAL;
         return -1;
     }
@@ -49,8 +48,8 @@ int clock_gettime(clockid_t clock_id, struct timespec* time) {
 /**
  * @brief Report that no Unix wall clock is provided by the firmware.
  *
- * Newlib's time() implementation references this syscall through currently
- * unused rclc action-client code. Defining the stub prevents libnosys from
+ * Some linked library code references this syscall even though the firmware
+ * does not provide wall-clock time. Defining the stub prevents libnosys from
  * emitting a linker warning while preserving honest wall-clock semantics.
  *
  * @param time_value Unused destination for Unix wall time.

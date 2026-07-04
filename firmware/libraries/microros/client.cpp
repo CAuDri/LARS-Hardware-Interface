@@ -147,7 +147,6 @@ rcl_ret_t Client::init(const Config& client_config) {
         return RCL_RET_ERROR;
     }
 
-    LogInfo("micro-ROS Client: Initialized; waiting for an agent");
     return RCL_RET_OK;
 }
 
@@ -234,8 +233,8 @@ builtin_interfaces__msg__Time Client::getRosTime() const {
         return ros_time;
     }
 
-    // ROS Time stores only the sub-second remainder in nanosec. The KITcar
-    // implementation returned the complete epoch nanoseconds in that field.
+    // ROS Time stores seconds and the sub-second nanosecond remainder in
+    // separate fields, matching builtin_interfaces/msg/Time.
     ros_time.sec = static_cast<int32_t>(current_epoch_ns / NANOSECONDS_PER_SECOND);
     ros_time.nanosec = static_cast<uint32_t>(current_epoch_ns % NANOSECONDS_PER_SECOND);
     return ros_time;
@@ -299,50 +298,60 @@ void Client::executorError(void* context, rcl_ret_t error) {
 }
 
 void Client::thread() {
+    bool waiting_for_agent_logged = false;
+
     while (!stop_requested) {
         // Remember whether this iteration owned a complete session. Failed
         // discovery attempts are expected and should not flood the info log.
         bool session_connected = false;
         state = State::CONNECTING;
         publishConnectionState(ConnectionState::CONNECTING);
-        LogDebug("micro-ROS Client: Searching for agent");
+        if (!waiting_for_agent_logged) {
+            LogInfo("micro-ROS Client: Waiting for agent");
+            waiting_for_agent_logged = true;
+        }
         rcl_ret_t result = connectSession();
 
         if (result == RCL_RET_OK) {
             state = State::CONNECTED;
+            (void)osEventFlagsClear(connection_events, ROS_TEST_CONNECTION_FLAG);
             publishConnectionState(ConnectionState::CONNECTED);
             session_connected = true;
-            LogInfo("micro-ROS Client: Connected to agent");
+            waiting_for_agent_logged = false;
+            LogSuccess("micro-ROS Client: Connected to agent");
 
-            // A timeout is the normal health-check interval. An entity or
-            // executor can set ROS_TEST_CONNECTION_FLAG to request an earlier
-            // ping when a communication error suggests that the agent vanished.
+            // Keep connected-state health checks lightweight. Periodic time
+            // synchronization verifies the session and maintains ROS time,
+            // while entity/executor errors request an immediate reconnect.
             while (!stop_requested && isConnected()) {
                 const uint32_t flags = osEventFlagsWait(
                     connection_events, ROS_TEST_CONNECTION_FLAG | ROS_STOP_CLIENT_FLAG, osFlagsWaitAny, config->connection_health_interval_ms);
-                if ((flags & osFlagsError) == 0U && (flags & ROS_STOP_CLIENT_FLAG) != 0U) {
-                    stop_requested = true;
-                    break;
-                }
-                if ((flags & osFlagsError) != 0U && flags != osFlagsErrorTimeout) {
+                if ((flags & osFlagsError) == 0U) {
+                    if ((flags & ROS_STOP_CLIENT_FLAG) != 0U) {
+                        stop_requested = true;
+                        break;
+                    }
+                    if ((flags & ROS_TEST_CONNECTION_FLAG) != 0U) {
+                        LogWarning("micro-ROS Client: Communication error reported; reconnecting");
+                        result = RCL_RET_ERROR;
+                        break;
+                    }
+                } else if (flags != osFlagsErrorTimeout) {
                     result = RCL_RET_ERROR;
                     break;
                 }
-
-                bool agent_available = true;
-                if (osKernelGetTickCount() - last_time_sync_attempt_ms >= ROS_TIME_SYNC_INTERVAL_MS) {
-                    // A successful NTP exchange already proves that the agent
-                    // answered. If it fails, distinguish clock trouble from a
-                    // lost session with the normal lightweight ping.
-                    agent_available = synchronizeTime() || pingAgent();
-                } else {
-                    agent_available = pingAgent();
-                }
-
-                if (!agent_available) {
-                    LogWarning("micro-ROS Client: Agent health check failed");
-                    result = RCL_RET_ERROR;
-                    break;
+                const uint32_t time_sync_interval =
+                    isTimeSynchronized() ? ROS_TIME_SYNC_INTERVAL_MS : ROS_INITIAL_TIME_SYNC_RETRY_INTERVAL_MS;
+                if (osKernelGetTickCount() - last_time_sync_attempt_ms >= time_sync_interval) {
+                    // Retry quickly until the first successful synchronization,
+                    // then use the normal low-rate interval. Repeated failures
+                    // invalidate the session because ROS timestamps are no
+                    // longer available.
+                    if (!synchronizeTime() && consecutive_time_sync_failures >= ROS_TIME_SYNC_FAILURE_RECONNECT_THRESHOLD) {
+                        LogWarning("micro-ROS Client: Time synchronization failed repeatedly; reconnecting");
+                        result = RCL_RET_ERROR;
+                        break;
+                    }
                 }
             }
         }
@@ -359,6 +368,7 @@ void Client::thread() {
             state = State::DISCONNECTED;
             if (session_connected) {
                 LogInfo("micro-ROS Client: Disconnected; reconnecting automatically");
+                waiting_for_agent_logged = false;
             }
             const uint32_t flags = osEventFlagsWait(
                 connection_events, ROS_STOP_CLIENT_FLAG, osFlagsWaitAny, config->connection_retry_interval_ms);
@@ -387,9 +397,13 @@ rcl_ret_t Client::connectSession() {
     }
 
     rcl_ret_t result = RCL_RET_OK;
+    bool agent_found = false;
+    LogDebug("micro-ROS Client: Pinging agent");
     if (!pingAgent()) {
         result = RCL_RET_ERROR;
     } else {
+        agent_found = true;
+        LogInfo("micro-ROS Client: Agent found; creating session");
         // rclc_support_init creates the native context and XRCE session. A
         // non-null context marks partial ownership even if initialization
         // returns an error, so cleanup can remain deterministic.
@@ -398,12 +412,10 @@ rcl_ret_t Client::connectSession() {
         support_active = support.context.impl != nullptr;
     }
     if (result == RCL_RET_OK) {
-        // Synchronization is mandatory for ROS timestamps, but a clock sync
-        // failure alone must not discard an otherwise healthy session. Verify
-        // connectivity and keep retrying periodically when the ping succeeds.
-        if (!synchronizeTime() && !pingAgent()) {
-            result = RCL_RET_ERROR;
-        }
+        // Start time synchronization for the new session. The connection thread
+        // continues retrying until ROS time is available or repeated failures
+        // require a reconnect.
+        (void)synchronizeTime();
     }
     if (result == RCL_RET_OK) {
         result = executor.nativeInit(&support.context, &allocator);
@@ -418,7 +430,12 @@ rcl_ret_t Client::connectSession() {
 
     if (result != RCL_RET_OK) {
         last_error = result;
-        LogDebug("micro-ROS Client: Connection attempt failed: %d", (int)result);
+        // A failed ping simply means the agent is not available yet. Only log
+        // failures that happen after discovery succeeded, because those point
+        // to a real session setup or cleanup problem.
+        if (agent_found || support_active) {
+            LogWarning("micro-ROS Client: Session setup failed: %d", (int)result);
+        }
         if (support_active) {
             (void)disconnectSession(false);
         }
@@ -502,8 +519,12 @@ bool Client::synchronizeTime() {
         synchronized_monotonic_ns = monotonic_ns;
         time_synchronized = true;
         taskEXIT_CRITICAL();
+        consecutive_time_sync_failures = 0;
     } else {
         clearSynchronizedTime();
+        if (consecutive_time_sync_failures < UINT8_MAX) {
+            consecutive_time_sync_failures++;
+        }
     }
     last_time_sync_error = synchronized ? RMW_RET_OK : (result == RMW_RET_OK ? RMW_RET_ERROR : result);
 

@@ -208,14 +208,14 @@ void Executor::thread() {
 
         // Hold the session mutex only across the native spin call. The short
         // configured timeout gives the connection thread regular opportunities
-        // to ping, initialize, or destroy the session.
+        // to synchronize time, initialize, or destroy the session.
         rcl_ret_t result = RCL_RET_OK;
         if (spin_requested) {
             result = rclc_executor_spin_some(&native_executor, ROS_EXECUTOR_SPIN_TIMEOUT_NS);
         }
         (void)osMutexRelease(session_mutex);
 
-        if (result != RCL_RET_OK && result != RCL_RET_TIMEOUT) {
+        if (result != RCL_RET_OK && result != RCL_RET_TIMEOUT && result != RCL_RET_WAIT_SET_EMPTY) {
             last_error = result;
             LogWarning("micro-ROS Executor: Spin failed: %d", (int)result);
             error_callback(error_context, result);

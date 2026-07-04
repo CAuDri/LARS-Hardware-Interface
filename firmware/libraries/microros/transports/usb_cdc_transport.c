@@ -301,7 +301,7 @@ size_t usb_cdc_transport_read(struct uxrCustomTransport* transport, uint8_t* buf
 
     /* A wrapped read has two physical sections. Start DMA on the section at
      * the beginning of the ring, then copy the tail section on the CPU while
-     * DMA runs. This preserves KITcar's overlap without a second DMA IRQ. */
+     * DMA runs. This overlaps both transfers without needing a second DMA IRQ. */
     size_t cpu_length = 0U;
     size_t dma_tail = tail;
     size_t dma_length = to_read;
@@ -444,11 +444,10 @@ static uint32_t get_empty_read_timeout(int timeout_ms) {
         return 0U;
     }
 
-    /* micro-XRCE-DDS may call the custom transport with a very large timeout
-     * while probing for an agent or while its framing state machine waits for
-     * the next byte of a session reply. Waiting for that value directly would
-     * park the connection thread for far too long, but a zero-timeout busy loop
-     * can starve the session creation path. Use a tiny bounded wait instead. */
+    /* The upper layer may request a very large timeout while waiting for framed
+     * session data. Waiting for that value directly would block the connection
+     * thread for too long, but a zero-timeout busy loop can starve session
+     * setup. Use a tiny bounded wait instead. */
     if ((uint32_t)timeout_ms > USB_CDC_MAX_BLOCKING_READ_TIMEOUT_MS) {
         return USB_CDC_FALLBACK_READ_TIMEOUT_MS;
     }
