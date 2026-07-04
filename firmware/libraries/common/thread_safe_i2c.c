@@ -120,14 +120,14 @@ HAL_StatusTypeDef I2C_Transmit(I2C_HandleTypeDef* hi2c, uint16_t address, uint8_
         LogDebug("I2C: Transmit timeout in thread '%s'", osThreadGetName(osThreadGetId()));
     }
 
-    if (flags >= osFlagsError || flags == I2C_ERROR_FLAG) {
+    if ((flags & osFlagsError) != 0U || (flags & I2C_ERROR_FLAG) != 0U) {
         HAL_I2C_StateTypeDef state = HAL_I2C_GetState(hi2c);
         if (state == HAL_I2C_STATE_BUSY || state == HAL_I2C_STATE_BUSY_TX) {
             // Reset the HAL state and I2C peripheral to stop any ongoing transfers
             HAL_I2C_Master_Abort_IT(hi2c, address);
 
             flags = osThreadFlagsWait(I2C_ABORT_FLAG, osFlagsWaitAny, I2C_MAX_TX_TIMEOUT_MS);
-            if (flags >= osFlagsError) {
+            if ((flags & osFlagsError) != 0U) {
                 // If the abort fails, the I2C bus might be deadlocked
                 // Not much we can do here except logging the error
                 LogWarning("I2C: Abort transmit timeout, I2C state: 0x%02X", HAL_I2C_GetState(hi2c));
@@ -201,14 +201,14 @@ HAL_StatusTypeDef I2C_Receive(I2C_HandleTypeDef* hi2c, uint16_t address, uint8_t
         LogDebug("I2C: Receive timeout in thread '%s'", osThreadGetName(osThreadGetId()));
     }
 
-    if (flags >= osFlagsError || flags == I2C_ERROR_FLAG) {
+    if ((flags & osFlagsError) != 0U || (flags & I2C_ERROR_FLAG) != 0U) {
         HAL_I2C_StateTypeDef state = HAL_I2C_GetState(hi2c);
         if (state == HAL_I2C_STATE_BUSY || state == HAL_I2C_STATE_BUSY_RX) {
             // Reset the HAL state and I2C peripheral to stop any ongoing transfers
             HAL_I2C_Master_Abort_IT(hi2c, address);
 
             flags = osThreadFlagsWait(I2C_ABORT_FLAG, osFlagsWaitAny, I2C_MAX_RX_TIMEOUT_MS);
-            if (flags >= osFlagsError) {
+            if ((flags & osFlagsError) != 0U) {
                 // If the abort fails, the I2C bus might be deadlocked
                 // Not much we can do here except logging the error
                 LogWarning("I2C: Abort receive timeout, I2C state: 0x%02X", HAL_I2C_GetState(hi2c));
@@ -285,14 +285,14 @@ HAL_StatusTypeDef I2C_MemWrite(I2C_HandleTypeDef* hi2c, uint16_t address, uint16
         HAL_I2C_Master_Abort_IT(hi2c, address);
     }
 
-    if (flags >= osFlagsError || flags == I2C_ERROR_FLAG) {
+    if ((flags & osFlagsError) != 0U || (flags & I2C_ERROR_FLAG) != 0U) {
         HAL_I2C_StateTypeDef state = HAL_I2C_GetState(hi2c);
         if (state == HAL_I2C_STATE_BUSY || state == HAL_I2C_STATE_BUSY_TX) {
             // Reset the HAL state and I2C peripheral to stop any ongoing transfers
             HAL_I2C_Master_Abort_IT(hi2c, address);
 
             flags = osThreadFlagsWait(I2C_ABORT_FLAG, osFlagsWaitAny, I2C_MAX_TX_TIMEOUT_MS);
-            if (flags >= osFlagsError) {
+            if ((flags & osFlagsError) != 0U) {
                 // If the abort fails, the I2C bus might be deadlocked
                 // Not much we can do here except logging the error
                 LogWarning("I2C: Abort mem write timeout, I2C state: 0x%02X", HAL_I2C_GetState(hi2c));
@@ -367,14 +367,14 @@ HAL_StatusTypeDef I2C_MemRead(I2C_HandleTypeDef* hi2c, uint16_t address, uint16_
         LogDebug("I2C: Mem read timeout in thread '%s'", osThreadGetName(osThreadGetId()));
     }
 
-    if (flags >= osFlagsError || flags == I2C_ERROR_FLAG) {
+    if ((flags & osFlagsError) != 0U || (flags & I2C_ERROR_FLAG) != 0U) {
         HAL_I2C_StateTypeDef state = HAL_I2C_GetState(hi2c);
         if (state == HAL_I2C_STATE_BUSY || state == HAL_I2C_STATE_BUSY_RX) {
             // Reset the HAL state and I2C peripheral to stop any ongoing transfers
             HAL_I2C_Master_Abort_IT(hi2c, address);
 
             flags = osThreadFlagsWait(I2C_ABORT_FLAG, osFlagsWaitAny, I2C_MAX_RX_TIMEOUT_MS);
-            if (flags >= osFlagsError) {
+            if ((flags & osFlagsError) != 0U) {
                 // If the abort fails, the I2C bus might be deadlocked
                 // Not much we can do here except logging the error
                 LogWarning("I2C: Abort mem read timeout, I2C state: 0x%02X", HAL_I2C_GetState(hi2c));

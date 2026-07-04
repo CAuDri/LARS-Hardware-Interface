@@ -182,7 +182,9 @@ bool SystemMonitor::waitForSystemError(uint32_t timeout_ms) {
     }
 
     auto flags = osEventFlagsWait(system_event_flags, SYSTEM_EVENT_ERROR_FLAG, osFlagsNoClear, timeout_ms);
-    if (flags & osFlagsError) {
+    if (flags == osFlagsErrorTimeout) {
+        return false;
+    } else if (flags & osFlagsError) {
         LogError("System Monitor: Error waiting for system error event, flags: 0x%08lX", flags);
         return false;
     } else if (flags & SYSTEM_EVENT_ERROR_FLAG) {
@@ -205,7 +207,9 @@ bool SystemMonitor::waitForSystemOK(uint32_t timeout_ms) {
     }
 
     auto flags = osEventFlagsWait(system_event_flags, SYSTEM_EVENT_OK_FLAG, osFlagsNoClear, timeout_ms);
-    if (flags & osFlagsError) {
+    if (flags == osFlagsErrorTimeout) {
+        return false;
+    } else if (flags & osFlagsError) {
         LogError("System Monitor: Error waiting for system OK event, flags: 0x%08lX", flags);
         return false;
     } else if (flags & SYSTEM_EVENT_OK_FLAG) {

@@ -199,7 +199,7 @@ bool RCReceiver::waitForConnect(uint32_t timeout_ms) const {
         return true;
     }
     uint32_t flags = osEventFlagsWait(connection_event, CONNECTED_EVENT_FLAG, osFlagsNoClear, timeout_ms);
-    return (flags & CONNECTED_EVENT_FLAG);
+    return (flags & osFlagsError) == 0U && (flags & CONNECTED_EVENT_FLAG) != 0U;
 }
 
 /**
@@ -216,7 +216,7 @@ bool RCReceiver::waitForDisconnect(uint32_t timeout_ms) const {
         return true;
     }
     uint32_t flags = osEventFlagsWait(connection_event, DISCONNECTED_EVENT_FLAG, osFlagsNoClear, timeout_ms);
-    return (flags & DISCONNECTED_EVENT_FLAG);
+    return (flags & osFlagsError) == 0U && (flags & DISCONNECTED_EVENT_FLAG) != 0U;
 }
 
 /**

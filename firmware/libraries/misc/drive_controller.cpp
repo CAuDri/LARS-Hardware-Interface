@@ -308,7 +308,7 @@ bool DriveController::handleEmergencyStop() {
         LogError("Drive Controller: Emergency stop restart timeout expired, unable to recover");
         return false;
     }
-    if (!(flags & START_THREAD_FLAG)) {
+    if ((flags & osFlagsError) != 0U || (flags & START_THREAD_FLAG) == 0U) {
         LogError("Drive Controller: Unexpected error waiting for restart signal, flags: 0x%08lX", flags);
         return false;
     }
@@ -472,8 +472,12 @@ void DriveController::controllerThread(void* arg) {
     while (state == NodeState::RUNNING) {
         // The thread will be notified of mode switches to speed up the response time
         uint32_t flags = osThreadFlagsWait(MODE_SWITCH_FLAG, osFlagsWaitAny, CONTROLLER_THREAD_UPDATE_TIME_MS);
-        if (!(flags & MODE_SWITCH_FLAG || flags == osFlagsErrorTimeout)) {
+        if ((flags & osFlagsError) != 0U && flags != osFlagsErrorTimeout) {
             LogError("Drive Controller: Unexpected error waiting for thread flags, flags: 0x%08lX", flags);
+            emergencyStop();
+            setState(NodeState::ERROR);
+        } else if ((flags & osFlagsError) == 0U && (flags & MODE_SWITCH_FLAG) == 0U) {
+            LogError("Drive Controller: Unexpected thread flags received: 0x%08lX", flags);
             emergencyStop();
             setState(NodeState::ERROR);
         }

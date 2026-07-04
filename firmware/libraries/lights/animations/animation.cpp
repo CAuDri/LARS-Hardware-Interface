@@ -42,7 +42,7 @@ bool Animation::exitOnDelay(uint32_t delay_ms) {
     if (flags == osFlagsErrorTimeout) {
         return false;  // Normal timeout, no stop requested
     }
-    if (!(flags & STOP_ANIMATION_FLAG)) {
+    if ((flags & osFlagsError) != 0U || (flags & STOP_ANIMATION_FLAG) == 0U) {
         LogError("Animation: Unexpected error waiting for thread flags, flags: 0x%08lX", flags);
         return true;
     }

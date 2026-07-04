@@ -365,7 +365,7 @@ bool WS2812Driver::transmitBuffer() {
         LogWarning("WS2812: Timeout waiting for DMA transmit to complete");
         transmit_thread_id = nullptr;
         return false;
-    } else if (!(flags & TRANSMIT_COMPLETE_FLAG)) {
+    } else if ((flags & osFlagsError) != 0U || (flags & TRANSMIT_COMPLETE_FLAG) == 0U) {
         LogWarning("WS2812: Unexpected thread flags received: 0x%08lX", flags);
         transmit_thread_id = nullptr;
         return false;
