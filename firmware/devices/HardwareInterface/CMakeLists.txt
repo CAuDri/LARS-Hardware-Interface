@@ -10,7 +10,15 @@ project(HardwareInterface LANGUAGES C CXX ASM)
 
 # Apply the board selection to every target created below, including auxiliary
 # libraries such as TraceRecorder that include STM32 device headers directly.
-add_compile_definitions(USE_HAL_DRIVER STM32F429xx)
+add_compile_definitions(
+    USE_HAL_DRIVER
+    STM32F429xx
+    # micro-XRCE-DDS exposes FreeRTOS mutex fields in public structs when this
+    # definition is enabled. The firmware target must match the static
+    # micro-ROS library build or custom transport callbacks read the wrong
+    # uxrCustomTransport layout.
+    PLATFORM_NAME_FREERTOS
+)
 
 add_executable(${PROJECT_NAME})
 

@@ -13,6 +13,7 @@
 
 #include "FreeRTOS.h"
 #include "cmsis_os2.h"
+#include "logger.h"
 #include "task.h"
 
 enum {
@@ -46,9 +47,13 @@ static osThreadId_t transmit_thread = NULL;
 static uint8_t line_coding[7] = {0x00, 0xC2, 0x01, 0x00, 0x00, 0x00, 0x08};
 
 static bool validate_config(const usb_cdc_transport_config_t* config);
+static USBD_CDC_HandleTypeDef* get_cdc_handle(const USBD_HandleTypeDef* usb_device);
 static bool dma_interrupt_enabled(const DMA_HandleTypeDef* dma);
+static uint32_t get_empty_read_timeout(int timeout_ms);
+static uint32_t get_dma_read_timeout(int timeout_ms);
 static bool reception_has_packet_space(void);
 static void resume_reception_if_paused(void);
+static void reset_active_transport(usb_cdc_transport_config_t* config);
 static int8_t cdc_control(uint8_t command, uint8_t* buffer, uint16_t length);
 static int8_t cdc_receive_complete(uint8_t* buffer, uint32_t* length);
 static int8_t cdc_transmit_complete(uint8_t* buffer, uint32_t* length, uint8_t endpoint);
@@ -69,6 +74,7 @@ static void dma_receive_error(DMA_HandleTypeDef* dma);
  */
 bool usb_cdc_transport_open(struct uxrCustomTransport* transport) {
     if (transport == NULL || !validate_config((usb_cdc_transport_config_t*)transport->args)) {
+        LogWarning("micro-ROS USB CDC Transport: Invalid configuration");
         return false;
     }
 
@@ -77,8 +83,19 @@ bool usb_cdc_transport_open(struct uxrCustomTransport* transport) {
         return active_config == config;
     }
 
+    if (config->usb_device->dev_state != USBD_STATE_CONFIGURED) {
+        return false;
+    }
+
+    USBD_CDC_HandleTypeDef* cdc = get_cdc_handle(config->usb_device);
+    if (cdc == NULL) {
+        LogWarning("micro-ROS USB CDC Transport: USB CDC class data is not available");
+        return false;
+    }
+
     USBD_CDC_ItfTypeDef* interface = (USBD_CDC_ItfTypeDef*)config->usb_device->pUserData[config->usb_device->classId];
     if (interface == NULL) {
+        LogWarning("micro-ROS USB CDC Transport: CDC interface callbacks are not registered");
         return false;
     }
 
@@ -88,18 +105,20 @@ bool usb_cdc_transport_open(struct uxrCustomTransport* transport) {
         packet_size = config->usb_device->dev_speed == USBD_SPEED_HIGH ? CDC_DATA_HS_MAX_PACKET_SIZE : CDC_DATA_FS_MAX_PACKET_SIZE;
     }
     if (packet_size > USB_CDC_RX_BUFFER_PADDING) {
+        LogWarning("micro-ROS USB CDC Transport: USB packet size does not fit RX padding");
         return false;
     }
 
     previous_interface = *interface;
-    USBD_CDC_HandleTypeDef* cdc = (USBD_CDC_HandleTypeDef*)config->usb_device->pClassData;
     previous_rx_buffer = cdc->RxBuffer;
 
     if (HAL_DMA_RegisterCallback(config->rx_dma, HAL_DMA_XFER_CPLT_CB_ID, dma_receive_complete) != HAL_OK) {
+        LogWarning("micro-ROS USB CDC Transport: Failed to register DMA complete callback");
         return false;
     }
     if (HAL_DMA_RegisterCallback(config->rx_dma, HAL_DMA_XFER_ERROR_CB_ID, dma_receive_error) != HAL_OK) {
         (void)HAL_DMA_UnRegisterCallback(config->rx_dma, HAL_DMA_XFER_CPLT_CB_ID);
+        LogWarning("micro-ROS USB CDC Transport: Failed to register DMA error callback");
         return false;
     }
 
@@ -120,7 +139,8 @@ bool usb_cdc_transport_open(struct uxrCustomTransport* transport) {
     active_interface->TransmitCplt = cdc_transmit_complete;
     USBD_CDC_SetRxBuffer(config->usb_device, rx_buffer);
     if (USBD_CDC_ReceivePacket(config->usb_device) != USBD_OK) {
-        (void)usb_cdc_transport_close(transport);
+        reset_active_transport(config);
+        LogWarning("micro-ROS USB CDC Transport: Failed to arm USB reception");
         return false;
     }
     return true;
@@ -144,6 +164,16 @@ bool usb_cdc_transport_close(struct uxrCustomTransport* transport) {
         return false;
     }
 
+    reset_active_transport(config);
+    transmit_thread = NULL;
+    return true;
+}
+
+static void reset_active_transport(usb_cdc_transport_config_t* config) {
+    if (active_config == NULL || active_config != config || active_interface == NULL) {
+        return;
+    }
+
     active_interface->Control = previous_interface.Control;
     active_interface->Receive = previous_interface.Receive;
     active_interface->TransmitCplt = previous_interface.TransmitCplt;
@@ -162,7 +192,6 @@ bool usb_cdc_transport_close(struct uxrCustomTransport* transport) {
     active_packet_size = 0U;
     receive_thread = NULL;
     transmit_thread = NULL;
-    return true;
 }
 
 /**
@@ -246,7 +275,7 @@ size_t usb_cdc_transport_read(struct uxrCustomTransport* transport, uint8_t* buf
          * fresh flag, so this sequence cannot lose the wakeup. */
         (void)osThreadFlagsClear(USB_CDC_RX_COMPLETE_FLAG);
         if (rx_head == rx_tail && !rx_full) {
-            const uint32_t timeout = timeout_ms > 0 ? (uint32_t)timeout_ms : 0U;
+            const uint32_t timeout = get_empty_read_timeout(timeout_ms);
             const uint32_t flags = osThreadFlagsWait(USB_CDC_RX_COMPLETE_FLAG, osFlagsWaitAny, timeout);
             if ((flags & osFlagsError) != 0U || (flags & USB_CDC_RX_COMPLETE_FLAG) == 0U) {
                 *error = TRANSPORT_ERROR_TIMEOUT;
@@ -296,7 +325,7 @@ size_t usb_cdc_transport_read(struct uxrCustomTransport* transport, uint8_t* buf
         memcpy(buffer, &rx_buffer[tail], cpu_length);
     }
 
-    const uint32_t timeout = timeout_ms > 0 ? (uint32_t)timeout_ms : 0U;
+    const uint32_t timeout = get_dma_read_timeout(timeout_ms);
     const uint32_t flags = osThreadFlagsWait(USB_CDC_DMA_COMPLETE_FLAG, osFlagsWaitAny, timeout);
     if ((flags & osFlagsError) != 0U || (flags & USB_CDC_DMA_COMPLETE_FLAG) == 0U || dma_failed) {
         *error = dma_failed ? TRANSPORT_ERROR_IO : TRANSPORT_ERROR_TIMEOUT;
@@ -320,15 +349,53 @@ size_t usb_cdc_transport_read(struct uxrCustomTransport* transport, uint8_t* buf
 }
 
 static bool validate_config(const usb_cdc_transport_config_t* config) {
-    if (config == NULL || config->usb_device == NULL || config->usb_device->pClassData == NULL ||
-        config->rx_dma == NULL || config->rx_dma->Instance == NULL) {
+    if (config == NULL) {
+        LogWarning("micro-ROS USB CDC Transport: Missing transport configuration");
+        return false;
+    }
+    if (config->usb_device == NULL) {
+        LogWarning("micro-ROS USB CDC Transport: Missing USB device handle");
+        return false;
+    }
+    if (config->rx_dma == NULL || config->rx_dma->Instance == NULL) {
+        LogWarning("micro-ROS USB CDC Transport: Missing RX DMA handle");
         return false;
     }
 
-    return config->rx_dma->Init.Direction == DMA_MEMORY_TO_MEMORY && config->rx_dma->Init.PeriphInc == DMA_PINC_ENABLE &&
-           config->rx_dma->Init.MemInc == DMA_MINC_ENABLE && config->rx_dma->Init.PeriphDataAlignment == DMA_PDATAALIGN_BYTE &&
-           config->rx_dma->Init.MemDataAlignment == DMA_MDATAALIGN_BYTE && config->rx_dma->Init.Mode == DMA_NORMAL &&
-           config->rx_dma->State == HAL_DMA_STATE_READY && dma_interrupt_enabled(config->rx_dma);
+    if (config->rx_dma->Init.Direction != DMA_MEMORY_TO_MEMORY) {
+        LogWarning("micro-ROS USB CDC Transport: RX DMA direction is not memory-to-memory");
+        return false;
+    }
+    if (config->rx_dma->Init.PeriphInc != DMA_PINC_ENABLE || config->rx_dma->Init.MemInc != DMA_MINC_ENABLE) {
+        LogWarning("micro-ROS USB CDC Transport: RX DMA address increment mode is invalid");
+        return false;
+    }
+    if (config->rx_dma->Init.PeriphDataAlignment != DMA_PDATAALIGN_BYTE ||
+        config->rx_dma->Init.MemDataAlignment != DMA_MDATAALIGN_BYTE) {
+        LogWarning("micro-ROS USB CDC Transport: RX DMA data alignment is invalid");
+        return false;
+    }
+    if (config->rx_dma->Init.Mode != DMA_NORMAL) {
+        LogWarning("micro-ROS USB CDC Transport: RX DMA mode is not normal");
+        return false;
+    }
+    if (config->rx_dma->State != HAL_DMA_STATE_READY) {
+        LogWarning("micro-ROS USB CDC Transport: RX DMA is not ready: %lu", (uint32_t)config->rx_dma->State);
+        return false;
+    }
+    if (!dma_interrupt_enabled(config->rx_dma)) {
+        LogWarning("micro-ROS USB CDC Transport: RX DMA interrupt is not enabled");
+        return false;
+    }
+
+    return true;
+}
+
+static USBD_CDC_HandleTypeDef* get_cdc_handle(const USBD_HandleTypeDef* usb_device) {
+    if (usb_device == NULL) {
+        return NULL;
+    }
+    return (USBD_CDC_HandleTypeDef*)usb_device->pClassDataCmsit[usb_device->classId];
 }
 
 static bool dma_interrupt_enabled(const DMA_HandleTypeDef* dma) {
@@ -370,6 +437,38 @@ static bool dma_interrupt_enabled(const DMA_HandleTypeDef* dma) {
         return false;
 
     return NVIC_GetEnableIRQ(interrupt) != 0U;
+}
+
+static uint32_t get_empty_read_timeout(int timeout_ms) {
+    if (timeout_ms <= 0) {
+        return 0U;
+    }
+
+    /* micro-XRCE-DDS may call the custom transport with a very large timeout
+     * while probing for an agent or while its framing state machine waits for
+     * the next byte of a session reply. Waiting for that value directly would
+     * park the connection thread for far too long, but a zero-timeout busy loop
+     * can starve the session creation path. Use a tiny bounded wait instead. */
+    if ((uint32_t)timeout_ms > USB_CDC_MAX_BLOCKING_READ_TIMEOUT_MS) {
+        return USB_CDC_FALLBACK_READ_TIMEOUT_MS;
+    }
+
+    return (uint32_t)timeout_ms;
+}
+
+static uint32_t get_dma_read_timeout(int timeout_ms) {
+    if (timeout_ms <= 0) {
+        return 0U;
+    }
+
+    /* Once data is already available, the memory-to-memory DMA copy should
+     * complete within a few milliseconds. Keep a bounded wait even if the
+     * upper layer supplied an effectively infinite timeout. */
+    if ((uint32_t)timeout_ms > USB_CDC_MAX_BLOCKING_READ_TIMEOUT_MS) {
+        return USB_CDC_DMA_TIMEOUT_MS;
+    }
+
+    return (uint32_t)timeout_ms;
 }
 
 static bool reception_has_packet_space(void) {
