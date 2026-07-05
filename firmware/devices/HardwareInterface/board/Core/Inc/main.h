@@ -84,6 +84,12 @@ extern DMA_HandleTypeDef hdma_usart3_tx;
 extern DMA_HandleTypeDef hdma_usart6_rx;
 extern DMA_HandleTypeDef hdma_usart6_tx;
 
+extern USBD_HandleTypeDef hUsbDeviceFS;
+extern USBD_HandleTypeDef hUsbDeviceHS;
+
+#define hUsbHostPort hUsbDeviceFS  // Host USB port on the Hardware Interface
+#define hUsbDebugPort hUsbDeviceHS // Debug USB port on the Hardware Interface
+
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/

@@ -20,13 +20,14 @@
 #include "vesc.hpp"
 #include "ws2812.hpp"
 
-// RC Channel Mapping
+/*****************  RC Channel Mappings *******************/
 constexpr crsf::Channel RC_THROTTLE_CHANNEL = crsf::CHANNEL_3;
 constexpr crsf::Channel RC_STEERING_CHANNEL = crsf::CHANNEL_1;
 constexpr crsf::Channel RC_MODE_SWITCH_CHANNEL = crsf::CHANNEL_7;
 
+/***************** Micro-ROS Configuration ****************/
 usb_cdc_transport_config_t microros_usb_transport_config{
-    .usb_device = &hUsbDeviceHS,
+    .usb_device = &hUsbHostPort,
     .rx_dma = &hdma_memtomem_dma2_stream3,
 };
 
@@ -45,6 +46,20 @@ ros::Client::Config microros_client_config{
     .executor_thread_priority = osPriorityRealtime,
 };
 
+/***************** System Configuration ****************/
+SystemMonitor::Config system_monitor_config{
+    .reset_gpio_port = PWR_EXT_ENABLE_GPIO_Port,
+    .reset_gpio_pin = PWR_EXT_ENABLE_Pin,
+    .check_interval_ms = 500,
+};
+
+DriveController::Config drive_controller_config{
+    .throttle_channel = RC_THROTTLE_CHANNEL,
+    .steering_channel = RC_STEERING_CHANNEL,
+    .mode_switch_channel = RC_MODE_SWITCH_CHANNEL,
+};
+
+/***************** Driver Configurations *******************/
 RCReceiver::Config rc_config{
     .huart = &huart2,
     .baud_rate = 420000,
@@ -79,14 +94,3 @@ WS2812Driver::Config ws2812_config{
     .hdma = &hdma_tim4_ch3,
 };
 
-SystemMonitor::Config system_monitor_config{
-    .reset_gpio_port = PWR_EXT_ENABLE_GPIO_Port,
-    .reset_gpio_pin = PWR_EXT_ENABLE_Pin,
-    .check_interval_ms = 500,
-};
-
-DriveController::Config drive_controller_config{
-    .throttle_channel = RC_THROTTLE_CHANNEL,
-    .steering_channel = RC_STEERING_CHANNEL,
-    .mode_switch_channel = RC_MODE_SWITCH_CHANNEL,
-};
