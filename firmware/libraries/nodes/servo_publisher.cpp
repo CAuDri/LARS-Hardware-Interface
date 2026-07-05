@@ -165,7 +165,13 @@ rcl_ret_t ServoPublisher::initPublishers() {
             continue;
         }
 
-        configureMessage(slot);
+        // The frame id points to application-owned static storage to avoid a
+        // heap allocation for every message.
+        slot.message.header.frame_id.data = const_cast<char*>(slot.frame_id);
+        slot.message.header.frame_id.size = std::strlen(slot.frame_id);
+        slot.message.header.frame_id.capacity = slot.message.header.frame_id.size + 1U;
+        slot.message.data = 0.0F;
+
         const rcl_ret_t result = slot.publisher.init(node, slot.topic_name, config.publisher_config);
         if (result != RCL_RET_OK) {
             LogError("ServoPublisher: Failed to register publisher '%s': %d", slot.topic_name, static_cast<int>(result));
@@ -176,15 +182,6 @@ rcl_ret_t ServoPublisher::initPublishers() {
     }
 
     return RCL_RET_OK;
-}
-
-void ServoPublisher::configureMessage(ServoSlot& slot) {
-    // The frame id points to application-owned static storage to avoid a
-    // heap allocation for every message.
-    slot.message.header.frame_id.data = const_cast<char*>(slot.frame_id);
-    slot.message.header.frame_id.size = std::strlen(slot.frame_id);
-    slot.message.header.frame_id.capacity = slot.message.header.frame_id.size + 1U;
-    slot.message.data = 0.0F;
 }
 
 void ServoPublisher::thread() {

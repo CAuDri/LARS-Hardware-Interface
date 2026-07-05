@@ -88,7 +88,6 @@ class ServoPublisher {
     std::array<uint32_t, SERVO_PUBLISHER_THREAD_STACK_SIZE / sizeof(uint32_t)> thread_stack{};
 
     rcl_ret_t initPublishers();
-    void configureMessage(ServoSlot& slot);
     void thread();
     void publishServos(uint32_t now_ms);
     void publishServo(ServoSlot& slot, uint32_t now_ms);
