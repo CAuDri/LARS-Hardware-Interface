@@ -6,6 +6,7 @@
                 "${workspaceFolder}/**"
             ],
             "defines": [],
+            "compileCommands": "${workspaceFolder}/firmware/devices/HardwareInterface/build/compile_commands.json",
             "compilerPath": "/usr/bin/arm-none-eabi-g++",
             "cStandard": "c11",
             "cppStandard": "c++17",

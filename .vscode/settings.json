@@ -49,5 +49,6 @@
             // }
         ]
     },
-    "C_Cpp.default.compilerPath": "/usr/bin/arm-none-eabi-g++"
+    "C_Cpp.default.compilerPath": "/usr/bin/arm-none-eabi-g++",
+    "C_Cpp.default.compileCommands": "${workspaceFolder}/firmware/devices/HardwareInterface/build/compile_commands.json"
 }
