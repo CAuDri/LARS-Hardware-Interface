@@ -14,6 +14,7 @@
 #include "main.h"
 #include "rc_receiver.hpp"
 #include "servo.hpp"
+#include "servo_publisher.hpp"
 #include "system_monitor.hpp"
 #include "usb_cdc_transport.h"
 #include "usb_device.h"
@@ -21,11 +22,13 @@
 #include "ws2812.hpp"
 
 /*****************  RC Channel Mappings *******************/
+
 constexpr crsf::Channel RC_THROTTLE_CHANNEL = crsf::CHANNEL_3;
 constexpr crsf::Channel RC_STEERING_CHANNEL = crsf::CHANNEL_1;
 constexpr crsf::Channel RC_MODE_SWITCH_CHANNEL = crsf::CHANNEL_7;
 
 /***************** Micro-ROS Configuration ****************/
+
 usb_cdc_transport_config_t microros_usb_transport_config{
     .usb_device = &hUsbHostPort,
     .rx_dma = &hdma_memtomem_dma2_stream3,
@@ -46,7 +49,18 @@ ros::Client::Config microros_client_config{
     .executor_thread_priority = osPriorityRealtime,
 };
 
+/***************** ROS Node Configuration ****************/
+
+ServoPublisher::Config servo_publisher_config{
+    .publish_period_ms = SERVO_PUBLISHER_DEFAULT_PERIOD_MS,
+    .read_failure_threshold = SERVO_PUBLISHER_DEFAULT_READ_FAILURE_THRESHOLD,
+    .recovery_probe_interval_ms = SERVO_PUBLISHER_DEFAULT_RECOVERY_PROBE_INTERVAL_MS,
+    .thread_priority = osPriorityNormal,
+    .publisher_config = {true, 0},
+};
+
 /***************** System Configuration ****************/
+
 SystemMonitor::Config system_monitor_config{
     .reset_gpio_port = PWR_EXT_ENABLE_GPIO_Port,
     .reset_gpio_pin = PWR_EXT_ENABLE_Pin,
@@ -60,6 +74,7 @@ DriveController::Config drive_controller_config{
 };
 
 /***************** Driver Configurations *******************/
+
 RCReceiver::Config rc_config{
     .huart = &huart2,
     .baud_rate = 420000,
@@ -93,4 +108,3 @@ WS2812Driver::Config ws2812_config{
     .tim_channel = TIM_CHANNEL_3,
     .hdma = &hdma_tim4_ch3,
 };
-

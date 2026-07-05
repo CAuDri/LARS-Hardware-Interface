@@ -41,12 +41,18 @@ constexpr size_t ROS_MAX_NODES = 15;
 constexpr size_t ROS_MAX_PUBLISHERS = 40;
 constexpr size_t ROS_MAX_SUBSCRIPTIONS = 30;
 constexpr size_t ROS_MAX_SERVICES = 1;
-constexpr size_t ROS_EXECUTOR_HANDLE_CAPACITY = ROS_MAX_SUBSCRIPTIONS + ROS_MAX_SERVICES;
+
+// The registries above mirror the RMW compile-time limits, but the executor
+// only needs storage for entities that are actually dispatched from the rclc
+// spin loop. Publishers do not consume executor handles. Keeping this value
+// separate avoids a large heap allocation during every session setup.
+constexpr size_t ROS_EXECUTOR_HANDLE_CAPACITY = 8;
 
 static_assert(ROS_MAX_NODES <= RMW_UXRCE_MAX_NODES);
 static_assert(ROS_MAX_PUBLISHERS <= RMW_UXRCE_MAX_PUBLISHERS);
 static_assert(ROS_MAX_SUBSCRIPTIONS <= RMW_UXRCE_MAX_SUBSCRIPTIONS);
 static_assert(ROS_MAX_SERVICES <= RMW_UXRCE_MAX_SERVICES);
+static_assert(ROS_EXECUTOR_HANDLE_CAPACITY <= RMW_UXRCE_MAX_SUBSCRIPTIONS + RMW_UXRCE_MAX_SERVICES);
 
 namespace ros {
 

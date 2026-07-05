@@ -57,6 +57,8 @@ void Error_Handler(void);
 /* USER CODE BEGIN EFP */
 
 // CAuDri - Manual forward declaration of the HAL handles (for use in config.h)
+typedef struct _USBD_HandleTypeDef USBD_HandleTypeDef;
+
 extern ADC_HandleTypeDef hadc1;
 extern ADC_HandleTypeDef hadc2;
 

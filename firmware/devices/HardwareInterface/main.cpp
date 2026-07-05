@@ -22,6 +22,7 @@
 #include "pulse_animation.hpp"
 #include "publisher.hpp"
 #include "service.hpp"
+#include "servo_publisher.hpp"
 #include "subscriber.hpp"
 #include "thread_safe_adc.h"
 #include "type_support.hpp"
@@ -73,6 +74,7 @@ ros::Subscriber<std_msgs__msg__UInt32> microros_test_subscriber;
 ros::BaseSubscriber::Config microros_test_subscriber_config{true};
 ros::Service<ros::service_types::std_srvs_Trigger> microros_test_service;
 char microros_test_service_response_buffer[64]{};
+ServoPublisher servo_publisher;
 
 /**
  * @brief Main entry point called from the RTOS task in the auto-generated main.c
@@ -137,6 +139,17 @@ void mainTask() {
     microros_entity_result = microros_test_service.init(microros_hardware_node, "test/trigger", onMicrorosTestTrigger);
     if (microros_entity_result != RCL_RET_OK) {
         LogError("Main: Failed to initialize micro-ROS test service: %d", static_cast<int>(microros_entity_result));
+    }
+    microros_entity_result = servo_publisher.init(microros_client, servo_publisher_config);
+    if (microros_entity_result != RCL_RET_OK) {
+        LogError("Main: Failed to initialize servo publisher node: %d", static_cast<int>(microros_entity_result));
+    } else if (!servo_publisher.registerServo(servo, "measure/steering_angle_front", "servo_front")) {
+        LogError("Main: Failed to register front servo with servo publisher node");
+    } else {
+        microros_entity_result = servo_publisher.start();
+        if (microros_entity_result != RCL_RET_OK) {
+            LogError("Main: Failed to start servo publisher node: %d", static_cast<int>(microros_entity_result));
+        }
     }
 
     /**

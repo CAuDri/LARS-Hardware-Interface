@@ -257,8 +257,10 @@ builtin_interfaces__msg__Time Client::getRosTime() const {
 
     // ROS Time stores seconds and the sub-second nanosecond remainder in
     // separate fields, matching builtin_interfaces/msg/Time.
-    ros_time.sec = static_cast<int32_t>(current_epoch_ns / NANOSECONDS_PER_SECOND);
-    ros_time.nanosec = static_cast<uint32_t>(current_epoch_ns % NANOSECONDS_PER_SECOND);
+    const int64_t seconds = current_epoch_ns / NANOSECONDS_PER_SECOND;
+    const int64_t nanoseconds = current_epoch_ns % NANOSECONDS_PER_SECOND;
+    ros_time.sec = static_cast<int32_t>(seconds);
+    ros_time.nanosec = static_cast<uint32_t>(nanoseconds);
     return ros_time;
 }
 
