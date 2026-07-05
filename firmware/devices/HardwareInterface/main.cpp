@@ -6,40 +6,21 @@
 
 #include "main.h"
 
-#include <algorithm>
-#include <bitset>
-#include <cstring>
-
-#include <std_msgs/msg/u_int32.h>
-#include <std_srvs/srv/trigger.h>
-
 // #include "blink_animation.hpp"
 #include "config/config.h"
 #include "gpio_light.hpp"
 #include "light_dispatcher.hpp"
 #include "logger.h"
-#include "node.hpp"
+#include "motor_publisher.hpp"
 #include "pulse_animation.hpp"
-#include "publisher.hpp"
-#include "service.hpp"
 #include "servo_publisher.hpp"
-#include "subscriber.hpp"
-#include "thread_safe_adc.h"
-#include "type_support.hpp"
 #include "ws2812_light.hpp"
-
-ROS_DECLARE_MESSAGE_TYPE(std_msgs, UInt32);
-ROS_DECLARE_SERVICE_TYPE(std_srvs, Trigger);
 
 /**
  * Forward function declarations
  */
 extern "C" void mainTask();
 void onSystemStateChange(SystemCheck::SystemState state);
-void onMicrorosTestCommand(const std_msgs__msg__UInt32* message, void* context);
-void onMicrorosTestTrigger(const std_srvs__srv__Trigger_Request* request,
-                           std_srvs__srv__Trigger_Response* response,
-                           void* context);
 
 /**
  * All global objects that can be statically initialized
@@ -65,16 +46,9 @@ GPIOLight debug_led_blue(DEBUG_LED_BLUE_GPIO_Port, DEBUG_LED_BLUE_Pin, COLOR_BLU
 
 LightDispatcher light_dispatcher("Light Dispatcher");
 
-ros::Client microros_client;
-ros::Node microros_hardware_node;
-ros::Publisher<std_msgs__msg__UInt32> microros_heartbeat_publisher;
-ros::BasePublisher::Config microros_heartbeat_config{true, 5};
-std_msgs__msg__UInt32 microros_heartbeat_message{};
-ros::Subscriber<std_msgs__msg__UInt32> microros_test_subscriber;
-ros::BaseSubscriber::Config microros_test_subscriber_config{true};
-ros::Service<ros::service_types::std_srvs_Trigger> microros_test_service;
-char microros_test_service_response_buffer[64]{};
-ServoPublisher servo_publisher;
+ros::Client microros_client;    // micro-ROS client for communication with the ROS 2 agent
+ServoPublisher servo_publisher; // ROS 2 node for publishing servo feedback messages
+MotorPublisher motor_publisher; // ROS 2 node for publishing motor feedback and telemetry messages
 
 /**
  * @brief Main entry point called from the RTOS task in the auto-generated main.c
@@ -101,10 +75,15 @@ void mainTask() {
     }
 
     /**
+     * Initialize the micro-ROS client and start agent discovery
+     */
+    microros_client.init(microros_client_config);
+
+    /**
      * Initialize all peripheral drivers
      */
     ws2812_top.init(ws2812_config);
-    ws2812_top.setColor(COLOR_GREEN);
+    ws2812_top.setColor(COLOR_ORANGE);
 
     rc_receiver.init(rc_config);
     rc_receiver.start();
@@ -115,42 +94,16 @@ void mainTask() {
     servo.init(servo_config, servo_calibration);
     servo.start();
 
-    const rcl_ret_t microros_result = microros_client.init(microros_client_config);
-    if (microros_result != RCL_RET_OK) {
-        LogError("Main: Failed to initialize micro-ROS client: %d", static_cast<int>(microros_result));
-    }
-    rcl_ret_t microros_entity_result = microros_hardware_node.init(microros_client, "hardware_interface");
-    if (microros_entity_result != RCL_RET_OK) {
-        LogError("Main: Failed to initialize micro-ROS test node: %d", static_cast<int>(microros_entity_result));
-    }
-    microros_entity_result = microros_heartbeat_publisher.init(microros_hardware_node, "heartbeat", microros_heartbeat_config);
-    if (microros_entity_result != RCL_RET_OK) {
-        LogError("Main: Failed to initialize micro-ROS heartbeat publisher: %d", static_cast<int>(microros_entity_result));
-    }
-    microros_entity_result = microros_test_subscriber.init(
-        microros_hardware_node, "command/test", onMicrorosTestCommand, nullptr, microros_test_subscriber_config);
-    if (microros_entity_result != RCL_RET_OK) {
-        LogError("Main: Failed to initialize micro-ROS test subscriber: %d", static_cast<int>(microros_entity_result));
-    }
-    microros_test_service.response().message.data = microros_test_service_response_buffer;
-    microros_test_service.response().message.capacity = sizeof(microros_test_service_response_buffer);
-    microros_test_service.response().message.size = 0;
-    microros_test_service_response_buffer[0] = '\0';
-    microros_entity_result = microros_test_service.init(microros_hardware_node, "test/trigger", onMicrorosTestTrigger);
-    if (microros_entity_result != RCL_RET_OK) {
-        LogError("Main: Failed to initialize micro-ROS test service: %d", static_cast<int>(microros_entity_result));
-    }
-    microros_entity_result = servo_publisher.init(microros_client, servo_publisher_config);
-    if (microros_entity_result != RCL_RET_OK) {
-        LogError("Main: Failed to initialize servo publisher node: %d", static_cast<int>(microros_entity_result));
-    } else if (!servo_publisher.registerServo(servo, "measure/steering_angle_front", "servo_front")) {
-        LogError("Main: Failed to register front servo with servo publisher node");
-    } else {
-        microros_entity_result = servo_publisher.start();
-        if (microros_entity_result != RCL_RET_OK) {
-            LogError("Main: Failed to start servo publisher node: %d", static_cast<int>(microros_entity_result));
-        }
-    }
+    /**
+     * Initialize all micro-ROS nodes
+     */
+    servo_publisher.init(microros_client, servo_publisher_config);
+    servo_publisher.registerServo(servo, "measure/steering_angle", "servo");
+    servo_publisher.start();
+
+    motor_publisher.init(microros_client, motor_publisher_config);
+    motor_publisher.registerMotor(motor, "measure/motor_feedback", "telemetry/motor", "motor");
+    motor_publisher.start();
 
     /**
      * Register components with the system check for monitoring
@@ -174,16 +127,10 @@ void mainTask() {
     LogInfo("Main: Initialization complete");
 
     /**
-     * Main loop - nothing is actually done here, all functionality is handled in background tasks.
-     * Here you can add any additional code for debugging or testing purposes.
+     * Main loop - all application functionality is handled by background threads.
      */
     while (true) {
         osDelay(1000);
-        microros_heartbeat_message.data++;
-        const rcl_ret_t heartbeat_result = microros_heartbeat_publisher.publish(microros_heartbeat_message);
-        if (heartbeat_result != RCL_RET_OK && heartbeat_result != RCL_RET_NOT_INIT && heartbeat_result != RCL_RET_TIMEOUT) {
-            LogWarning("Main: Failed to publish micro-ROS heartbeat: %d", static_cast<int>(heartbeat_result));
-        }
         debug_led_green.turnOn();
         osDelay(100);
         debug_led_green.turnOff();
@@ -216,47 +163,4 @@ void onSystemStateChange(SystemCheck::SystemState state) {
             drive_controller.emergencyStop();
             break;
     }
-}
-
-/**
- * @brief Receive a harmless test command from ROS to validate subscriber dispatch.
- * @param message Received UInt32 message.
- * @param context Optional callback context, unused for this test subscriber.
- */
-void onMicrorosTestCommand(const std_msgs__msg__UInt32* message, void* context) {
-    (void)context;
-    if (message != nullptr) {
-        LogInfo("Main: Received micro-ROS test command: %lu", message->data);
-    }
-}
-
-/**
- * @brief Respond to a host-triggered service call for validating micro-ROS services.
- * @param request Empty Trigger request.
- * @param response Trigger response filled with a static success message.
- * @param context Optional callback context, unused for this test service.
- */
-void onMicrorosTestTrigger(const std_srvs__srv__Trigger_Request* request,
-                           std_srvs__srv__Trigger_Response* response,
-                           void* context) {
-    (void)request;
-    (void)context;
-
-    if (response == nullptr) {
-        return;
-    }
-
-    constexpr char service_message[] = "Hardware Interface service callback executed";
-    response->success = true;
-
-    if (response->message.data != nullptr && response->message.capacity > 0U) {
-        const size_t message_length = std::min(sizeof(service_message) - 1U, response->message.capacity - 1U);
-        std::memcpy(response->message.data, service_message, message_length);
-        response->message.data[message_length] = '\0';
-        response->message.size = message_length;
-    } else {
-        response->message.size = 0;
-    }
-
-    LogInfo("Main: micro-ROS test service triggered");
 }

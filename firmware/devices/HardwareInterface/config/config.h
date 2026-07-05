@@ -12,6 +12,7 @@
 #include "client.hpp"
 #include "drive_controller.hpp"
 #include "main.h"
+#include "motor_publisher.hpp"
 #include "rc_receiver.hpp"
 #include "servo.hpp"
 #include "servo_publisher.hpp"
@@ -57,6 +58,12 @@ ServoPublisher::Config servo_publisher_config{
     .recovery_probe_interval_ms = SERVO_PUBLISHER_DEFAULT_RECOVERY_PROBE_INTERVAL_MS,
     .thread_priority = osPriorityNormal,
     .publisher_config = {true, 0},
+};
+
+MotorPublisher::Config motor_publisher_config{
+    .publish_period_ms = MOTOR_PUBLISHER_DEFAULT_PERIOD_MS,
+    .telemetry_period_ms = MOTOR_PUBLISHER_DEFAULT_TELEMETRY_PERIOD_MS,
+    .thread_priority = osPriorityNormal,
 };
 
 /***************** System Configuration ****************/
