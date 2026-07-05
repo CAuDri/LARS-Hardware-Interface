@@ -40,6 +40,7 @@ ros::Client::Config microros_client_config{
             .write = usb_cdc_transport_write,
             .read = usb_cdc_transport_read,
         },
+    .base_namespace = "/hardware",
     .client_thread_priority = osPriorityNormal1,
     .executor_thread_priority = osPriorityRealtime,
 };

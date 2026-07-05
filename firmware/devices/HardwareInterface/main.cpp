@@ -9,20 +9,29 @@
 #include <algorithm>
 #include <bitset>
 
+#include <std_msgs/msg/u_int32.h>
+
 // #include "blink_animation.hpp"
 #include "config/config.h"
 #include "gpio_light.hpp"
 #include "light_dispatcher.hpp"
 #include "logger.h"
+#include "node.hpp"
 #include "pulse_animation.hpp"
+#include "publisher.hpp"
+#include "subscriber.hpp"
 #include "thread_safe_adc.h"
+#include "type_support.hpp"
 #include "ws2812_light.hpp"
+
+ROS_DECLARE_MESSAGE_TYPE(std_msgs, UInt32);
 
 /**
  * Forward function declarations
  */
 extern "C" void mainTask();
 void onSystemStateChange(SystemCheck::SystemState state);
+void onMicrorosTestCommand(const std_msgs__msg__UInt32* message, void* context);
 
 /**
  * All global objects that can be statically initialized
@@ -49,6 +58,12 @@ GPIOLight debug_led_blue(DEBUG_LED_BLUE_GPIO_Port, DEBUG_LED_BLUE_Pin, COLOR_BLU
 LightDispatcher light_dispatcher("Light Dispatcher");
 
 ros::Client microros_client;
+ros::Node microros_hardware_node;
+ros::Publisher<std_msgs__msg__UInt32> microros_heartbeat_publisher;
+ros::BasePublisher::Config microros_heartbeat_config{true, 5};
+std_msgs__msg__UInt32 microros_heartbeat_message{};
+ros::Subscriber<std_msgs__msg__UInt32> microros_test_subscriber;
+ros::BaseSubscriber::Config microros_test_subscriber_config{true};
 
 /**
  * @brief Main entry point called from the RTOS task in the auto-generated main.c
@@ -93,6 +108,19 @@ void mainTask() {
     if (microros_result != RCL_RET_OK) {
         LogError("Main: Failed to initialize micro-ROS client: %d", static_cast<int>(microros_result));
     }
+    rcl_ret_t microros_entity_result = microros_hardware_node.init(microros_client, "hardware_interface");
+    if (microros_entity_result != RCL_RET_OK) {
+        LogError("Main: Failed to initialize micro-ROS test node: %d", static_cast<int>(microros_entity_result));
+    }
+    microros_entity_result = microros_heartbeat_publisher.init(microros_hardware_node, "heartbeat", microros_heartbeat_config);
+    if (microros_entity_result != RCL_RET_OK) {
+        LogError("Main: Failed to initialize micro-ROS heartbeat publisher: %d", static_cast<int>(microros_entity_result));
+    }
+    microros_entity_result = microros_test_subscriber.init(
+        microros_hardware_node, "command/test", onMicrorosTestCommand, nullptr, microros_test_subscriber_config);
+    if (microros_entity_result != RCL_RET_OK) {
+        LogError("Main: Failed to initialize micro-ROS test subscriber: %d", static_cast<int>(microros_entity_result));
+    }
 
     /**
      * Register components with the system check for monitoring
@@ -121,6 +149,11 @@ void mainTask() {
      */
     while (true) {
         osDelay(1000);
+        microros_heartbeat_message.data++;
+        const rcl_ret_t heartbeat_result = microros_heartbeat_publisher.publish(microros_heartbeat_message);
+        if (heartbeat_result != RCL_RET_OK && heartbeat_result != RCL_RET_NOT_INIT && heartbeat_result != RCL_RET_TIMEOUT) {
+            LogWarning("Main: Failed to publish micro-ROS heartbeat: %d", static_cast<int>(heartbeat_result));
+        }
         debug_led_green.turnOn();
         osDelay(100);
         debug_led_green.turnOff();
@@ -152,5 +185,17 @@ void onSystemStateChange(SystemCheck::SystemState state) {
             LogError("Main: System state ERROR, stopping drive controller");
             drive_controller.emergencyStop();
             break;
+    }
+}
+
+/**
+ * @brief Receive a harmless test command from ROS to validate subscriber dispatch.
+ * @param message Received UInt32 message.
+ * @param context Optional callback context, unused for this test subscriber.
+ */
+void onMicrorosTestCommand(const std_msgs__msg__UInt32* message, void* context) {
+    (void)context;
+    if (message != nullptr) {
+        LogInfo("Main: Received micro-ROS test command: %lu", message->data);
     }
 }
