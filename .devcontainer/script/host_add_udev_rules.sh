@@ -21,19 +21,17 @@ if [ -f /.dockerenv ]; then
     exit 1
 fi
 
-# Check if the udev rule is already present on the system
-if [ -f "${UDEV_DIR}/${UDEV_RULE_FILE}" ]; then
-    echo "The udev rule is already present on your system."
-    exit 1
-fi
-
 # Ask the user if they want to add the udev rules to their system
-echo -e "This script will add a udev rule to your host system to allow the devcontainer to mount serial devices."
+if [ -f "${UDEV_DIR}/${UDEV_RULE_FILE}" ]; then
+    echo -e "This script will update the existing udev rule on your host system to allow the devcontainer to mount serial devices."
+else
+    echo -e "This script will add a udev rule to your host system to allow the devcontainer to mount serial devices."
+fi
 echo -e "\033[1mDo you want to continue? (y/n)\033[0m"
 read -p "" answer
 case ${answer:0:1} in
     y|Y )
-        echo -e "\nAdding udev rules to your system..."
+        echo -e "\nInstalling udev rules on your system..."
 
         # Create the udev rules directory if it does not exist
         if [ ! -d "${UDEV_DIR}" ]; then

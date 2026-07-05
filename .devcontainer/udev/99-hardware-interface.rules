@@ -14,6 +14,16 @@ ATTRS{idVendor}=="0483", ATTRS{idProduct}=="374b", MODE="660", GROUP="plugdev", 
 # CMSIS-DAP devices (e.g. Picoprobe)
 ATTRS{product}=="*CMSIS-DAP*", MODE="660", GROUP="plugdev", TAG+="uaccess"
 
+# Hardware Interface Host Port -> /dev/hardware_interface_host_port
+SUBSYSTEM=="tty", KERNEL=="ttyACM[0-9]*", ATTRS{idVendor}=="0483", ATTRS{idProduct}=="5740", \
+  ATTRS{manufacturer}=="CAuDri e.V.", ATTRS{product}=="Hardware Interface Host Port", \
+  MODE="660", GROUP="plugdev", TAG+="uaccess", SYMLINK+="hardware_interface_host_port"
+
+# Hardware Interface Debug Port -> /dev/hardware_interface_debug_port
+SUBSYSTEM=="tty", KERNEL=="ttyACM[0-9]*", ATTRS{idVendor}=="0483", ATTRS{idProduct}=="5740", \
+  ATTRS{manufacturer}=="CAuDri e.V.", ATTRS{product}=="Hardware Interface Debug Port", \
+  MODE="660", GROUP="plugdev", TAG+="uaccess", SYMLINK+="hardware_interface_debug_port"
+
 # STM32 DFU Bootloader -> /dev/bootloader
 SUBSYSTEM=="usb", ENV{DEVTYPE}=="usb_device", ATTR{idVendor}=="0483", \
   ENV{ID_USB_INTERFACES}=="*:fe0102:*", \
