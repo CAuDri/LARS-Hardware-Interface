@@ -66,14 +66,14 @@ target_sources(${PROJECT_NAME} PRIVATE
     ${LIB_DIR}/lights/animations/animation.cpp
 
     # micro-ROS wrapper
-    ${LIB_DIR}/microros/client.cpp
-    ${LIB_DIR}/microros/executor.cpp
-    ${LIB_DIR}/microros/node.cpp
-    ${LIB_DIR}/microros/publisher.cpp
-    ${LIB_DIR}/microros/service.cpp
-    ${LIB_DIR}/microros/subscriber.cpp
-    ${LIB_DIR}/microros/microros_allocator.c
-    ${LIB_DIR}/microros/microros_time.c
+    ${LIB_DIR}/microros/cpp_wrapper/client.cpp
+    ${LIB_DIR}/microros/cpp_wrapper/executor.cpp
+    ${LIB_DIR}/microros/cpp_wrapper/node.cpp
+    ${LIB_DIR}/microros/cpp_wrapper/publisher.cpp
+    ${LIB_DIR}/microros/cpp_wrapper/service.cpp
+    ${LIB_DIR}/microros/cpp_wrapper/subscriber.cpp
+    ${LIB_DIR}/microros/runtime/microros_allocator.c
+    ${LIB_DIR}/microros/runtime/microros_time.c
     ${LIB_DIR}/microros/transports/usb_cdc_transport.c
 
     # Misc
@@ -91,8 +91,9 @@ target_include_directories(${PROJECT_NAME} PRIVATE
     ${LIB_DIR}/drivers/interfaces
     ${LIB_DIR}/lights/include
     ${LIB_DIR}/lights/animations/include
-    ${LIB_DIR}/microros/include
-    ${LIB_DIR}/microros/include/transports
+    ${LIB_DIR}/microros/cpp_wrapper/include
+    ${LIB_DIR}/microros/runtime/include
+    ${LIB_DIR}/microros/transports/include
     ${LIB_DIR}/misc/include
 )
 

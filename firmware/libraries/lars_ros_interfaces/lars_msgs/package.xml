@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<!-- CAuDri - ROS interface package manifest for LARS firmware messages -->
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>lars_msgs</name>
+  <version>0.1.0</version>
+  <description>Shared ROS message definitions for LARS firmware and host-side ROS applications.</description>
+
+  <maintainer email="dev@caudri.local">CAuDri Team</maintainer>
+  <license>TODO: License declaration</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+  <build_depend>rosidl_default_generators</build_depend>
+  <depend>rosidl_default_runtime</depend>
+  <depend>std_msgs</depend>
+
+  <member_of_group>rosidl_interface_packages</member_of_group>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>

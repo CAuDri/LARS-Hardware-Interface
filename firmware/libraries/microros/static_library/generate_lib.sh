@@ -10,6 +10,10 @@
 
 set -Eeuo pipefail
 
+# Directories for local ROS interfaces. These will be copied into the micro-ROS workspace.
+readonly LOCAL_INTERFACES_DIR="${FIRMWARE_DIR}/libraries/lars_ros_interfaces"
+readonly LOCAL_INTERFACES_WORKSPACE_DIR="${WORKSPACE_DIR}/mcu_ws/lars_ros_interfaces"
+
 readonly SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 readonly FIRMWARE_DIR="$(cd -- "${SCRIPT_DIR}/../../.." && pwd)"
 readonly WORKSPACE_DIR="${SCRIPT_DIR}/firmware"
@@ -102,6 +106,17 @@ cd -- "${SCRIPT_DIR}"
 if [ ! -d "${WORKSPACE_DIR}" ]; then
     printf 'Creating micro-ROS %s static-library workspace\n' "${ROS_DISTRO}"
     ros2 run micro_ros_setup create_firmware_ws.sh generate_lib
+fi
+
+if [ -d "${LOCAL_INTERFACES_DIR}" ]; then
+    printf 'Copying local ROS interfaces from %s\n' "${LOCAL_INTERFACES_DIR}"
+    rm -rf -- "${LOCAL_INTERFACES_WORKSPACE_DIR}"
+    mkdir -p -- "${LOCAL_INTERFACES_WORKSPACE_DIR}"
+
+    for package_dir in "${LOCAL_INTERFACES_DIR}"/*/; do
+        [ -f "${package_dir}/package.xml" ] || continue
+        cp -a -- "${package_dir}" "${LOCAL_INTERFACES_WORKSPACE_DIR}/"
+    done
 fi
 
 printf 'Building micro-ROS for %s using ROS_DISTRO=%s\n' "${DEVICE_NAME}" "${ROS_DISTRO}"
