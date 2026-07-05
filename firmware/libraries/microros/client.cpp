@@ -12,6 +12,9 @@
 
 #include "logger.h"
 #include "microros_allocator.h"
+#include "node.hpp"
+#include "publisher.hpp"
+#include "subscriber.hpp"
 
 namespace ros {
 
@@ -24,7 +27,7 @@ int64_t Client::getMonotonicTimeNs() {
     vTaskSetTimeOutState(&current_time);
 
     // Include the FreeRTOS overflow counter so ROS time remains monotonic
-    // across the native TickType_t wraparound.
+    // across the raw TickType_t wraparound.
     const uint64_t ticks =
         (static_cast<uint64_t>(current_time.xOverflowCount) << (sizeof(TickType_t) * CHAR_BIT)) + current_time.xTimeOnEntering;
     return static_cast<int64_t>(ticks / configTICK_RATE_HZ) * NANOSECONDS_PER_SECOND +
@@ -34,7 +37,7 @@ int64_t Client::getMonotonicTimeNs() {
 /**
  * @brief Construct an uninitialized micro-ROS client.
  *
- * Native and RTOS resources are deliberately created by init(), allowing the
+ * rclc/session and RTOS resources are deliberately created by init(), allowing the
  * Client object itself to be declared statically.
  */
 Client::Client() = default;
@@ -112,7 +115,7 @@ rcl_ret_t Client::init(const Config& client_config) {
         return RCL_RET_ERROR;
     }
 
-    // The executor thread is created once and sleeps until a native session is
+    // The executor thread is created once and sleeps until an rclc session is
     // ready. Keeping it alive avoids RTOS object churn during reconnection.
     result = executor.createThread(config->executor_thread_priority, session_mutex, executorError, static_cast<void*>(this));
     if (result != RCL_RET_OK) {
@@ -126,7 +129,7 @@ rcl_ret_t Client::init(const Config& client_config) {
         .attr_bits = osThreadDetached,
         .cb_mem = &thread_control_block,
         .cb_size = sizeof(thread_control_block),
-        .stack_mem = thread_stack,
+        .stack_mem = thread_stack.data(),
         .stack_size = sizeof(thread_stack),
         .priority = config->client_thread_priority,
         .tz_module = 0,
@@ -151,7 +154,7 @@ rcl_ret_t Client::init(const Config& client_config) {
 }
 
 /**
- * @brief Stop both background threads and release native resources.
+ * @brief Stop both background threads and release rclc resources.
  * @param timeout_ms Maximum wait in milliseconds, or osWaitForever.
  * @return RCL_RET_OK on success or RCL_RET_TIMEOUT if shutdown does not finish.
  */
@@ -187,22 +190,40 @@ rcl_ret_t Client::fini(uint32_t timeout_ms) {
     return RCL_RET_OK;
 }
 
-/** @return Current client lifecycle state. */
+/**
+ * @brief Get the client lifecycle state.
+ * @return Current client lifecycle state.
+ */
 Client::State Client::getState() const { return state; }
 
-/** @return Current micro-ROS agent connection state. */
+/**
+ * @brief Get the micro-ROS agent connection state.
+ * @return Current micro-ROS agent connection state.
+ */
 ConnectionState Client::getConnectionState() const { return connection_state; }
 
-/** @return Most recent rcl error observed by the client or executor. */
+/**
+ * @brief Get the most recent client or executor error.
+ * @return Most recent rcl/rclc error observed by the client or executor.
+ */
 rcl_ret_t Client::getLastError() const { return last_error; }
 
-/** @return True while a complete micro-ROS session is active. */
+/**
+ * @brief Check whether a complete micro-ROS session is active.
+ * @return True while a complete micro-ROS session is active.
+ */
 bool Client::isConnected() const { return connection_state == ConnectionState::CONNECTED; }
 
-/** @return True after the latest agent time synchronization succeeded. */
+/**
+ * @brief Check whether ROS time is synchronized with the agent.
+ * @return True after the latest agent time synchronization succeeded.
+ */
 bool Client::isTimeSynchronized() const { return time_synchronized; }
 
-/** @return Result of the latest micro-ROS time synchronization attempt. */
+/**
+ * @brief Get the latest micro-ROS time synchronization result.
+ * @return Result of the latest micro-ROS time synchronization attempt.
+ */
 rmw_ret_t Client::getLastTimeSyncError() const { return last_time_sync_error; }
 
 /**
@@ -276,7 +297,7 @@ bool Client::waitForDisconnect(uint32_t timeout_ms) const {
 
 /**
  * @brief Request an agent health check after an entity reports an error.
- * @param error rcl error that caused the health check request.
+ * @param error rcl/rclc error that caused the health check request.
  */
 void Client::signalPossibleDisconnect(rcl_ret_t error) {
     // Entity and executor failures do not necessarily mean that the agent has
@@ -287,11 +308,25 @@ void Client::signalPossibleDisconnect(rcl_ret_t error) {
     }
 }
 
-/** @return Executor owned by this client. */
+/**
+ * @brief Get the executor owned by this client.
+ * @return Executor owned by this client.
+ */
 Executor& Client::getExecutor() { return executor; }
 
-/** @return Read-only executor owned by this client. */
+/**
+ * @brief Get the read-only executor owned by this client.
+ * @return Read-only executor owned by this client.
+ */
 const Executor& Client::getExecutor() const { return executor; }
+
+/**
+ * @brief Get the namespace prefix configured for this client.
+ * @return Client base namespace, or an empty string when no prefix is configured.
+ */
+const char* Client::getBaseNamespace() const {
+    return config == nullptr || config->base_namespace == nullptr ? "" : config->base_namespace;
+}
 
 void Client::executorError(void* context, rcl_ret_t error) {
     static_cast<Client*>(context)->signalPossibleDisconnect(error);
@@ -321,8 +356,9 @@ void Client::thread() {
             LogSuccess("micro-ROS Client: Connected to agent");
 
             // Keep connected-state health checks lightweight. Periodic time
-            // synchronization verifies the session and maintains ROS time,
-            // while entity/executor errors request an immediate reconnect.
+            // synchronization maintains ROS time. A failed time sync clears
+            // the cached ROS clock but does not by itself justify recreating
+            // the whole XRCE session and all graph entities.
             while (!stop_requested && isConnected()) {
                 const uint32_t flags = osEventFlagsWait(
                     connection_events, ROS_TEST_CONNECTION_FLAG | ROS_STOP_CLIENT_FLAG, osFlagsWaitAny, config->connection_health_interval_ms);
@@ -333,7 +369,7 @@ void Client::thread() {
                     }
                     if ((flags & ROS_TEST_CONNECTION_FLAG) != 0U) {
                         LogWarning("micro-ROS Client: Communication error reported; reconnecting");
-                        result = RCL_RET_ERROR;
+                        result = last_error == RCL_RET_OK ? RCL_RET_ERROR : last_error;
                         break;
                     }
                 } else if (flags != osFlagsErrorTimeout) {
@@ -344,20 +380,18 @@ void Client::thread() {
                     isTimeSynchronized() ? ROS_TIME_SYNC_INTERVAL_MS : ROS_INITIAL_TIME_SYNC_RETRY_INTERVAL_MS;
                 if (osKernelGetTickCount() - last_time_sync_attempt_ms >= time_sync_interval) {
                     // Retry quickly until the first successful synchronization,
-                    // then use the normal low-rate interval. Repeated failures
-                    // invalidate the session because ROS timestamps are no
-                    // longer available.
-                    if (!synchronizeTime() && consecutive_time_sync_failures >= ROS_TIME_SYNC_FAILURE_RECONNECT_THRESHOLD) {
-                        LogWarning("micro-ROS Client: Time synchronization failed repeatedly; reconnecting");
-                        result = RCL_RET_ERROR;
-                        break;
+                    // then use the normal low-rate interval. Clock sync uses
+                    // the same XRCE session, but failing to read the agent time
+                    // is not enough evidence to recreate all entities.
+                    if (!synchronizeTime() && consecutive_time_sync_failures == ROS_TIME_SYNC_FAILURE_RECONNECT_THRESHOLD) {
+                        LogWarning("micro-ROS Client: Time synchronization failed repeatedly; keeping session active");
                     }
                 }
             }
         }
 
         // support_active can also be true after a partially failed support
-        // initialization. Always roll it back before the next attempt.
+        // initialization. Always roll back before the next attempt.
         if (support_active) {
             state = stop_requested ? State::STOPPING : State::DISCONNECTED;
             publishConnectionState(ConnectionState::DISCONNECTED);
@@ -404,7 +438,7 @@ rcl_ret_t Client::connectSession() {
     } else {
         agent_found = true;
         LogInfo("micro-ROS Client: Agent found; creating session");
-        // rclc_support_init creates the native context and XRCE session. A
+        // rclc_support_init creates the rcl context and XRCE session. A
         // non-null context marks partial ownership even if initialization
         // returns an error, so cleanup can remain deterministic.
         support = {};
@@ -412,13 +446,16 @@ rcl_ret_t Client::connectSession() {
         support_active = support.context.impl != nullptr;
     }
     if (result == RCL_RET_OK) {
-        // Start time synchronization for the new session. The connection thread
-        // continues retrying until ROS time is available or repeated failures
-        // require a reconnect.
+        // Start time synchronization for the new session. The connection
+        // thread keeps retrying until ROS time is available.
         (void)synchronizeTime();
+        consecutive_time_sync_failures = 0;
     }
     if (result == RCL_RET_OK) {
-        result = executor.nativeInit(&support.context, &allocator);
+        result = executor.initRclcExecutor(&support.context, &allocator);
+    }
+    if (result == RCL_RET_OK) {
+        result = initEntities();
     }
     if (result == RCL_RET_OK) {
         result = executor.prepare();
@@ -446,7 +483,7 @@ rcl_ret_t Client::connectSession() {
 }
 
 rcl_ret_t Client::disconnectSession(bool agent_available) {
-    // Stop executor access before destroying any native session resources.
+    // Stop executor access before destroying any rclc session resources.
     clearSynchronizedTime();
     executor.requestStop();
     rcl_ret_t result = executor.waitForStop(osWaitForever);
@@ -464,7 +501,12 @@ rcl_ret_t Client::disconnectSession(bool agent_available) {
         }
     }
 
-    const rcl_ret_t executor_result = executor.nativeFini();
+    const rcl_ret_t entities_result = finiEntities();
+    if (result == RCL_RET_OK) {
+        result = entities_result;
+    }
+
+    const rcl_ret_t executor_result = executor.finiRclcExecutor();
     if (result == RCL_RET_OK) {
         result = executor_result;
     }
@@ -534,8 +576,11 @@ bool Client::synchronizeTime() {
 
     if (synchronized) {
         LogDebug("micro-ROS Client: Time synchronized with agent");
-    } else {
+    } else if (consecutive_time_sync_failures <= 1U ||
+               consecutive_time_sync_failures == ROS_TIME_SYNC_FAILURE_RECONNECT_THRESHOLD) {
         LogWarning("micro-ROS Client: Time synchronization with agent failed: %d", (int)last_time_sync_error);
+    } else {
+        LogDebug("micro-ROS Client: Time synchronization with agent failed: %d", (int)last_time_sync_error);
     }
     return synchronized;
 }
@@ -566,12 +611,214 @@ void Client::publishConnectionState(ConnectionState new_state) {
     }
 }
 
+rcl_ret_t Client::initEntities() {
+    // Entity creation is ordered from parent to child: nodes first, then the
+    // entities that depend on them. Public init() only registers wrappers, so
+    // this function can safely recreate everything after every reconnect.
+    for (size_t i = 0; i < node_count; i++) {
+        const rcl_ret_t result = nodes[i]->initRclcNode(&support);
+        if (result != RCL_RET_OK) {
+            return result;
+        }
+    }
+    for (size_t i = 0; i < publisher_count; i++) {
+        const rcl_ret_t result = publishers[i]->initRclcPublisher();
+        if (result != RCL_RET_OK) {
+            return result;
+        }
+    }
+    for (size_t i = 0; i < subscription_count; i++) {
+        const rcl_ret_t result = subscriptions[i]->initRclcSubscriber();
+        if (result != RCL_RET_OK) {
+            return result;
+        }
+    }
+    return RCL_RET_OK;
+}
+
+rcl_ret_t Client::finiEntities() {
+    rcl_ret_t result = RCL_RET_OK;
+
+    // Destruction runs in reverse dependency order. Subscribers are removed
+    // from the executor before their rcl subscriptions are finalized.
+    for (size_t i = subscription_count; i > 0U; i--) {
+        const rcl_ret_t fini_result = subscriptions[i - 1U]->finiRclcSubscriber();
+        if (result == RCL_RET_OK) {
+            result = fini_result;
+        }
+    }
+    for (size_t i = publisher_count; i > 0U; i--) {
+        const rcl_ret_t fini_result = publishers[i - 1U]->finiRclcPublisher();
+        if (result == RCL_RET_OK) {
+            result = fini_result;
+        }
+    }
+    for (size_t i = node_count; i > 0U; i--) {
+        const rcl_ret_t fini_result = nodes[i - 1U]->finiRclcNode();
+        if (result == RCL_RET_OK) {
+            result = fini_result;
+        }
+    }
+
+    return result;
+}
+
+rcl_ret_t Client::registerNode(Node* node) {
+    if (node == nullptr || session_mutex == nullptr) {
+        return RCL_RET_INVALID_ARGUMENT;
+    }
+    rcl_ret_t result = lockSession(osWaitForever);
+    if (result != RCL_RET_OK) {
+        return result;
+    }
+    // Registries are fixed-size arrays on purpose: no allocation is performed
+    // when application code registers entities before the agent is connected.
+    for (size_t i = 0; i < node_count; i++) {
+        if (nodes[i] == node) {
+            unlockSession();
+            return RCL_RET_OK;
+        }
+    }
+    if (node_count >= nodes.size()) {
+        result = RCL_RET_ERROR;
+    } else {
+        nodes[node_count++] = node;
+    }
+    unlockSession();
+    return result;
+}
+
+rcl_ret_t Client::unregisterNode(Node* node) {
+    if (node == nullptr || session_mutex == nullptr) {
+        return RCL_RET_INVALID_ARGUMENT;
+    }
+    rcl_ret_t result = lockSession(osWaitForever);
+    if (result != RCL_RET_OK) {
+        return result;
+    }
+    for (size_t i = 0; i < node_count; i++) {
+        if (nodes[i] == node) {
+            for (size_t j = i; j + 1U < node_count; j++) {
+                nodes[j] = nodes[j + 1U];
+            }
+            nodes[--node_count] = nullptr;
+            unlockSession();
+            return RCL_RET_OK;
+        }
+    }
+    unlockSession();
+    return RCL_RET_ERROR;
+}
+
+rcl_ret_t Client::registerPublisher(BasePublisher* publisher) {
+    if (publisher == nullptr || session_mutex == nullptr) {
+        return RCL_RET_INVALID_ARGUMENT;
+    }
+    rcl_ret_t result = lockSession(osWaitForever);
+    if (result != RCL_RET_OK) {
+        return result;
+    }
+    for (size_t i = 0; i < publisher_count; i++) {
+        if (publishers[i] == publisher) {
+            unlockSession();
+            return RCL_RET_OK;
+        }
+    }
+    if (publisher_count >= publishers.size()) {
+        result = RCL_RET_ERROR;
+    } else {
+        publishers[publisher_count++] = publisher;
+    }
+    unlockSession();
+    return result;
+}
+
+rcl_ret_t Client::unregisterPublisher(BasePublisher* publisher) {
+    if (publisher == nullptr || session_mutex == nullptr) {
+        return RCL_RET_INVALID_ARGUMENT;
+    }
+    rcl_ret_t result = lockSession(osWaitForever);
+    if (result != RCL_RET_OK) {
+        return result;
+    }
+    for (size_t i = 0; i < publisher_count; i++) {
+        if (publishers[i] == publisher) {
+            for (size_t j = i; j + 1U < publisher_count; j++) {
+                publishers[j] = publishers[j + 1U];
+            }
+            publishers[--publisher_count] = nullptr;
+            unlockSession();
+            return RCL_RET_OK;
+        }
+    }
+    unlockSession();
+    return RCL_RET_ERROR;
+}
+
+rcl_ret_t Client::registerSubscriber(BaseSubscriber* subscriber) {
+    if (subscriber == nullptr || session_mutex == nullptr) {
+        return RCL_RET_INVALID_ARGUMENT;
+    }
+    rcl_ret_t result = lockSession(osWaitForever);
+    if (result != RCL_RET_OK) {
+        return result;
+    }
+    for (size_t i = 0; i < subscription_count; i++) {
+        if (subscriptions[i] == subscriber) {
+            unlockSession();
+            return RCL_RET_OK;
+        }
+    }
+    if (subscription_count >= subscriptions.size()) {
+        result = RCL_RET_ERROR;
+    } else {
+        subscriptions[subscription_count++] = subscriber;
+    }
+    unlockSession();
+    return result;
+}
+
+rcl_ret_t Client::unregisterSubscriber(BaseSubscriber* subscriber) {
+    if (subscriber == nullptr || session_mutex == nullptr) {
+        return RCL_RET_INVALID_ARGUMENT;
+    }
+    rcl_ret_t result = lockSession(osWaitForever);
+    if (result != RCL_RET_OK) {
+        return result;
+    }
+    for (size_t i = 0; i < subscription_count; i++) {
+        if (subscriptions[i] == subscriber) {
+            for (size_t j = i; j + 1U < subscription_count; j++) {
+                subscriptions[j] = subscriptions[j + 1U];
+            }
+            subscriptions[--subscription_count] = nullptr;
+            unlockSession();
+            return RCL_RET_OK;
+        }
+    }
+    unlockSession();
+    return RCL_RET_ERROR;
+}
+
+rcl_ret_t Client::lockSession(uint32_t timeout_ms) {
+    if (session_mutex == nullptr) {
+        return RCL_RET_NOT_INIT;
+    }
+    return osMutexAcquire(session_mutex, timeout_ms) == osOK ? RCL_RET_OK : RCL_RET_TIMEOUT;
+}
+
+void Client::unlockSession() {
+    if (session_mutex != nullptr) {
+        (void)osMutexRelease(session_mutex);
+    }
+}
+
 bool Client::validateConfig(const Config& client_config) const {
     const Transport& transport = client_config.transport;
     return transport.context != nullptr && transport.open != nullptr && transport.close != nullptr &&
-           transport.write != nullptr && transport.read != nullptr && client_config.connection_retry_interval_ms > 0U &&
-           client_config.connection_health_interval_ms > 0U && client_config.ping_timeout_ms > 0 &&
-           client_config.ping_attempts > 0U;
+           transport.write != nullptr && transport.read != nullptr && client_config.base_namespace != nullptr &&
+           client_config.connection_retry_interval_ms > 0U && client_config.connection_health_interval_ms > 0U &&
+           client_config.ping_timeout_ms > 0 && client_config.ping_attempts > 0U;
 }
 
 void Client::cleanupInitFailure(rcl_ret_t error) {

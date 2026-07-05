@@ -8,6 +8,7 @@
 #include <cmsis_os2.h>
 #include <rclc/executor.h>
 
+#include <array>
 #include <cstdint>
 
 #include "FreeRTOS.h"
@@ -23,9 +24,10 @@ constexpr uint32_t ROS_EXECUTOR_STOPPED_FLAG = 0x01U;
 namespace ros {
 
 class Client;
+class BaseSubscriber;
 
 /**
- * @brief Owns the native rclc executor and its persistent RTOS thread
+ * @brief Owns the rclc executor and its persistent RTOS thread
  */
 class Executor {
    public:
@@ -40,10 +42,11 @@ class Executor {
 
    private:
     friend class Client;
+    friend class BaseSubscriber;
 
     using ErrorCallback = void (*)(void* context, rcl_ret_t error);
 
-    rclc_executor_t native_executor{};
+    rclc_executor_t rclc_executor{};
     volatile State state = State::UNINITIALIZED;
     volatile bool spin_requested = false;
     rcl_ret_t last_error = RCL_RET_OK;
@@ -55,7 +58,7 @@ class Executor {
     osThreadId_t thread_id = nullptr;
     osThreadAttr_t thread_attributes{};
     StaticTask_t thread_control_block{};
-    uint32_t thread_stack[ROS_EXECUTOR_THREAD_STACK_SIZE / sizeof(uint32_t)]{};
+    std::array<uint32_t, ROS_EXECUTOR_THREAD_STACK_SIZE / sizeof(uint32_t)> thread_stack{};
 
     osEventFlagsId_t state_events = nullptr;
     osEventFlagsAttr_t event_attributes{};
@@ -63,12 +66,18 @@ class Executor {
 
     rcl_ret_t createThread(osPriority_t priority, osMutexId_t mutex, ErrorCallback callback, void* callback_context);
     rcl_ret_t destroyThread();
-    rcl_ret_t nativeInit(rcl_context_t* context, const rcl_allocator_t* allocator);
+    rcl_ret_t initRclcExecutor(rcl_context_t* context, const rcl_allocator_t* allocator);
     rcl_ret_t prepare();
     rcl_ret_t startSpinning();
     void requestStop();
     rcl_ret_t waitForStop(uint32_t timeout_ms);
-    rcl_ret_t nativeFini();
+    rcl_ret_t finiRclcExecutor();
+    rcl_ret_t addSubscription(rcl_subscription_t* subscription,
+                              void* message,
+                              rclc_subscription_callback_with_context_t callback,
+                              void* context,
+                              rclc_executor_handle_invocation_t invocation);
+    rcl_ret_t removeSubscription(const rcl_subscription_t* subscription);
 
     void thread();
     void setError(rcl_ret_t error);

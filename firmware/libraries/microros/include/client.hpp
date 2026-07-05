@@ -15,6 +15,7 @@
 #include <cstdint>
 
 #include "FreeRTOS.h"
+#include "state.hpp"
 #include "event_groups.h"
 #include "executor.hpp"
 #include "semphr.h"
@@ -27,7 +28,7 @@ constexpr int ROS_AGENT_PING_TIMEOUT_MS = 50;
 constexpr uint8_t ROS_AGENT_PING_ATTEMPTS = 1;
 constexpr uint32_t ROS_INITIAL_TIME_SYNC_RETRY_INTERVAL_MS = 1000;
 constexpr uint32_t ROS_TIME_SYNC_INTERVAL_MS = 30000;
-constexpr int ROS_TIME_SYNC_TIMEOUT_MS = 50;
+constexpr int ROS_TIME_SYNC_TIMEOUT_MS = 250;
 constexpr uint8_t ROS_TIME_SYNC_FAILURE_RECONNECT_THRESHOLD = 3;
 
 constexpr uint32_t ROS_CONNECTION_ESTABLISHED_FLAG = 0x01U;
@@ -51,13 +52,11 @@ static_assert(ROS_MAX_SERVICE_CLIENTS <= RMW_UXRCE_MAX_CLIENTS);
 
 namespace ros {
 
-class BaseNode;
+class Node;
 class BasePublisher;
 class BaseSubscriber;
 class BaseService;
 class BaseServiceClient;
-
-enum class ConnectionState { UNKNOWN, CONNECTING, CONNECTED, DISCONNECTED };
 
 /**
  * @brief Owns the micro-ROS support/session lifecycle and executor
@@ -69,9 +68,9 @@ class Client {
     /**
      * @brief Non-owning custom transport configuration
      *
-     * Callback signatures are the native Jazzy micro-ROS custom transport
-     * signatures. The callback context and everything it references must
-     * outlive the client.
+     * Callback signatures are the Jazzy micro-ROS custom transport callbacks.
+     * The callback context and everything it references must outlive the
+     * client.
      */
     struct Transport {
         bool framing = true;
@@ -92,9 +91,11 @@ class Client {
      * @param connection_health_interval_ms Connected-state wake interval for event and time-sync checks (default: 1000 ms)
      * @param ping_timeout_ms Timeout for pinging the agent (default: 50 ms)
      * @param ping_attempts Number of ping attempts before considering the agent unavailable (default: 1)
+     * @param base_namespace Optional namespace prefix joined with every node namespace
      */
     struct Config {
         Transport transport{};
+        const char* base_namespace = "";
         osPriority_t client_thread_priority = osPriorityNormal1;
         osPriority_t executor_thread_priority = osPriorityRealtime;
         uint32_t connection_retry_interval_ms = ROS_CONNECTION_RETRY_INTERVAL_MS;
@@ -125,10 +126,11 @@ class Client {
 
     Executor& getExecutor();
     const Executor& getExecutor() const;
+    const char* getBaseNamespace() const;
 
    private:
     friend class Executor;
-    friend class BaseNode;
+    friend class Node;
     friend class BasePublisher;
     friend class BaseSubscriber;
     friend class BaseService;
@@ -141,6 +143,7 @@ class Client {
     volatile ConnectionState connection_state = ConnectionState::UNKNOWN;
     volatile bool stop_requested = false;
     rcl_ret_t last_error = RCL_RET_OK;
+
     volatile bool time_synchronized = false;
     rmw_ret_t last_time_sync_error = RMW_RET_ERROR;
     int64_t synchronized_epoch_ns = 0;
@@ -165,9 +168,9 @@ class Client {
     osThreadId_t thread_id = nullptr;
     osThreadAttr_t thread_attributes{};
     StaticTask_t thread_control_block{};
-    uint32_t thread_stack[ROS_CLIENT_THREAD_STACK_SIZE / sizeof(uint32_t)]{};
+    std::array<uint32_t, ROS_CLIENT_THREAD_STACK_SIZE / sizeof(uint32_t)> thread_stack{};
 
-    std::array<BaseNode*, ROS_MAX_NODES> nodes{};
+    std::array<Node*, ROS_MAX_NODES> nodes{};
     std::array<BasePublisher*, ROS_MAX_PUBLISHERS> publishers{};
     std::array<BaseSubscriber*, ROS_MAX_SUBSCRIPTIONS> subscriptions{};
     std::array<BaseService*, ROS_MAX_SERVICES> services{};
@@ -187,6 +190,18 @@ class Client {
     bool synchronizeTime();
     void clearSynchronizedTime();
     void publishConnectionState(ConnectionState new_state);
+
+    rcl_ret_t initEntities();
+    rcl_ret_t finiEntities();
+    rcl_ret_t registerNode(Node* node);
+    rcl_ret_t unregisterNode(Node* node);
+    rcl_ret_t registerPublisher(BasePublisher* publisher);
+    rcl_ret_t unregisterPublisher(BasePublisher* publisher);
+    rcl_ret_t registerSubscriber(BaseSubscriber* subscriber);
+    rcl_ret_t unregisterSubscriber(BaseSubscriber* subscriber);
+
+    rcl_ret_t lockSession(uint32_t timeout_ms);
+    void unlockSession();
     bool validateConfig(const Config& client_config) const;
     void cleanupInitFailure(rcl_ret_t error);
 };

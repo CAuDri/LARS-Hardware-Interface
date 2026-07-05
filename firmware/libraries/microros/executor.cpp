@@ -12,14 +12,20 @@
 namespace ros {
 
 /**
- * @brief Construct an executor without creating native or RTOS resources.
+ * @brief Construct an executor without creating rclc or RTOS resources.
  */
-Executor::Executor() { native_executor = rclc_executor_get_zero_initialized_executor(); }
+Executor::Executor() { rclc_executor = rclc_executor_get_zero_initialized_executor(); }
 
-/** @return Current executor lifecycle state. */
+/**
+ * @brief Get the executor lifecycle state.
+ * @return Current executor lifecycle state.
+ */
 Executor::State Executor::getState() const { return state; }
 
-/** @return Most recent native executor error. */
+/**
+ * @brief Get the most recent rclc executor error.
+ * @return Most recent rclc executor error.
+ */
 rcl_ret_t Executor::getLastError() const { return last_error; }
 
 rcl_ret_t Executor::createThread(osPriority_t priority, osMutexId_t mutex, ErrorCallback callback, void* callback_context) {
@@ -35,7 +41,7 @@ rcl_ret_t Executor::createThread(osPriority_t priority, osMutexId_t mutex, Error
     error_context = callback_context;
 
     // The stopped flag acknowledges that no spin operation can still be using
-    // native entities. Client waits for it before tearing down a session.
+    // rclc entities. Client waits for it before tearing down a session.
     event_attributes = {
         .name = "ROS Executor State",
         .attr_bits = 0,
@@ -52,7 +58,7 @@ rcl_ret_t Executor::createThread(osPriority_t priority, osMutexId_t mutex, Error
         .attr_bits = osThreadDetached,
         .cb_mem = &thread_control_block,
         .cb_size = sizeof(thread_control_block),
-        .stack_mem = thread_stack,
+        .stack_mem = thread_stack.data(),
         .stack_size = sizeof(thread_stack),
         .priority = priority,
         .tz_module = 0,
@@ -89,7 +95,7 @@ rcl_ret_t Executor::destroyThread() {
     return RCL_RET_OK;
 }
 
-rcl_ret_t Executor::nativeInit(rcl_context_t* context, const rcl_allocator_t* allocator) {
+rcl_ret_t Executor::initRclcExecutor(rcl_context_t* context, const rcl_allocator_t* allocator) {
     if (context == nullptr || allocator == nullptr) {
         return RCL_RET_INVALID_ARGUMENT;
     }
@@ -97,26 +103,26 @@ rcl_ret_t Executor::nativeInit(rcl_context_t* context, const rcl_allocator_t* al
         return RCL_RET_ALREADY_INIT;
     }
 
-    // Native storage is recreated for every session while the containing C++
+    // rclc storage is recreated for every session while the containing C++
     // object and its RTOS thread remain alive across reconnects.
-    native_executor = rclc_executor_get_zero_initialized_executor();
-    rcl_ret_t result = rclc_executor_init(&native_executor, context, ROS_EXECUTOR_HANDLE_CAPACITY, allocator);
+    rclc_executor = rclc_executor_get_zero_initialized_executor();
+    rcl_ret_t result = rclc_executor_init(&rclc_executor, context, ROS_EXECUTOR_HANDLE_CAPACITY, allocator);
     if (result == RCL_RET_OK) {
-        result = rclc_executor_set_semantics(&native_executor, RCLC_SEMANTICS_RCLCPP_EXECUTOR);
+        result = rclc_executor_set_semantics(&rclc_executor, RCLC_SEMANTICS_RCLCPP_EXECUTOR);
     }
     if (result != RCL_RET_OK) {
-        if (native_executor.type != RCLC_EXECUTOR_NOT_INITIALIZED) {
-            (void)rclc_executor_fini(&native_executor);
+        if (rclc_executor.type != RCLC_EXECUTOR_NOT_INITIALIZED) {
+            (void)rclc_executor_fini(&rclc_executor);
         }
-        native_executor = rclc_executor_get_zero_initialized_executor();
+        rclc_executor = rclc_executor_get_zero_initialized_executor();
         setError(result);
-        LogError("micro-ROS Executor: Native initialization failed: %d", (int)result);
+        LogError("micro-ROS Executor: rclc initialization failed: %d", (int)result);
         return result;
     }
 
     last_error = RCL_RET_OK;
     state = State::INITIALIZED;
-    LogDebug("micro-ROS Executor: Native executor initialized with %lu handles", (uint32_t)ROS_EXECUTOR_HANDLE_CAPACITY);
+    LogDebug("micro-ROS Executor: rclc executor initialized with %lu handles", (uint32_t)ROS_EXECUTOR_HANDLE_CAPACITY);
     return RCL_RET_OK;
 }
 
@@ -127,7 +133,7 @@ rcl_ret_t Executor::prepare() {
 
     // Explicit preparation allocates the wait set before the real-time spin
     // loop starts, keeping allocation out of normal callback dispatch.
-    const rcl_ret_t result = rclc_executor_prepare(&native_executor);
+    const rcl_ret_t result = rclc_executor_prepare(&rclc_executor);
     if (result != RCL_RET_OK) {
         setError(result);
         LogError("micro-ROS Executor: Failed to prepare wait set: %d", (int)result);
@@ -169,7 +175,7 @@ rcl_ret_t Executor::waitForStop(uint32_t timeout_ms) {
     return (flags & osFlagsError) == 0U && (flags & ROS_EXECUTOR_STOPPED_FLAG) != 0U ? RCL_RET_OK : RCL_RET_TIMEOUT;
 }
 
-rcl_ret_t Executor::nativeFini() {
+rcl_ret_t Executor::finiRclcExecutor() {
     if (state == State::UNINITIALIZED || state == State::STOPPED) {
         return RCL_RET_OK;
     }
@@ -178,12 +184,41 @@ rcl_ret_t Executor::nativeFini() {
     }
 
     const rcl_ret_t result =
-        native_executor.type == RCLC_EXECUTOR_NOT_INITIALIZED ? RCL_RET_OK : rclc_executor_fini(&native_executor);
-    native_executor = rclc_executor_get_zero_initialized_executor();
+        rclc_executor.type == RCLC_EXECUTOR_NOT_INITIALIZED ? RCL_RET_OK : rclc_executor_fini(&rclc_executor);
+    rclc_executor = rclc_executor_get_zero_initialized_executor();
     last_error = result;
     state = result == RCL_RET_OK ? State::STOPPED : State::ERROR;
     if (result != RCL_RET_OK) {
-        LogWarning("micro-ROS Executor: Native cleanup returned: %d", (int)result);
+        LogWarning("micro-ROS Executor: rclc cleanup returned: %d", (int)result);
+    }
+    return result;
+}
+
+rcl_ret_t Executor::addSubscription(rcl_subscription_t* subscription,
+                                    void* message,
+                                    rclc_subscription_callback_with_context_t callback,
+                                    void* context,
+                                    rclc_executor_handle_invocation_t invocation) {
+    if (state != State::INITIALIZED || subscription == nullptr || message == nullptr || callback == nullptr) {
+        return RCL_RET_INVALID_ARGUMENT;
+    }
+
+    const rcl_ret_t result =
+        rclc_executor_add_subscription_with_context(&rclc_executor, subscription, message, callback, context, invocation);
+    if (result != RCL_RET_OK) {
+        last_error = result;
+    }
+    return result;
+}
+
+rcl_ret_t Executor::removeSubscription(const rcl_subscription_t* subscription) {
+    if (state == State::UNINITIALIZED || state == State::STOPPED || subscription == nullptr) {
+        return RCL_RET_OK;
+    }
+
+    const rcl_ret_t result = rclc_executor_remove_subscription(&rclc_executor, subscription);
+    if (result != RCL_RET_OK) {
+        last_error = result;
     }
     return result;
 }
@@ -191,7 +226,7 @@ rcl_ret_t Executor::nativeFini() {
 void Executor::thread() {
     while (true) {
         if (!spin_requested) {
-            // The RTOS thread persists between sessions. Only the native rclc
+            // The RTOS thread persists between sessions. Only the rclc
             // executor is destroyed and recreated during a reconnect.
             state = state == State::SPINNING ? State::INITIALIZED : state;
             (void)osEventFlagsSet(state_events, ROS_EXECUTOR_STOPPED_FLAG);
@@ -206,12 +241,12 @@ void Executor::thread() {
             continue;
         }
 
-        // Hold the session mutex only across the native spin call. The short
+        // Hold the session mutex only across the rclc spin call. The short
         // configured timeout gives the connection thread regular opportunities
         // to synchronize time, initialize, or destroy the session.
         rcl_ret_t result = RCL_RET_OK;
         if (spin_requested) {
-            result = rclc_executor_spin_some(&native_executor, ROS_EXECUTOR_SPIN_TIMEOUT_NS);
+            result = rclc_executor_spin_some(&rclc_executor, ROS_EXECUTOR_SPIN_TIMEOUT_NS);
         }
         (void)osMutexRelease(session_mutex);
 
