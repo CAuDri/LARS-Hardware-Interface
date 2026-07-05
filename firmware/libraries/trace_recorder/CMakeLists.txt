@@ -53,13 +53,13 @@ set(TRC_SRC
   trcObject.c
   trcPrint.c
   trcRunnable.c
-  trcSnapshotRecorder.c
   trcStackMonitor.c
   trcStateMachine.c
   trcStaticBuffer.c
   trcStreamingRecorder.c
   trcString.c
   trcTask.c
+  trcTaskMonitor.c
   trcTimestamp.c
 )
 

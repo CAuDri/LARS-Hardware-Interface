@@ -1,6 +1,6 @@
 /*
- * Trace Recorder for Tracealyzer v4.8.2
- * Copyright 2023 Percepio AB
+ * Trace Recorder for Tracealyzer v4.11.0
+ * Copyright 2025 Percepio AB
  * www.percepio.com
  *
  * SPDX-License-Identifier: Apache-2.0
@@ -16,21 +16,6 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-/**
- * @def TRC_CFG_RECORDER_MODE
- * @brief Specify what recording mode to use. Snapshot means that the data is saved in
- * an internal RAM buffer, for later upload. Streaming means that the data is
- * transferred continuously to the host PC.
- *
- * For more information, see http://percepio.com/2016/10/05/rtos-tracing/
- * and the Tracealyzer User Manual.
- *
- * Values:
- * TRC_RECORDER_MODE_SNAPSHOT
- * TRC_RECORDER_MODE_STREAMING
- */
-#define TRC_CFG_RECORDER_MODE TRC_RECORDER_MODE_STREAMING
 
 /**
  * @def TRC_CFG_FREERTOS_VERSION
@@ -58,7 +43,13 @@ extern "C" {
  * TRC_FREERTOS_VERSION_10_4_2				If using FreeRTOS v10.4.2
  * TRC_FREERTOS_VERSION_10_4_3				If using FreeRTOS v10.4.3
  * TRC_FREERTOS_VERSION_10_5_0				If using FreeRTOS v10.5.0
- * TRC_FREERTOS_VERSION_10_5_1				If using FreeRTOS v10.5.1 or later
+ * TRC_FREERTOS_VERSION_10_5_1				If using FreeRTOS v10.5.1
+ * TRC_FREERTOS_VERSION_10_6_0				If using FreeRTOS v10.6.0
+ * TRC_FREERTOS_VERSION_10_6_1				If using FreeRTOS v10.6.1
+ * TRC_FREERTOS_VERSION_10_6_2				If using FreeRTOS v10.6.2
+ * TRC_FREERTOS_VERSION_11_0_0				If using FreeRTOS v11.0.0
+ * TRC_FREERTOS_VERSION_11_0_1				If using FreeRTOS v11.0.1
+ * TRC_FREERTOS_VERSION_11_1_0				If using FreeRTOS v11.1.0 or later
  */
 #define TRC_CFG_FREERTOS_VERSION TRC_FREERTOS_VERSION_10_3_1
 
@@ -112,6 +103,12 @@ extern "C" {
  * other traceQUEUE_SEND trace points. Then set this to TRC_ACKNOWLEDGED.
  */
 #define TRC_CFG_ACKNOWLEDGE_QUEUE_SET_SEND  0 /* TRC_ACKNOWLEDGED */
+
+/**
+ * @def TRC_CFG_KERNEL_PORT_TASK_MONITOR_TLS_INDEX
+ * @brief The index used for TraceTaskMonitorTaskData_t* in Thread Local Storage.
+ */
+#define TRC_CFG_KERNEL_PORT_TASK_MONITOR_TLS_INDEX 0
 
 #ifdef __cplusplus
 }
