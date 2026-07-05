@@ -14,6 +14,7 @@
 #include "microros_allocator.h"
 #include "node.hpp"
 #include "publisher.hpp"
+#include "service.hpp"
 #include "subscriber.hpp"
 
 namespace ros {
@@ -633,14 +634,26 @@ rcl_ret_t Client::initEntities() {
             return result;
         }
     }
+    for (size_t i = 0; i < service_count; i++) {
+        const rcl_ret_t result = services[i]->initRclcService();
+        if (result != RCL_RET_OK) {
+            return result;
+        }
+    }
     return RCL_RET_OK;
 }
 
 rcl_ret_t Client::finiEntities() {
     rcl_ret_t result = RCL_RET_OK;
 
-    // Destruction runs in reverse dependency order. Subscribers are removed
-    // from the executor before their rcl subscriptions are finalized.
+    // Destruction runs in reverse dependency order. Executor-backed entities
+    // are removed from the executor before their rcl handles are finalized.
+    for (size_t i = service_count; i > 0U; i--) {
+        const rcl_ret_t fini_result = services[i - 1U]->finiRclcService();
+        if (result == RCL_RET_OK) {
+            result = fini_result;
+        }
+    }
     for (size_t i = subscription_count; i > 0U; i--) {
         const rcl_ret_t fini_result = subscriptions[i - 1U]->finiRclcSubscriber();
         if (result == RCL_RET_OK) {
@@ -792,6 +805,51 @@ rcl_ret_t Client::unregisterSubscriber(BaseSubscriber* subscriber) {
                 subscriptions[j] = subscriptions[j + 1U];
             }
             subscriptions[--subscription_count] = nullptr;
+            unlockSession();
+            return RCL_RET_OK;
+        }
+    }
+    unlockSession();
+    return RCL_RET_ERROR;
+}
+
+rcl_ret_t Client::registerService(BaseService* service) {
+    if (service == nullptr || session_mutex == nullptr) {
+        return RCL_RET_INVALID_ARGUMENT;
+    }
+    rcl_ret_t result = lockSession(osWaitForever);
+    if (result != RCL_RET_OK) {
+        return result;
+    }
+    for (size_t i = 0; i < service_count; i++) {
+        if (services[i] == service) {
+            unlockSession();
+            return RCL_RET_OK;
+        }
+    }
+    if (service_count >= services.size()) {
+        result = RCL_RET_ERROR;
+    } else {
+        services[service_count++] = service;
+    }
+    unlockSession();
+    return result;
+}
+
+rcl_ret_t Client::unregisterService(BaseService* service) {
+    if (service == nullptr || session_mutex == nullptr) {
+        return RCL_RET_INVALID_ARGUMENT;
+    }
+    rcl_ret_t result = lockSession(osWaitForever);
+    if (result != RCL_RET_OK) {
+        return result;
+    }
+    for (size_t i = 0; i < service_count; i++) {
+        if (services[i] == service) {
+            for (size_t j = i; j + 1U < service_count; j++) {
+                services[j] = services[j + 1U];
+            }
+            services[--service_count] = nullptr;
             unlockSession();
             return RCL_RET_OK;
         }

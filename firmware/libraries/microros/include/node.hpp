@@ -42,7 +42,6 @@ class Node {
     friend class BasePublisher;
     friend class BaseSubscriber;
     friend class BaseService;
-    friend class BaseServiceClient;
 
     Client* client = nullptr;
     const char* name = nullptr;

@@ -25,6 +25,7 @@ namespace ros {
 
 class Client;
 class BaseSubscriber;
+class BaseService;
 
 /**
  * @brief Owns the rclc executor and its persistent RTOS thread
@@ -43,6 +44,7 @@ class Executor {
    private:
     friend class Client;
     friend class BaseSubscriber;
+    friend class BaseService;
 
     using ErrorCallback = void (*)(void* context, rcl_ret_t error);
 
@@ -78,6 +80,12 @@ class Executor {
                               void* context,
                               rclc_executor_handle_invocation_t invocation);
     rcl_ret_t removeSubscription(const rcl_subscription_t* subscription);
+    rcl_ret_t addService(rcl_service_t* service,
+                         void* request,
+                         void* response,
+                         rclc_service_callback_with_context_t callback,
+                         void* context);
+    rcl_ret_t removeService(const rcl_service_t* service);
 
     void thread();
     void setError(rcl_ret_t error);

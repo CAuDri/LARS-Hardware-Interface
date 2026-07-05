@@ -223,6 +223,34 @@ rcl_ret_t Executor::removeSubscription(const rcl_subscription_t* subscription) {
     return result;
 }
 
+rcl_ret_t Executor::addService(rcl_service_t* service,
+                               void* request,
+                               void* response,
+                               rclc_service_callback_with_context_t callback,
+                               void* context) {
+    if (state != State::INITIALIZED || service == nullptr || request == nullptr || response == nullptr || callback == nullptr) {
+        return RCL_RET_INVALID_ARGUMENT;
+    }
+
+    const rcl_ret_t result = rclc_executor_add_service_with_context(&rclc_executor, service, request, response, callback, context);
+    if (result != RCL_RET_OK) {
+        last_error = result;
+    }
+    return result;
+}
+
+rcl_ret_t Executor::removeService(const rcl_service_t* service) {
+    if (state == State::UNINITIALIZED || state == State::STOPPED || service == nullptr) {
+        return RCL_RET_OK;
+    }
+
+    const rcl_ret_t result = rclc_executor_remove_service(&rclc_executor, service);
+    if (result != RCL_RET_OK) {
+        last_error = result;
+    }
+    return result;
+}
+
 void Executor::thread() {
     while (true) {
         if (!spin_requested) {

@@ -70,6 +70,7 @@ target_sources(${PROJECT_NAME} PRIVATE
     ${LIB_DIR}/microros/executor.cpp
     ${LIB_DIR}/microros/node.cpp
     ${LIB_DIR}/microros/publisher.cpp
+    ${LIB_DIR}/microros/service.cpp
     ${LIB_DIR}/microros/subscriber.cpp
     ${LIB_DIR}/microros/microros_allocator.c
     ${LIB_DIR}/microros/microros_time.c

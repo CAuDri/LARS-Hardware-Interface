@@ -41,14 +41,12 @@ constexpr size_t ROS_MAX_NODES = 15;
 constexpr size_t ROS_MAX_PUBLISHERS = 40;
 constexpr size_t ROS_MAX_SUBSCRIPTIONS = 30;
 constexpr size_t ROS_MAX_SERVICES = 1;
-constexpr size_t ROS_MAX_SERVICE_CLIENTS = 1;
-constexpr size_t ROS_EXECUTOR_HANDLE_CAPACITY = ROS_MAX_SUBSCRIPTIONS + ROS_MAX_SERVICES + ROS_MAX_SERVICE_CLIENTS;
+constexpr size_t ROS_EXECUTOR_HANDLE_CAPACITY = ROS_MAX_SUBSCRIPTIONS + ROS_MAX_SERVICES;
 
 static_assert(ROS_MAX_NODES <= RMW_UXRCE_MAX_NODES);
 static_assert(ROS_MAX_PUBLISHERS <= RMW_UXRCE_MAX_PUBLISHERS);
 static_assert(ROS_MAX_SUBSCRIPTIONS <= RMW_UXRCE_MAX_SUBSCRIPTIONS);
 static_assert(ROS_MAX_SERVICES <= RMW_UXRCE_MAX_SERVICES);
-static_assert(ROS_MAX_SERVICE_CLIENTS <= RMW_UXRCE_MAX_CLIENTS);
 
 namespace ros {
 
@@ -56,7 +54,6 @@ class Node;
 class BasePublisher;
 class BaseSubscriber;
 class BaseService;
-class BaseServiceClient;
 
 /**
  * @brief Owns the micro-ROS support/session lifecycle and executor
@@ -134,7 +131,6 @@ class Client {
     friend class BasePublisher;
     friend class BaseSubscriber;
     friend class BaseService;
-    friend class BaseServiceClient;
 
     static Client* instance;
 
@@ -174,12 +170,10 @@ class Client {
     std::array<BasePublisher*, ROS_MAX_PUBLISHERS> publishers{};
     std::array<BaseSubscriber*, ROS_MAX_SUBSCRIPTIONS> subscriptions{};
     std::array<BaseService*, ROS_MAX_SERVICES> services{};
-    std::array<BaseServiceClient*, ROS_MAX_SERVICE_CLIENTS> service_clients{};
     size_t node_count = 0;
     size_t publisher_count = 0;
     size_t subscription_count = 0;
     size_t service_count = 0;
-    size_t service_client_count = 0;
 
     static void executorError(void* context, rcl_ret_t error);
     static int64_t getMonotonicTimeNs();
@@ -199,6 +193,8 @@ class Client {
     rcl_ret_t unregisterPublisher(BasePublisher* publisher);
     rcl_ret_t registerSubscriber(BaseSubscriber* subscriber);
     rcl_ret_t unregisterSubscriber(BaseSubscriber* subscriber);
+    rcl_ret_t registerService(BaseService* service);
+    rcl_ret_t unregisterService(BaseService* service);
 
     rcl_ret_t lockSession(uint32_t timeout_ms);
     void unlockSession();
