@@ -5,6 +5,8 @@
  */
 #pragma once
 
+#include <array>
+
 #include "cmsis_os.h"
 #include "rc_receiver.hpp"
 #include "servo.hpp"
@@ -14,6 +16,7 @@
 #include "light_dispatcher.hpp"
 
 constexpr size_t DRIVE_CONTROLLER_THREAD_STACK_SIZE = 1024;
+constexpr size_t DRIVE_MODE_TRACE_STATE_COUNT = 5;
 
 enum class NodeState { UNINITIALIZED, INITIALIZING, RUNNING, ERROR };
 
@@ -77,10 +80,15 @@ class DriveController {
     StaticTask_t thread_control_block{};
     uint32_t thread_stack[DRIVE_CONTROLLER_THREAD_STACK_SIZE]{};
 
-    TraceStringHandle_t drive_mode_channel = nullptr;
+    TraceStateMachineHandle_t drive_mode_machine = nullptr;
+    std::array<TraceStateMachineStateHandle_t, DRIVE_MODE_TRACE_STATE_COUNT> drive_mode_trace_states{};
+    bool drive_mode_trace_initialized = false;
+    bool drive_mode_trace_failed = false;
 
     bool setState(NodeState new_state);
     void setDriveMode(DriveMode mode);
+    bool initDriveModeTrace();
+    void traceDriveMode(DriveMode mode);
 
     void stopVehicle();
     bool handleEmergencyStop();

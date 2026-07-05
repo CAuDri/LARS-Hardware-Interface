@@ -6,6 +6,7 @@
 #include "system_monitor.hpp"
 
 #include "logger.h"
+#include "trcRecorder.h"
 #include "usbd_core.h"
 
 // Definitions for external power control GPIO (if not defined in main.h)
@@ -23,6 +24,8 @@ constexpr uint32_t THREAD_START_FLAG = 0x01;
 constexpr uint32_t SYSTEM_EVENT_ERROR_FLAG = 0x01;
 constexpr uint32_t SYSTEM_EVENT_WARNING_FLAG = 0x02;
 constexpr uint32_t SYSTEM_EVENT_OK_FLAG = 0x04;
+
+constexpr const char* SYSTEM_MONITOR_TRACE_STATES[] = {"UNKNOWN", "OK", "WARNING", "ERROR"};
 
 // Static instance pointer for global access
 SystemMonitor* SystemMonitor::instance = nullptr;
@@ -59,6 +62,7 @@ SystemMonitor::~SystemMonitor() {
 bool SystemMonitor::init(SystemCheck& system_check, const Config& config) {
     this->config = &config;
     this->system_check = &system_check;
+    (void)initTraceStateMachine();
 
     if (instance != nullptr) {
         LogWarning(
@@ -401,18 +405,85 @@ bool SystemMonitor::publishSystemState() {
     switch (last_check_result.system_state) {
         case SystemCheck::SystemState::OK:
             osEventFlagsSet(system_event_flags, SYSTEM_EVENT_OK_FLAG);
+            traceSystemState(last_check_result.system_state);
             break;
         case SystemCheck::SystemState::WARNING:
             osEventFlagsSet(system_event_flags, SYSTEM_EVENT_WARNING_FLAG);
+            traceSystemState(last_check_result.system_state);
             break;
         case SystemCheck::SystemState::ERROR:
             osEventFlagsSet(system_event_flags, SYSTEM_EVENT_ERROR_FLAG);
+            traceSystemState(last_check_result.system_state);
             break;
         default:
             LogError("System Monitor: Unknown system state, cannot publish");
             return false;
     }
     return true;
+}
+
+/**
+ * @brief Initialize the native TraceRecorder state machine for system health
+ */
+bool SystemMonitor::initTraceStateMachine() {
+    if (trace_initialized) {
+        return true;
+    }
+    if (trace_failed) {
+        return false;
+    }
+
+    TraceStateMachineHandle_t machine = nullptr;
+    if (xTraceStateMachineCreate("System Monitor", &machine) != TRC_SUCCESS || machine == nullptr) {
+        (void)xTracePrintCompactF1("System Monitor Trace", "Registration failed: %u", 1U);
+        trace_failed = true;
+        return false;
+    }
+
+    for (size_t i = 0; i < SYSTEM_MONITOR_TRACE_STATE_COUNT; i++) {
+        TraceStateMachineStateHandle_t state_handle = nullptr;
+        if (xTraceStateMachineStateCreate(machine, SYSTEM_MONITOR_TRACE_STATES[i], &state_handle) != TRC_SUCCESS ||
+            state_handle == nullptr) {
+            (void)xTracePrintCompactF1("System Monitor Trace", "Registration failed: %u", 2U);
+            trace_failed = true;
+            return false;
+        }
+        trace_state_handles[i] = state_handle;
+    }
+
+    trace_state_machine = machine;
+    trace_initialized = true;
+    if (xTraceStateMachineSetState(machine, static_cast<TraceStateMachineStateHandle_t>(trace_state_handles[0])) != TRC_SUCCESS) {
+        (void)xTracePrintCompactF1("System Monitor Trace", "Registration failed: %u", 3U);
+    }
+    return true;
+}
+
+/**
+ * @brief Update the native TraceRecorder system health state machine
+ */
+void SystemMonitor::traceSystemState(SystemCheck::SystemState state) {
+    if (!trace_initialized && !initTraceStateMachine()) {
+        return;
+    }
+
+    size_t state_index = 0U;
+    switch (state) {
+        case SystemCheck::SystemState::OK:
+            state_index = 1U;
+            break;
+        case SystemCheck::SystemState::WARNING:
+            state_index = 2U;
+            break;
+        case SystemCheck::SystemState::ERROR:
+            state_index = 3U;
+            break;
+    }
+
+    if (xTraceStateMachineSetState(static_cast<TraceStateMachineHandle_t>(trace_state_machine),
+                                   static_cast<TraceStateMachineStateHandle_t>(trace_state_handles[state_index])) != TRC_SUCCESS) {
+        (void)xTracePrintCompactF1("System Monitor Trace", "Registration failed: %u", 4U);
+    }
 }
 
 /**

@@ -5,11 +5,14 @@
  */
 #pragma once
 
+#include <array>
+
 #include "cmsis_os2.h"
 #include "main.h"
 #include "system_check.hpp"
 
 constexpr uint32_t SYSTEM_MONITOR_THREAD_STACK_SIZE = 2048;
+constexpr size_t SYSTEM_MONITOR_TRACE_STATE_COUNT = 4;
 
 /**
  * @brief Possible reasons for system wakeup/reset
@@ -96,6 +99,14 @@ class SystemMonitor {
     osThreadAttr_t thread_attributes{};
     StaticTask_t thread_control_block{};
     uint32_t thread_stack[SYSTEM_MONITOR_THREAD_STACK_SIZE / 4]{};
+
+    void* trace_state_machine = nullptr;
+    std::array<void*, SYSTEM_MONITOR_TRACE_STATE_COUNT> trace_state_handles{};
+    bool trace_initialized = false;
+    bool trace_failed = false;
+
+    bool initTraceStateMachine();
+    void traceSystemState(SystemCheck::SystemState state);
 
     bool performSystemCheck();
     bool publishSystemState();

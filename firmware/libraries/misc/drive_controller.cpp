@@ -40,6 +40,8 @@ static constexpr uint32_t CONTROLLER_THREAD_UPDATE_TIME_MS = 100;  // Timeout fo
 static constexpr uint32_t START_THREAD_FLAG = 0x01;
 static constexpr uint32_t MODE_SWITCH_FLAG = 0x02;
 
+static constexpr const char* DRIVE_MODE_TRACE_STATES[] = {"IDLE", "MANUAL", "AUTONOMOUS", "MANDATORY_STOP", "EMERGENCY_STOP"};
+
 /**
  * @brief Construct a new drive controller object for later initialization
  */
@@ -104,10 +106,7 @@ bool DriveController::init(const Config& config, RCReceiver& rc_receiver, VESC& 
         return false;
     }
 
-    // Register the Tracealyzer channel for drive mode logging
-    if (xTraceStringRegister("Drive Mode", &drive_mode_channel) != TRC_SUCCESS) {
-        LogDebug("Drive Controller: Failed to register Tracealyzer channel for drive mode");
-    }
+    (void)initDriveModeTrace();
 
     // Initialize the light dispatcher with the status light
     if (!light_dispatcher.registerLight(status_light)) {
@@ -413,35 +412,78 @@ void DriveController::remoteControlCallback(const crsf::ChannelData& channels) {
 /**
  * @brief Internal helper to set the current drive mode
  *
- * Will additionally create a Tracealyzer event for the mode change and notify the controller thread.
+ * Will additionally update Tracealyzer drive mode state and notify the controller thread.
  *
  * @param mode The new drive mode to set
  */
 void DriveController::setDriveMode(DriveMode mode) {
     current_drive_mode = mode;
-    if (drive_mode_channel != nullptr) {
-        switch (mode) {
-            case DriveMode::IDLE:
-                xTracePrint(drive_mode_channel, "IDLE");
-                break;
-            case DriveMode::MANUAL:
-                xTracePrint(drive_mode_channel, "MANUAL");
-                break;
-            case DriveMode::AUTONOMOUS:
-                xTracePrint(drive_mode_channel, "AUTONOMOUS");
-                break;
-            case DriveMode::MANDATORY_STOP:
-                xTracePrint(drive_mode_channel, "MANDATORY_STOP");
-                break;
-            case DriveMode::EMERGENCY_STOP:
-                xTracePrint(drive_mode_channel, "EMERGENCY_STOP");
-                break;
-            default:
-                xTracePrint(drive_mode_channel, "INVALID");
-                break;
+    traceDriveMode(mode);
+    osThreadFlagsSet(controller_thread, MODE_SWITCH_FLAG);
+}
+
+/**
+ * @brief Initialize the native TraceRecorder drive mode state machine
+ */
+bool DriveController::initDriveModeTrace() {
+    if (drive_mode_trace_initialized) {
+        return true;
+    }
+    if (drive_mode_trace_failed) {
+        return false;
+    }
+
+    if (xTraceStateMachineCreate("Drive Mode", &drive_mode_machine) != TRC_SUCCESS || drive_mode_machine == nullptr) {
+        (void)xTracePrintCompactF1("Drive Controller Trace", "Registration failed: %u", 1U);
+        drive_mode_trace_failed = true;
+        return false;
+    }
+
+    for (size_t i = 0; i < DRIVE_MODE_TRACE_STATE_COUNT; i++) {
+        if (xTraceStateMachineStateCreate(drive_mode_machine, DRIVE_MODE_TRACE_STATES[i], &drive_mode_trace_states[i]) !=
+                TRC_SUCCESS ||
+            drive_mode_trace_states[i] == nullptr) {
+            (void)xTracePrintCompactF1("Drive Controller Trace", "Registration failed: %u", 2U);
+            drive_mode_trace_failed = true;
+            return false;
         }
     }
-    osThreadFlagsSet(controller_thread, MODE_SWITCH_FLAG);
+
+    drive_mode_trace_initialized = true;
+    traceDriveMode(current_drive_mode);
+    return true;
+}
+
+/**
+ * @brief Update the native TraceRecorder drive mode state machine
+ */
+void DriveController::traceDriveMode(DriveMode mode) {
+    if (!drive_mode_trace_initialized && !initDriveModeTrace()) {
+        return;
+    }
+
+    size_t state_index = 0U;
+    switch (mode) {
+        case DriveMode::IDLE:
+            state_index = 0U;
+            break;
+        case DriveMode::MANUAL:
+            state_index = 1U;
+            break;
+        case DriveMode::AUTONOMOUS:
+            state_index = 2U;
+            break;
+        case DriveMode::MANDATORY_STOP:
+            state_index = 3U;
+            break;
+        case DriveMode::EMERGENCY_STOP:
+            state_index = 4U;
+            break;
+    }
+
+    if (xTraceStateMachineSetState(drive_mode_machine, drive_mode_trace_states[state_index]) != TRC_SUCCESS) {
+        (void)xTracePrintCompactF1("Drive Controller Trace", "Registration failed: %u", 3U);
+    }
 }
 
 /**
