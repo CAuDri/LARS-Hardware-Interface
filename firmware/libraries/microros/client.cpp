@@ -357,9 +357,8 @@ void Client::thread() {
             LogSuccess("micro-ROS Client: Connected to agent");
 
             // Keep connected-state health checks lightweight. Periodic time
-            // synchronization maintains ROS time. A failed time sync clears
-            // the cached ROS clock but does not by itself justify recreating
-            // the whole XRCE session and all graph entities.
+            // synchronization maintains ROS time and also proves that the
+            // current XRCE session still has a responding agent behind it.
             while (!stop_requested && isConnected()) {
                 const uint32_t flags = osEventFlagsWait(
                     connection_events, ROS_TEST_CONNECTION_FLAG | ROS_STOP_CLIENT_FLAG, osFlagsWaitAny, config->connection_health_interval_ms);
@@ -380,12 +379,14 @@ void Client::thread() {
                 const uint32_t time_sync_interval =
                     isTimeSynchronized() ? ROS_TIME_SYNC_INTERVAL_MS : ROS_INITIAL_TIME_SYNC_RETRY_INTERVAL_MS;
                 if (osKernelGetTickCount() - last_time_sync_attempt_ms >= time_sync_interval) {
-                    // Retry quickly until the first successful synchronization,
-                    // then use the normal low-rate interval. Clock sync uses
-                    // the same XRCE session, but failing to read the agent time
-                    // is not enough evidence to recreate all entities.
+                    // Retry quickly after the first failure. A restarted agent
+                    // no longer knows the old XRCE session, so repeated clock
+                    // sync failures mean the client has to recreate all rclc
+                    // entities against a fresh session.
                     if (!synchronizeTime() && consecutive_time_sync_failures == ROS_TIME_SYNC_FAILURE_RECONNECT_THRESHOLD) {
-                        LogWarning("micro-ROS Client: Time synchronization failed repeatedly; keeping session active");
+                        LogWarning("micro-ROS Client: Time synchronization failed repeatedly; reconnecting");
+                        result = last_time_sync_error == RMW_RET_OK ? RCL_RET_ERROR : RCL_RET_TIMEOUT;
+                        break;
                     }
                 }
             }
