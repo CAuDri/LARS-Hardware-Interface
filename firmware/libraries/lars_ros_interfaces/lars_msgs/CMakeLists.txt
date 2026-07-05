@@ -9,6 +9,8 @@ find_package(std_msgs REQUIRED)
 
 set(msg_files
     "msg/Float32Stamped.msg"
+    "msg/MotorFeedback.msg"
+    "msg/MotorTelemetry.msg"
 )
 
 rosidl_generate_interfaces(${PROJECT_NAME}

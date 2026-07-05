@@ -10,14 +10,14 @@
 
 set -Eeuo pipefail
 
-# Directories for local ROS interfaces. These will be copied into the micro-ROS workspace.
-readonly LOCAL_INTERFACES_DIR="${FIRMWARE_DIR}/libraries/lars_ros_interfaces"
-readonly LOCAL_INTERFACES_WORKSPACE_DIR="${WORKSPACE_DIR}/mcu_ws/lars_ros_interfaces"
-
 readonly SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 readonly FIRMWARE_DIR="$(cd -- "${SCRIPT_DIR}/../../.." && pwd)"
 readonly WORKSPACE_DIR="${SCRIPT_DIR}/firmware"
 readonly TOOLCHAIN_FILE="${SCRIPT_DIR}/toolchain.cmake"
+
+# Directories for local ROS interfaces. These will be copied into the micro-ROS workspace.
+readonly LOCAL_INTERFACES_DIR="${FIRMWARE_DIR}/libraries/lars_ros_interfaces"
+readonly LOCAL_INTERFACES_WORKSPACE_DIR="${WORKSPACE_DIR}/mcu_ws/lars_ros_interfaces"
 
 CLEAN_WORKSPACE=false
 DEVICE_NAME=""
