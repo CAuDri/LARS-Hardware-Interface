@@ -11,6 +11,7 @@
 #include <climits>
 
 #include "logger.h"
+#include "microros_trace.hpp"
 #include "microros_allocator.h"
 #include "node.hpp"
 #include "publisher.hpp"
@@ -50,13 +51,18 @@ Client::Client() = default;
  */
 rcl_ret_t Client::init(const Config& client_config) {
     LogDebug("micro-ROS Client: Initializing");
+    trace::initClient();
+    trace::setClientState(static_cast<size_t>(State::UNINITIALIZED));
     if (state != State::UNINITIALIZED) {
         LogError("micro-ROS Client: Cannot initialize an already initialized client");
+        trace::incrementErrors();
         return RCL_RET_ALREADY_INIT;
     }
     if (!validateConfig(client_config) || instance != nullptr) {
         LogError("micro-ROS Client: Invalid configuration or another client is already active");
         state = State::ERROR;
+        trace::setClientState(static_cast<size_t>(state));
+        trace::incrementErrors();
         last_error = RCL_RET_INVALID_ARGUMENT;
         return last_error;
     }
@@ -77,6 +83,7 @@ rcl_ret_t Client::init(const Config& client_config) {
     session_mutex = osMutexNew(&mutex_attributes);
     if (session_mutex == nullptr) {
         LogError("micro-ROS Client: Failed to create the session mutex");
+        trace::incrementErrors();
         cleanupInitFailure(RCL_RET_ERROR);
         return RCL_RET_ERROR;
     }
@@ -92,6 +99,7 @@ rcl_ret_t Client::init(const Config& client_config) {
     connection_events = osEventFlagsNew(&event_attributes);
     if (connection_events == nullptr) {
         LogError("micro-ROS Client: Failed to create connection event flags");
+        trace::incrementErrors();
         cleanupInitFailure(RCL_RET_ERROR);
         return RCL_RET_ERROR;
     }
@@ -101,6 +109,7 @@ rcl_ret_t Client::init(const Config& client_config) {
     rcl_ret_t result = microros_set_default_allocator();
     if (result != RCL_RET_OK) {
         LogError("micro-ROS Client: Failed to install the FreeRTOS allocator: %d", (int)result);
+        trace::incrementErrors();
         cleanupInitFailure(result);
         return result;
     }
@@ -112,6 +121,7 @@ rcl_ret_t Client::init(const Config& client_config) {
     if (rmw_uros_set_custom_transport(
             transport.framing, transport.context, transport.open, transport.close, transport.write, transport.read) != RMW_RET_OK) {
         LogError("micro-ROS Client: Failed to configure the custom transport");
+        trace::incrementErrors();
         cleanupInitFailure(RCL_RET_ERROR);
         return RCL_RET_ERROR;
     }
@@ -121,6 +131,7 @@ rcl_ret_t Client::init(const Config& client_config) {
     result = executor.createThread(config->executor_thread_priority, session_mutex, executorError, static_cast<void*>(this));
     if (result != RCL_RET_OK) {
         LogError("micro-ROS Client: Failed to create the executor thread: %d", (int)result);
+        trace::incrementErrors();
         cleanupInitFailure(result);
         return result;
     }
@@ -138,6 +149,7 @@ rcl_ret_t Client::init(const Config& client_config) {
     };
 
     state = State::INITIALIZED;
+    trace::setClientState(static_cast<size_t>(state));
     publishConnectionState(ConnectionState::DISCONNECTED);
     thread_id = osThreadNew(
         // A non-capturing lambda can be converted to the C function pointer
@@ -147,6 +159,7 @@ rcl_ret_t Client::init(const Config& client_config) {
         &thread_attributes);
     if (thread_id == nullptr) {
         LogError("micro-ROS Client: Failed to create the connection thread");
+        trace::incrementErrors();
         cleanupInitFailure(RCL_RET_ERROR);
         return RCL_RET_ERROR;
     }
@@ -168,12 +181,14 @@ rcl_ret_t Client::fini(uint32_t timeout_ms) {
     }
 
     state = State::STOPPING;
+    trace::setClientState(static_cast<size_t>(state));
     LogDebug("micro-ROS Client: Stopping");
     stop_requested = true;
     (void)osEventFlagsSet(connection_events, ROS_STOP_CLIENT_FLAG);
     const uint32_t flags = osEventFlagsWait(connection_events, ROS_CLIENT_STOPPED_FLAG, osFlagsWaitAny, timeout_ms);
     if ((flags & osFlagsError) != 0U || (flags & ROS_CLIENT_STOPPED_FLAG) == 0U) {
         LogError("micro-ROS Client: Timed out while stopping the connection thread");
+        trace::incrementErrors();
         return RCL_RET_TIMEOUT;
     }
 
@@ -187,6 +202,7 @@ rcl_ret_t Client::fini(uint32_t timeout_ms) {
     instance = nullptr;
     config = nullptr;
     state = State::STOPPED;
+    trace::setClientState(static_cast<size_t>(state));
     LogInfo("micro-ROS Client: Stopped");
     return RCL_RET_OK;
 }
@@ -343,6 +359,7 @@ void Client::thread() {
         // discovery attempts are expected and should not flood the info log.
         bool session_connected = false;
         state = State::CONNECTING;
+        trace::setClientState(static_cast<size_t>(state));
         publishConnectionState(ConnectionState::CONNECTING);
         if (!waiting_for_agent_logged) {
             LogInfo("micro-ROS Client: Waiting for agent");
@@ -352,6 +369,7 @@ void Client::thread() {
 
         if (result == RCL_RET_OK) {
             state = State::CONNECTED;
+            trace::setClientState(static_cast<size_t>(state));
             (void)osEventFlagsClear(connection_events, ROS_TEST_CONNECTION_FLAG);
             publishConnectionState(ConnectionState::CONNECTED);
             session_connected = true;
@@ -398,13 +416,16 @@ void Client::thread() {
         // initialization. Always roll back before the next attempt.
         if (support_active) {
             state = stop_requested ? State::STOPPING : State::DISCONNECTED;
+            trace::setClientState(static_cast<size_t>(state));
             publishConnectionState(ConnectionState::DISCONNECTED);
             (void)disconnectSession(result == RCL_RET_OK && stop_requested);
         }
         publishConnectionState(ConnectionState::DISCONNECTED);
         if (!stop_requested) {
             state = State::DISCONNECTED;
+            trace::setClientState(static_cast<size_t>(state));
             if (session_connected) {
+                trace::incrementReconnects();
                 LogInfo("micro-ROS Client: Disconnected; reconnecting automatically");
                 waiting_for_agent_logged = false;
             }
@@ -421,16 +442,19 @@ void Client::thread() {
     }
     publishConnectionState(ConnectionState::DISCONNECTED);
     state = State::STOPPED;
+    trace::setClientState(static_cast<size_t>(state));
     (void)osEventFlagsSet(connection_events, ROS_CLIENT_STOPPED_FLAG);
     osThreadExit();
 }
 
 rcl_ret_t Client::connectSession() {
+    trace::incrementConnectionAttempts();
     // All rcl/rclc operations share one recursive priority-inheritance mutex.
     // The executor uses the same mutex while spinning, preventing concurrent
     // access to the session and to rcutils' global error state.
     if (osMutexAcquire(session_mutex, osWaitForever) != osOK) {
         LogError("micro-ROS Client: Failed to lock the session for connection");
+        trace::incrementErrors();
         return RCL_RET_ERROR;
     }
 
@@ -476,6 +500,7 @@ rcl_ret_t Client::connectSession() {
         // to a real session setup or cleanup problem.
         if (agent_found || support_active) {
             LogWarning("micro-ROS Client: Session setup failed: %d", (int)result);
+            trace::incrementErrors();
         }
         if (support_active) {
             (void)disconnectSession(false);
@@ -493,6 +518,7 @@ rcl_ret_t Client::disconnectSession(bool agent_available) {
     rcl_ret_t result = executor.waitForStop(osWaitForever);
     if (osMutexAcquire(session_mutex, osWaitForever) != osOK) {
         LogError("micro-ROS Client: Failed to lock the session for shutdown");
+        trace::incrementErrors();
         return RCL_RET_ERROR;
     }
 
@@ -525,6 +551,7 @@ rcl_ret_t Client::disconnectSession(bool agent_available) {
     (void)osMutexRelease(session_mutex);
     if (result != RCL_RET_OK) {
         LogWarning("micro-ROS Client: Session cleanup returned: %d", (int)result);
+        trace::incrementErrors();
     }
     return result;
 }
@@ -547,6 +574,7 @@ bool Client::synchronizeTime() {
         last_time_sync_error = RMW_RET_ERROR;
         clearSynchronizedTime();
         LogError("micro-ROS Client: Failed to lock the session for time synchronization");
+        trace::incrementErrors();
         return false;
     }
 
@@ -599,6 +627,7 @@ void Client::clearSynchronizedTime() {
 
 void Client::publishConnectionState(ConnectionState new_state) {
     connection_state = new_state;
+    trace::setConnectionState(new_state);
     if (connection_events == nullptr) {
         return;
     }
@@ -699,6 +728,7 @@ rcl_ret_t Client::registerNode(Node* node) {
         result = RCL_RET_ERROR;
     } else {
         nodes[node_count++] = node;
+        trace::setRegisteredNodeCount(node_count);
     }
     unlockSession();
     return result;
@@ -718,6 +748,7 @@ rcl_ret_t Client::unregisterNode(Node* node) {
                 nodes[j] = nodes[j + 1U];
             }
             nodes[--node_count] = nullptr;
+            trace::setRegisteredNodeCount(node_count);
             unlockSession();
             return RCL_RET_OK;
         }
@@ -886,6 +917,7 @@ void Client::cleanupInitFailure(rcl_ret_t error) {
     // Preserve the originating error so getLastError() agrees with init().
     last_error = error;
     state = State::ERROR;
+    trace::setClientState(static_cast<size_t>(state));
     (void)executor.destroyThread();
     if (connection_events != nullptr) {
         (void)osEventFlagsDelete(connection_events);

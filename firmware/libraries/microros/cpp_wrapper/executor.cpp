@@ -8,6 +8,7 @@
 
 #include "client.hpp"
 #include "logger.h"
+#include "microros_trace.hpp"
 
 namespace ros {
 
@@ -122,6 +123,7 @@ rcl_ret_t Executor::initRclcExecutor(rcl_context_t* context, const rcl_allocator
 
     last_error = RCL_RET_OK;
     state = State::INITIALIZED;
+    trace::setExecutorState(static_cast<size_t>(state));
     LogDebug("micro-ROS Executor: rclc executor initialized with %lu handles", (uint32_t)ROS_EXECUTOR_HANDLE_CAPACITY);
     return RCL_RET_OK;
 }
@@ -149,10 +151,13 @@ rcl_ret_t Executor::startSpinning() {
     (void)osEventFlagsClear(state_events, ROS_EXECUTOR_STOPPED_FLAG);
     spin_requested = true;
     state = State::SPINNING;
+    trace::setExecutorState(static_cast<size_t>(state));
     const uint32_t flags = osThreadFlagsSet(thread_id, ROS_EXECUTOR_WAKE_FLAG);
     if ((flags & osFlagsError) != 0U) {
         spin_requested = false;
         state = State::INITIALIZED;
+        trace::setExecutorState(static_cast<size_t>(state));
+        trace::incrementErrors();
         LogError("micro-ROS Executor: Failed to wake executor thread");
         return RCL_RET_ERROR;
     }
@@ -188,7 +193,9 @@ rcl_ret_t Executor::finiRclcExecutor() {
     rclc_executor = rclc_executor_get_zero_initialized_executor();
     last_error = result;
     state = result == RCL_RET_OK ? State::STOPPED : State::ERROR;
+    trace::setExecutorState(static_cast<size_t>(state));
     if (result != RCL_RET_OK) {
+        trace::incrementErrors();
         LogWarning("micro-ROS Executor: rclc cleanup returned: %d", (int)result);
     }
     return result;
@@ -257,6 +264,7 @@ void Executor::thread() {
             // The RTOS thread persists between sessions. Only the rclc
             // executor is destroyed and recreated during a reconnect.
             state = state == State::SPINNING ? State::INITIALIZED : state;
+            trace::setExecutorState(static_cast<size_t>(state));
             (void)osEventFlagsSet(state_events, ROS_EXECUTOR_STOPPED_FLAG);
             (void)osThreadFlagsWait(ROS_EXECUTOR_WAKE_FLAG, osFlagsWaitAny, osWaitForever);
             continue;
@@ -280,6 +288,7 @@ void Executor::thread() {
 
         if (result != RCL_RET_OK && result != RCL_RET_TIMEOUT && result != RCL_RET_WAIT_SET_EMPTY) {
             last_error = result;
+            trace::incrementErrors();
             LogWarning("micro-ROS Executor: Spin failed: %d", (int)result);
             error_callback(error_context, result);
         }
@@ -290,6 +299,8 @@ void Executor::thread() {
 void Executor::setError(rcl_ret_t error) {
     last_error = error;
     state = State::ERROR;
+    trace::setExecutorState(static_cast<size_t>(state));
+    trace::incrementErrors();
     spin_requested = false;
 }
 

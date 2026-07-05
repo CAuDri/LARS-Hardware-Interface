@@ -27,11 +27,15 @@ Node::Node() { rcl_node = rcl_get_zero_initialized_node(); }
  * @return RCL_RET_OK when the node was registered, otherwise an rcl error code.
  */
 rcl_ret_t Node::init(Client& node_client, const char* node_name, const char* node_namespace) {
+    trace::initNode(trace_state, node_name);
     if (state != EntityState::UNINITIALIZED) {
+        trace::incrementErrors();
         return RCL_RET_ALREADY_INIT;
     }
     if (node_name == nullptr || node_name[0] == '\0' || node_namespace == nullptr) {
         state = EntityState::ERROR;
+        trace::setNodeState(trace_state, state);
+        trace::incrementErrors();
         last_error = RCL_RET_INVALID_ARGUMENT;
         return last_error;
     }
@@ -42,6 +46,8 @@ rcl_ret_t Node::init(Client& node_client, const char* node_name, const char* nod
     const rcl_ret_t namespace_result = composeNamespace();
     if (namespace_result != RCL_RET_OK) {
         state = EntityState::ERROR;
+        trace::setNodeState(trace_state, state);
+        trace::incrementErrors();
         last_error = namespace_result;
         return namespace_result;
     }
@@ -50,12 +56,15 @@ rcl_ret_t Node::init(Client& node_client, const char* node_name, const char* nod
     const rcl_ret_t result = client->registerNode(this);
     if (result != RCL_RET_OK) {
         state = EntityState::ERROR;
+        trace::setNodeState(trace_state, state);
+        trace::incrementErrors();
         last_error = result;
         return result;
     }
 
     registered = true;
     state = EntityState::INITIALIZED;
+    trace::setNodeState(trace_state, state);
     last_error = RCL_RET_OK;
     LogDebug("micro-ROS Node: Registered '%s'", name);
     return RCL_RET_OK;
@@ -87,6 +96,7 @@ rcl_ret_t Node::fini() {
     local_namespace_name = "";
     namespace_name[0] = '\0';
     state = EntityState::UNINITIALIZED;
+    trace::setNodeState(trace_state, state);
     connection_state = ConnectionState::UNKNOWN;
     return result == RCL_RET_OK ? unregister_result : result;
 }
@@ -206,12 +216,16 @@ rcl_ret_t Node::initRclcNode(rclc_support_t* support) {
     last_error = result;
     if (result != RCL_RET_OK) {
         connection_state = ConnectionState::DISCONNECTED;
+        trace::setNodeState(trace_state, state);
         LogWarning("micro-ROS Node: Failed to create rclc node '%s': %d", name, (int)result);
+        trace::incrementErrors();
         return result;
     }
 
     rcl_active = true;
     state = EntityState::RUNNING;
+    trace::setNodeState(trace_state, state);
+    trace::incrementActiveNodeCount();
     connection_state = ConnectionState::CONNECTED;
     LogDebug("micro-ROS Node: rclc node '%s' initialized", name);
     return RCL_RET_OK;
@@ -220,6 +234,7 @@ rcl_ret_t Node::initRclcNode(rclc_support_t* support) {
 rcl_ret_t Node::finiRclcNode() {
     if (!rcl_active) {
         state = registered ? EntityState::INITIALIZED : EntityState::UNINITIALIZED;
+        trace::setNodeState(trace_state, state);
         connection_state = registered ? ConnectionState::DISCONNECTED : ConnectionState::UNKNOWN;
         rcl_node = rcl_get_zero_initialized_node();
         return RCL_RET_OK;
@@ -228,11 +243,14 @@ rcl_ret_t Node::finiRclcNode() {
     const rcl_ret_t result = rcl_node_fini(&rcl_node);
     rcl_node = rcl_get_zero_initialized_node();
     rcl_active = false;
+    trace::decrementActiveNodeCount();
     state = registered ? EntityState::INITIALIZED : EntityState::UNINITIALIZED;
+    trace::setNodeState(trace_state, state);
     connection_state = registered ? ConnectionState::DISCONNECTED : ConnectionState::UNKNOWN;
     last_error = result;
     if (result != RCL_RET_OK) {
         LogWarning("micro-ROS Node: rclc cleanup returned for '%s': %d", name, (int)result);
+        trace::incrementErrors();
     }
     return result;
 }

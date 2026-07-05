@@ -12,6 +12,7 @@
 
 #include <array>
 
+#include "microros_trace.hpp"
 #include "state.hpp"
 
 constexpr size_t ROS_NODE_NAMESPACE_BUFFER_SIZE = RMW_NAMESPACE_MAX_LENGTH + 1U;
@@ -53,6 +54,7 @@ class Node {
     rcl_ret_t last_error = RCL_RET_OK;
     bool registered = false;
     bool rcl_active = false;
+    trace::StateMachine trace_state{};
 
     rcl_ret_t composeNamespace();
     rcl_ret_t initRclcNode(rclc_support_t* support);

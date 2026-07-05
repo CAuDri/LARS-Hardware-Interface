@@ -71,6 +71,7 @@ target_sources(${PROJECT_NAME} PRIVATE
     # micro-ROS wrapper
     ${LIB_DIR}/microros/cpp_wrapper/client.cpp
     ${LIB_DIR}/microros/cpp_wrapper/executor.cpp
+    ${LIB_DIR}/microros/cpp_wrapper/microros_trace.cpp
     ${LIB_DIR}/microros/cpp_wrapper/node.cpp
     ${LIB_DIR}/microros/cpp_wrapper/publisher.cpp
     ${LIB_DIR}/microros/cpp_wrapper/service.cpp
