@@ -8,8 +8,10 @@
 
 #include <algorithm>
 #include <bitset>
+#include <cstring>
 
 #include <std_msgs/msg/u_int32.h>
+#include <std_srvs/srv/trigger.h>
 
 // #include "blink_animation.hpp"
 #include "config/config.h"
@@ -19,12 +21,14 @@
 #include "node.hpp"
 #include "pulse_animation.hpp"
 #include "publisher.hpp"
+#include "service.hpp"
 #include "subscriber.hpp"
 #include "thread_safe_adc.h"
 #include "type_support.hpp"
 #include "ws2812_light.hpp"
 
 ROS_DECLARE_MESSAGE_TYPE(std_msgs, UInt32);
+ROS_DECLARE_SERVICE_TYPE(std_srvs, Trigger);
 
 /**
  * Forward function declarations
@@ -32,6 +36,9 @@ ROS_DECLARE_MESSAGE_TYPE(std_msgs, UInt32);
 extern "C" void mainTask();
 void onSystemStateChange(SystemCheck::SystemState state);
 void onMicrorosTestCommand(const std_msgs__msg__UInt32* message, void* context);
+void onMicrorosTestTrigger(const std_srvs__srv__Trigger_Request* request,
+                           std_srvs__srv__Trigger_Response* response,
+                           void* context);
 
 /**
  * All global objects that can be statically initialized
@@ -64,6 +71,8 @@ ros::BasePublisher::Config microros_heartbeat_config{true, 5};
 std_msgs__msg__UInt32 microros_heartbeat_message{};
 ros::Subscriber<std_msgs__msg__UInt32> microros_test_subscriber;
 ros::BaseSubscriber::Config microros_test_subscriber_config{true};
+ros::Service<ros::service_types::std_srvs_Trigger> microros_test_service;
+char microros_test_service_response_buffer[64]{};
 
 /**
  * @brief Main entry point called from the RTOS task in the auto-generated main.c
@@ -120,6 +129,14 @@ void mainTask() {
         microros_hardware_node, "command/test", onMicrorosTestCommand, nullptr, microros_test_subscriber_config);
     if (microros_entity_result != RCL_RET_OK) {
         LogError("Main: Failed to initialize micro-ROS test subscriber: %d", static_cast<int>(microros_entity_result));
+    }
+    microros_test_service.response().message.data = microros_test_service_response_buffer;
+    microros_test_service.response().message.capacity = sizeof(microros_test_service_response_buffer);
+    microros_test_service.response().message.size = 0;
+    microros_test_service_response_buffer[0] = '\0';
+    microros_entity_result = microros_test_service.init(microros_hardware_node, "test/trigger", onMicrorosTestTrigger);
+    if (microros_entity_result != RCL_RET_OK) {
+        LogError("Main: Failed to initialize micro-ROS test service: %d", static_cast<int>(microros_entity_result));
     }
 
     /**
@@ -198,4 +215,35 @@ void onMicrorosTestCommand(const std_msgs__msg__UInt32* message, void* context) 
     if (message != nullptr) {
         LogInfo("Main: Received micro-ROS test command: %lu", message->data);
     }
+}
+
+/**
+ * @brief Respond to a host-triggered service call for validating micro-ROS services.
+ * @param request Empty Trigger request.
+ * @param response Trigger response filled with a static success message.
+ * @param context Optional callback context, unused for this test service.
+ */
+void onMicrorosTestTrigger(const std_srvs__srv__Trigger_Request* request,
+                           std_srvs__srv__Trigger_Response* response,
+                           void* context) {
+    (void)request;
+    (void)context;
+
+    if (response == nullptr) {
+        return;
+    }
+
+    constexpr char service_message[] = "Hardware Interface service callback executed";
+    response->success = true;
+
+    if (response->message.data != nullptr && response->message.capacity > 0U) {
+        const size_t message_length = std::min(sizeof(service_message) - 1U, response->message.capacity - 1U);
+        std::memcpy(response->message.data, service_message, message_length);
+        response->message.data[message_length] = '\0';
+        response->message.size = message_length;
+    } else {
+        response->message.size = 0;
+    }
+
+    LogInfo("Main: micro-ROS test service triggered");
 }
