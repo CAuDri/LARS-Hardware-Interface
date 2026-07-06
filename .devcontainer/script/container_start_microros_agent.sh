@@ -101,10 +101,9 @@ ensure_micro_ros_agent() {
     build_micro_ros_agent
 }
 
-# KITcar-style menu helper. It receives the available device paths directly
-# instead of keeping a separate display/path mapping. That deliberately keeps the
-# interactive selector tied to real /dev/tty* nodes, which are what the
-# micro-ROS agent reopens after a USB disconnect/reconnect.
+# Menu helper for real device paths. Keeping the selector tied directly to
+# /dev/tty* nodes avoids stale display/path mappings after a USB
+# disconnect/reconnect.
 choose_from_menu() {
     local prompt="$1" outvar="$2"
     shift
@@ -143,25 +142,65 @@ choose_from_menu() {
     printf -v "${outvar}" "%s" "${options[${cur}]}"
 }
 
+stop_micro_ros_agent() {
+    local pid="$1"
+    local signal="$2"
+    local attempt
+
+    if [ -z "${pid}" ] || ! kill -0 "${pid}" 2>/dev/null; then
+        return 0
+    fi
+
+    # The agent is started through setsid(), so its PID is also its process
+    # group ID. Signalling the group stops both the ros2 wrapper and the native
+    # micro_ros_agent process it launched.
+    kill "-${signal}" "-${pid}" 2>/dev/null || kill "-${signal}" "${pid}" 2>/dev/null || true
+
+    for attempt in {1..20}; do
+        if ! kill -0 "${pid}" 2>/dev/null; then
+            return 0
+        fi
+        sleep 0.1
+    done
+
+    kill -TERM "-${pid}" 2>/dev/null || kill -TERM "${pid}" 2>/dev/null || true
+
+    for attempt in {1..20}; do
+        if ! kill -0 "${pid}" 2>/dev/null; then
+            return 0
+        fi
+        sleep 0.1
+    done
+
+    kill -KILL "-${pid}" 2>/dev/null || kill -KILL "${pid}" 2>/dev/null || true
+}
+
 start_micro_ros_agent() {
     local device="$1"
-    local result
+    local result=0
+    local agent_pid=""
+    local interrupted=false
 
     source_ros_environment || return 1
 
-    # Match the KITcar action-button workflow: CTRL+C should stop the running
-    # agent and return to device selection, not close the whole helper script.
-    trap ":" SIGINT
+    # CTRL+C should stop the running agent and return to device selection, not
+    # close the whole helper script.
+    trap 'interrupted=true; stop_micro_ros_agent "${agent_pid}" INT' SIGINT
 
     echo "Starting micro_ros_agent"
     echo "  device:   ${device}"
     echo "  baudrate: ${MICROROS_AGENT_BAUDRATE}"
     echo ""
 
-    ros2 run micro_ros_agent micro_ros_agent serial --dev "${device}" -b "${MICROROS_AGENT_BAUDRATE}"
+    setsid ros2 run micro_ros_agent micro_ros_agent serial --dev "${device}" -b "${MICROROS_AGENT_BAUDRATE}" &
+    agent_pid=$!
+    wait "${agent_pid}"
     result=$?
 
     trap "exit 0" SIGINT
+    if ${interrupted}; then
+        return 130
+    fi
     return "${result}"
 }
 
