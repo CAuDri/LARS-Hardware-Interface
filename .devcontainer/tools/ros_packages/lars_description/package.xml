@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>lars_description</name>
+  <version>0.1.0</version>
+  <description>Temporary LARS robot description for host-side visualization.</description>
+  <maintainer email="caudri@todo.invalid">CAuDri</maintainer>
+  <license>TODO</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <exec_depend>robot_state_publisher</exec_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>
