@@ -1,0 +1,23 @@
+{
+  "name": "lars-lichtblick-panels",
+  "displayName": "LARS Lichtblick Panels",
+  "description": "Custom Lichtblick panels for LARS teleop and debug controls.",
+  "publisher": "lars",
+  "version": "0.1.0",
+  "license": "UNLICENSED",
+  "main": "./dist/extension.js",
+  "scripts": {
+    "build": "lichtblick-extension build",
+    "lichtblick:prepublish": "lichtblick-extension build --mode production",
+    "package": "lichtblick-extension package"
+  },
+  "devDependencies": {
+    "@lichtblick/suite": "1.26.0",
+    "@types/react": "18.3.12",
+    "@types/react-dom": "18.3.1",
+    "create-lichtblick-extension": "1.1.0",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "typescript": "5.7.2"
+  }
+}

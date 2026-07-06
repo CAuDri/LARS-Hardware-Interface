@@ -12,7 +12,7 @@
                 "command": "workbench.action.debug.start"
             },
             {
-                "name": "$(console) Open Serial Monitor",
+                "name": "$(console) Serial Monitor",
                 "tooltip": "Open the serial monitor to communicate with a serial device",
                 "color": "lightgrey",
                 "useVsCodeApi": true,
@@ -36,6 +36,26 @@
                 "command": "workbench.action.tasks.runTask",
                 "args": [
                     "Open STM32CubeMX"
+                ]
+            },
+            {
+                "name": "$(window) ROS RViz",
+                "tooltip": "Launch RViz with the LARS visualization and command panel",
+                "color": "#68c2f2",
+                "useVsCodeApi": true,
+                "command": "workbench.action.tasks.runTask",
+                "args": [
+                    "Launch ROS RViz"
+                ]
+            },
+            {
+                "name": "$(browser) ROS Visualizer",
+                "tooltip": "Start the local Lichtblick dashboard and ROS WebSocket bridge",
+                "color": "#9b7cff",
+                "useVsCodeApi": true,
+                "command": "workbench.action.tasks.runTask",
+                "args": [
+                    "Launch ROS Visualizer"
                 ]
             },
             // {

@@ -1,0 +1,633 @@
+{
+  "configById": {
+    "3D!visualization": {
+      "autoSyncCameraState": false,
+      "autoTextBackgroundColor": true,
+      "cameraState": {
+        "perspective": true,
+        "distance": 1.7966972914782513,
+        "phi": 0.950000000000249,
+        "thetaOffset": 0.7500000000000848,
+        "targetOffset": [
+          -0.0017957319845583561,
+          -0.00015149246741307334,
+          6.699452270667077e-23
+        ],
+        "target": [
+          0,
+          0,
+          0
+        ],
+        "targetOrientation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "fovy": 0.7853981633974483,
+        "near": 0.01,
+        "far": 5000
+      },
+      "checkedKeys": [
+        "name:Topics",
+        "t:/tf",
+        "t:/tf_static",
+        "t:/robot_description"
+      ],
+      "customBackgroundColor": "#000000",
+      "expandedKeys": [
+        "name:Topics"
+      ],
+      "followMode": "follow-pose",
+      "followTf": "base_link",
+      "modifiedNamespaceTopics": [],
+      "pinTopics": false,
+      "settingsByKey": {},
+      "useThemeBackgroundColor": true,
+      "scene": {},
+      "transforms": {},
+      "topics": {},
+      "layers": {},
+      "publish": {
+        "type": "point",
+        "poseTopic": "/move_base_simple/goal",
+        "pointTopic": "/clicked_point",
+        "poseEstimateTopic": "/initialpose",
+        "poseEstimateXDeviation": 0.5,
+        "poseEstimateYDeviation": 0.5,
+        "poseEstimateThetaDeviation": 0.26179939
+      },
+      "imageMode": {}
+    },
+    "Gauge!battery_voltage": {
+      "path": "/hardware/telemetry/motor.input_voltage",
+      "minValue": 11.1,
+      "maxValue": 12.6,
+      "colorMap": "red-yellow-green",
+      "colorMode": "colormap",
+      "gradient": [
+        "#0000ff",
+        "#ff00ff"
+      ],
+      "reverse": false,
+      "lichtblickPanelTitle": "Battery Voltage"
+    },
+    "Gauge!input_current": {
+      "path": "/hardware/telemetry/motor.input_current",
+      "minValue": 0,
+      "maxValue": 80,
+      "colorMap": "red-yellow-green",
+      "colorMode": "colormap",
+      "gradient": [
+        "#0000ff",
+        "#ff00ff"
+      ],
+      "reverse": true,
+      "lichtblickPanelTitle": "Motor Current"
+    },
+    "Gauge!fet_temperature": {
+      "path": "/hardware/telemetry/motor.fet_temperature",
+      "minValue": 0,
+      "maxValue": 120,
+      "colorMap": "red-yellow-green",
+      "colorMode": "gradient",
+      "gradient": [
+        "#ff0000ff",
+        "#0021ffff"
+      ],
+      "reverse": true,
+      "lichtblickPanelTitle": "VESC Temp"
+    },
+    "Gauge!motor_temperature": {
+      "path": "/hardware/telemetry/motor.motor_temperature",
+      "minValue": 0,
+      "maxValue": 120,
+      "colorMap": "red-yellow-green",
+      "colorMode": "gradient",
+      "gradient": [
+        "#ff0000ff",
+        "#2800ffff"
+      ],
+      "reverse": true,
+      "lichtblickPanelTitle": "Motor Temp"
+    },
+    "DiagnosticSummary!diagnostic_summary": {
+      "minLevel": 0,
+      "pinnedIds": [],
+      "hardwareIdFilter": "",
+      "topicToRender": "/diagnostics",
+      "sortByLevel": true
+    },
+    "RosOut!logs": {
+      "searchTerms": [],
+      "minLogLevel": 1,
+      "lichtblickPanelTitle": "ROS Logs"
+    },
+    "Plot!steering": {
+      "paths": [
+        {
+          "value": "/hardware/command/steering_angle.angle",
+          "enabled": true,
+          "timestampMethod": "receiveTime"
+        },
+        {
+          "value": "/hardware/measure/steering_angle.data",
+          "enabled": true,
+          "timestampMethod": "receiveTime"
+        }
+      ],
+      "minYValue": "-35",
+      "maxYValue": "35",
+      "showXAxisLabels": true,
+      "showYAxisLabels": true,
+      "showLegend": true,
+      "legendDisplay": "floating",
+      "showPlotValuesInLegend": true,
+      "isSynced": true,
+      "xAxisVal": "timestamp",
+      "sidebarDimension": 240
+    },
+    "Plot!rpm": {
+      "paths": [
+        {
+          "value": "/hardware/command/motor_rpm.rpm",
+          "enabled": true,
+          "timestampMethod": "receiveTime"
+        },
+        {
+          "value": "/hardware/measure/motor_feedback.rpm",
+          "enabled": true,
+          "timestampMethod": "receiveTime"
+        }
+      ],
+      "minYValue": "",
+      "maxYValue": "",
+      "showXAxisLabels": true,
+      "showYAxisLabels": true,
+      "showLegend": true,
+      "legendDisplay": "floating",
+      "showPlotValuesInLegend": true,
+      "isSynced": true,
+      "xAxisVal": "timestamp",
+      "sidebarDimension": 240,
+      "lichtblickPanelTitle": "Motor RPM"
+    },
+    "Plot!current": {
+      "paths": [
+        {
+          "value": "/hardware/command/motor_current.current",
+          "enabled": true,
+          "timestampMethod": "receiveTime"
+        },
+        {
+          "value": "/hardware/measure/motor_feedback.motor_current",
+          "enabled": true,
+          "timestampMethod": "receiveTime"
+        },
+        {
+          "value": "/hardware/telemetry/motor.input_current",
+          "enabled": true,
+          "timestampMethod": "receiveTime"
+        }
+      ],
+      "minYValue": "",
+      "maxYValue": "",
+      "showXAxisLabels": true,
+      "showYAxisLabels": true,
+      "showLegend": true,
+      "legendDisplay": "floating",
+      "showPlotValuesInLegend": true,
+      "isSynced": true,
+      "xAxisVal": "timestamp",
+      "sidebarDimension": 240,
+      "lichtblickPanelTitle": "Motor Current"
+    },
+    "TopicGraph!graph": {
+      "lichtblickPanelTitle": "ROS Topic Graph"
+    },
+    "SourceInfo!source_info": {
+      "lichtblickPanelTitle": "Data Source"
+    },
+    "DiagnosticSummary!diagnostic_summary_graph": {
+      "minLevel": 0,
+      "pinnedIds": [],
+      "hardwareIdFilter": "",
+      "topicToRender": "/diagnostics",
+      "sortByLevel": true,
+      "lichtblickPanelTitle": "Diagnostics Summary"
+    },
+    "DiagnosticStatusPanel!diagnostic_status": {
+      "topicToRender": "/diagnostics",
+      "collapsedSections": [],
+      "selectedHardwareId": "",
+      "splitFraction": 0.5,
+      "lichtblickPanelTitle": "Diagnostic Status"
+    },
+    "Parameters!parameters": {
+      "title": "ROS Parameters",
+      "lichtblickPanelTitle": "ROS Parameters"
+    },
+    "RosOut!warnings": {
+      "searchTerms": [],
+      "minLogLevel": 4,
+      "lichtblickPanelTitle": "ROS Warnings"
+    },
+    "Gauge!feedback_rpm": {
+      "path": "/hardware/measure/motor_feedback.rpm",
+      "minValue": -12000,
+      "maxValue": 12000,
+      "colorMap": "red-yellow-green",
+      "colorMode": "colormap",
+      "gradient": [
+        "#0000ff",
+        "#ff00ff"
+      ],
+      "reverse": false,
+      "lichtblickPanelTitle": "Feedback RPM"
+    },
+    "Gauge!feedback_current": {
+      "path": "/hardware/measure/motor_feedback.motor_current",
+      "minValue": -80,
+      "maxValue": 80,
+      "colorMap": "red-yellow-green",
+      "colorMode": "colormap",
+      "gradient": [
+        "#0000ff",
+        "#ff00ff"
+      ],
+      "reverse": false,
+      "lichtblickPanelTitle": "Feedback Current"
+    },
+    "Gauge!motor_battery_voltage": {
+      "path": "/hardware/telemetry/motor.input_voltage",
+      "minValue": 0,
+      "maxValue": 30,
+      "colorMap": "red-yellow-green",
+      "colorMode": "colormap",
+      "gradient": [
+        "#0000ff",
+        "#ff00ff"
+      ],
+      "reverse": false,
+      "lichtblickPanelTitle": "Motor Voltage"
+    },
+    "Gauge!motor_input_current": {
+      "path": "/hardware/telemetry/motor.input_current",
+      "minValue": 0,
+      "maxValue": 80,
+      "colorMap": "red-yellow-green",
+      "colorMode": "colormap",
+      "gradient": [
+        "#0000ff",
+        "#ff00ff"
+      ],
+      "reverse": false,
+      "lichtblickPanelTitle": "Input Current"
+    },
+    "Gauge!motor_fet_temperature": {
+      "path": "/hardware/telemetry/motor.fet_temperature",
+      "minValue": 0,
+      "maxValue": 120,
+      "colorMap": "red-yellow-green",
+      "colorMode": "colormap",
+      "gradient": [
+        "#0000ff",
+        "#ff00ff"
+      ],
+      "reverse": true,
+      "lichtblickPanelTitle": "FET Temperature"
+    },
+    "Gauge!motor_motor_temperature": {
+      "path": "/hardware/telemetry/motor.motor_temperature",
+      "minValue": 0,
+      "maxValue": 120,
+      "colorMap": "red-yellow-green",
+      "colorMode": "colormap",
+      "gradient": [
+        "#0000ff",
+        "#ff00ff"
+      ],
+      "reverse": true,
+      "lichtblickPanelTitle": "Motor Temperature"
+    },
+    "Plot!rpm_motor": {
+      "paths": [
+        {
+          "value": "/hardware/command/motor_rpm.rpm",
+          "enabled": true,
+          "timestampMethod": "receiveTime"
+        },
+        {
+          "value": "/hardware/measure/motor_feedback.rpm",
+          "enabled": true,
+          "timestampMethod": "receiveTime"
+        }
+      ],
+      "minYValue": "",
+      "maxYValue": "",
+      "showXAxisLabels": true,
+      "showYAxisLabels": true,
+      "showLegend": true,
+      "legendDisplay": "floating",
+      "showPlotValuesInLegend": true,
+      "isSynced": true,
+      "xAxisVal": "timestamp",
+      "sidebarDimension": 240,
+      "lichtblickPanelTitle": "Motor RPM"
+    },
+    "Plot!current_motor": {
+      "paths": [
+        {
+          "value": "/hardware/command/motor_current.current",
+          "enabled": true,
+          "timestampMethod": "receiveTime"
+        },
+        {
+          "value": "/hardware/measure/motor_feedback.motor_current",
+          "enabled": true,
+          "timestampMethod": "receiveTime"
+        },
+        {
+          "value": "/hardware/telemetry/motor.input_current",
+          "enabled": true,
+          "timestampMethod": "receiveTime"
+        }
+      ],
+      "minYValue": "",
+      "maxYValue": "",
+      "showXAxisLabels": true,
+      "showYAxisLabels": true,
+      "showLegend": true,
+      "legendDisplay": "floating",
+      "showPlotValuesInLegend": true,
+      "isSynced": true,
+      "xAxisVal": "timestamp",
+      "sidebarDimension": 240,
+      "lichtblickPanelTitle": "Motor Current"
+    },
+    "Plot!voltage_temperature": {
+      "paths": [
+        {
+          "value": "/hardware/telemetry/motor.input_voltage",
+          "enabled": true,
+          "timestampMethod": "receiveTime"
+        },
+        {
+          "value": "/hardware/telemetry/motor.fet_temperature",
+          "enabled": true,
+          "timestampMethod": "receiveTime"
+        },
+        {
+          "value": "/hardware/telemetry/motor.motor_temperature",
+          "enabled": true,
+          "timestampMethod": "receiveTime"
+        }
+      ],
+      "minYValue": "",
+      "maxYValue": "",
+      "showXAxisLabels": true,
+      "showYAxisLabels": true,
+      "showLegend": true,
+      "legendDisplay": "floating",
+      "showPlotValuesInLegend": true,
+      "isSynced": true,
+      "xAxisVal": "timestamp",
+      "sidebarDimension": 240,
+      "lichtblickPanelTitle": "Voltage and Temperature"
+    },
+    "Table!motor_feedback": {
+      "topicPath": "/hardware/measure/motor_feedback",
+      "lichtblickPanelTitle": "Motor Feedback"
+    },
+    "Table!motor_telemetry": {
+      "topicPath": "/hardware/telemetry/motor",
+      "lichtblickPanelTitle": "Motor Telemetry"
+    },
+    "Tab!lars_root": {
+      "activeTabIdx": 0,
+      "tabs": [
+        {
+          "title": "Visualization",
+          "layout": {
+            "direction": "row",
+            "first": {
+              "direction": "column",
+              "first": "3D!visualization",
+              "second": {
+                "direction": "row",
+                "first": {
+                  "direction": "row",
+                  "first": "Gauge!battery_voltage",
+                  "second": "Gauge!input_current",
+                  "splitPercentage": 50
+                },
+                "second": {
+                  "direction": "row",
+                  "first": "Gauge!fet_temperature",
+                  "second": "Gauge!motor_temperature",
+                  "splitPercentage": 50
+                },
+                "splitPercentage": 50
+              },
+              "splitPercentage": 72
+            },
+            "second": {
+              "direction": "column",
+              "first": "DiagnosticSummary!diagnostic_summary",
+              "second": "RosOut!logs",
+              "splitPercentage": 45
+            },
+            "splitPercentage": 68
+          }
+        },
+        {
+          "title": "Teleop",
+          "layout": {
+            "direction": "row",
+            "first": {
+              "direction": "column",
+              "first": "LARS Lichtblick Panels.LARS Teleop!teleop",
+              "second": "LARS Lichtblick Panels.LARS Lights!lights_teleop",
+              "splitPercentage": 78
+            },
+            "second": {
+              "direction": "column",
+              "first": "Plot!steering",
+              "second": {
+                "direction": "column",
+                "first": "Plot!rpm",
+                "second": "Plot!current",
+                "splitPercentage": 50
+              },
+              "splitPercentage": 34
+            },
+            "splitPercentage": 42
+          }
+        },
+        {
+          "title": "ROS Graph",
+          "layout": {
+            "direction": "row",
+            "first": {
+              "direction": "column",
+              "first": "TopicGraph!graph",
+              "second": "SourceInfo!source_info",
+              "splitPercentage": 68
+            },
+            "second": {
+              "direction": "column",
+              "first": {
+                "direction": "row",
+                "first": "DiagnosticSummary!diagnostic_summary_graph",
+                "second": "DiagnosticStatusPanel!diagnostic_status",
+                "splitPercentage": 38
+              },
+              "second": {
+                "direction": "row",
+                "first": "Parameters!parameters",
+                "second": "RosOut!warnings",
+                "splitPercentage": 45
+              },
+              "splitPercentage": 56
+            },
+            "splitPercentage": 54
+          }
+        },
+        {
+          "title": "Motor",
+          "layout": {
+            "direction": "row",
+            "first": {
+              "direction": "column",
+              "first": {
+                "direction": "row",
+                "first": "Gauge!feedback_rpm",
+                "second": "Gauge!feedback_current",
+                "splitPercentage": 50
+              },
+              "second": {
+                "direction": "column",
+                "first": {
+                  "direction": "row",
+                  "first": "Gauge!motor_battery_voltage",
+                  "second": "Gauge!motor_input_current",
+                  "splitPercentage": 50
+                },
+                "second": {
+                  "direction": "row",
+                  "first": "Gauge!motor_fet_temperature",
+                  "second": "Gauge!motor_motor_temperature",
+                  "splitPercentage": 50
+                },
+                "splitPercentage": 50
+              },
+              "splitPercentage": 40
+            },
+            "second": {
+              "direction": "column",
+              "first": {
+                "direction": "column",
+                "first": "Plot!rpm_motor",
+                "second": "Plot!current_motor",
+                "splitPercentage": 50
+              },
+              "second": {
+                "direction": "column",
+                "first": "Plot!voltage_temperature",
+                "second": {
+                  "direction": "row",
+                  "first": "Table!motor_feedback",
+                  "second": "Table!motor_telemetry",
+                  "splitPercentage": 50
+                },
+                "splitPercentage": 58
+              },
+              "splitPercentage": 50
+            },
+            "splitPercentage": 34
+          }
+        }
+      ]
+    },
+    "LARS Lichtblick Panels.LARS Teleop!teleop": {
+      "namespace": "/hardware",
+      "publishRateHz": 20,
+      "steering": {
+        "topicSuffix": "command/steering_angle",
+        "schemaName": "lars_msgs/msg/SteeringAngleCommand",
+        "minDeg": -30,
+        "maxDeg": 30,
+        "stepDeg": 1,
+        "valueDeg": 0,
+        "enabled": false
+      },
+      "motor": {
+        "rpmTopicSuffix": "command/motor_rpm",
+        "rpmSchemaName": "lars_msgs/msg/MotorRpmCommand",
+        "currentTopicSuffix": "command/motor_current",
+        "currentSchemaName": "lars_msgs/msg/MotorCurrentCommand",
+        "minRpm": -10000,
+        "maxRpm": 10000,
+        "rpmStep": 100,
+        "rpmValue": 0,
+        "rpmEnabled": false,
+        "minCurrentA": -50,
+        "maxCurrentA": 50,
+        "currentStepA": 0.5,
+        "currentValueA": 0,
+        "currentEnabled": false,
+        "mode": "rpm"
+      },
+      "lichtblickPanelTitle": "LARS Teleop"
+    },
+    "LARS Lichtblick Panels.LARS Lights!lights_teleop": {
+      "namespace": "/hardware",
+      "topicSuffix": "command/lights",
+      "schemaName": "std_msgs/msg/String",
+      "commands": {
+        "left": {
+          "label": "Left blinker",
+          "payload": "left_blinker"
+        },
+        "right": {
+          "label": "Right blinker",
+          "payload": "right_blinker"
+        },
+        "hazard": {
+          "label": "Hazard",
+          "payload": "hazard"
+        },
+        "off": {
+          "label": "Lights off",
+          "payload": "off"
+        }
+      },
+      "lichtblickPanelTitle": "LARS Lights"
+    },
+    "LARS Lichtblick Panels.LARS Header!header": {
+      "namespace": "/hardware",
+      "heartbeatTopicSuffix": "heartbeat",
+      "heartbeatTimeoutMs": 4000,
+      "resetServiceSuffix": "reset",
+      "emergencyStopServiceSuffix": "emergency_stop",
+      "serviceRequest": {},
+      "showHeartbeat": true,
+      "lichtblickPanelTitle": "LARS Header"
+    }
+  },
+  "globalVariables": {
+    "hardware_ns": "/hardware"
+  },
+  "userNodes": {},
+  "linkedGlobalVariables": [],
+  "playbackConfig": {
+    "speed": 1,
+    "messageOrder": "receiveTime"
+  },
+  "layout": {
+    "direction": "column",
+    "first": "LARS Lichtblick Panels.LARS Header!header",
+    "second": "Tab!lars_root",
+    "splitPercentage": 9
+  }
+}

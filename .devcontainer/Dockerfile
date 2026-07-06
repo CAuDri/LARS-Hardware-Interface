@@ -47,10 +47,11 @@ RUN git clone --depth 1 -b $ROS_DISTRO https://github.com/micro-ROS/micro_ros_se
 
 # Create a non-root user with home directory and sudo privileges
 RUN groupadd --gid $USER_GID $USERNAME \
+    && groupadd --force docker \
     && useradd --uid $USER_UID --gid $USER_GID -m $USERNAME \
     && echo $USERNAME ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/$USERNAME \
     && chmod 0440 /etc/sudoers.d/$USERNAME \
-    && usermod -a -G dialout,plugdev $USERNAME
+    && usermod -a -G dialout,plugdev,docker $USERNAME
 
 # Set the working directory to the user's home directory
 WORKDIR /home/$USERNAME

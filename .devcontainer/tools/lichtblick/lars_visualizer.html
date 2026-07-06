@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>LARS Visualizer</title>
+    <style>
+      html,
+      body {
+        height: 100%;
+        margin: 0;
+      }
+
+      body {
+        align-items: center;
+        background: #15151a;
+        color: #e1e1e4;
+        display: flex;
+        font: 14px system-ui, sans-serif;
+        justify-content: center;
+      }
+    </style>
+  </head>
+  <body>
+    <main id="status">Opening LARS visualizer...</main>
+    <script>
+      const layoutUrl = "/lars_visualizer_layout.json";
+      const extensionPackageUrl = "/lars_lichtblick_panels.foxe";
+      const extensionManifestUrl = "/lars_lichtblick_panels_extension.json";
+      const layoutId = "lars_visualizer";
+      const namespace = "local";
+      const databaseName = "lichtblick-layouts";
+      const storeName = "layouts";
+      const extensionDatabaseName = "lichtblick-extensions-local";
+      const extensionMetadataStoreName = "metadata";
+      const extensionStoreName = "extensions";
+      const profileStorageKey = "studio.profile-data";
+
+      function openLayoutsDatabase() {
+        return new Promise((resolve, reject) => {
+          const request = indexedDB.open(databaseName, 1);
+
+          request.onupgradeneeded = () => {
+            const db = request.result;
+            if (!db.objectStoreNames.contains(storeName)) {
+              const store = db.createObjectStore(storeName, { keyPath: ["namespace", "layout.id"] });
+              store.createIndex("namespace", "namespace");
+            }
+          };
+
+          request.onerror = () => reject(request.error);
+          request.onsuccess = () => resolve(request.result);
+        });
+      }
+
+      function putLayout(db, layout) {
+        return new Promise((resolve, reject) => {
+          const transaction = db.transaction(storeName, "readwrite");
+          transaction.objectStore(storeName).put({ namespace, layout });
+          transaction.oncomplete = resolve;
+          transaction.onerror = () => reject(transaction.error);
+          transaction.onabort = () => reject(transaction.error);
+        });
+      }
+
+      function openExtensionsDatabase() {
+        return new Promise((resolve, reject) => {
+          const request = indexedDB.open(extensionDatabaseName, 1);
+
+          request.onupgradeneeded = () => {
+            const db = request.result;
+            if (!db.objectStoreNames.contains(extensionMetadataStoreName)) {
+              db.createObjectStore(extensionMetadataStoreName, { keyPath: "id" });
+            }
+            if (!db.objectStoreNames.contains(extensionStoreName)) {
+              db.createObjectStore(extensionStoreName, { keyPath: "info.id" });
+            }
+          };
+
+          request.onerror = () => reject(request.error);
+          request.onsuccess = () => resolve(request.result);
+        });
+      }
+
+      function putExtension(db, extension) {
+        return new Promise((resolve, reject) => {
+          const transaction = db.transaction(
+            [extensionMetadataStoreName, extensionStoreName],
+            "readwrite",
+          );
+          transaction.objectStore(extensionMetadataStoreName).put(extension.info);
+          transaction.objectStore(extensionStoreName).put(extension);
+          transaction.oncomplete = resolve;
+          transaction.onerror = () => reject(transaction.error);
+          transaction.onabort = () => reject(transaction.error);
+        });
+      }
+
+      async function installExtension() {
+        const [manifestResponse, packageResponse] = await Promise.all([
+          fetch(extensionManifestUrl, { cache: "no-store" }),
+          fetch(extensionPackageUrl, { cache: "no-store" }),
+        ]);
+
+        if (!manifestResponse.ok || !packageResponse.ok) {
+          throw new Error("Could not load the LARS Lichtblick extension package.");
+        }
+
+        const manifest = await manifestResponse.json();
+        const content = new Uint8Array(await packageResponse.arrayBuffer());
+        const db = await openExtensionsDatabase();
+
+        try {
+          await putExtension(db, { ...manifest, content });
+        } finally {
+          db.close();
+        }
+      }
+
+      function setCurrentLayout() {
+        const rawProfile = localStorage.getItem(profileStorageKey);
+        const profile = rawProfile == null ? {} : JSON.parse(rawProfile);
+        profile.currentLayoutId = layoutId;
+        localStorage.setItem(profileStorageKey, JSON.stringify(profile));
+      }
+
+      function targetUrl() {
+        const params = new URLSearchParams(window.location.search);
+        const bridgeUrl = params.get("ds.url") ?? "ws://localhost:8765";
+        const next = new URL("/", window.location.href);
+
+        next.searchParams.set("ds", params.get("ds") ?? "foxglove-websocket");
+        next.searchParams.set("ds.url", bridgeUrl);
+
+        return next.toString();
+      }
+
+      async function main() {
+        await installExtension();
+
+        const response = await fetch(layoutUrl, { cache: "no-store" });
+        if (!response.ok) {
+          throw new Error(`Could not load ${layoutUrl}: ${response.status}`);
+        }
+
+        const layout = await response.json();
+        const db = await openLayoutsDatabase();
+
+        try {
+          await putLayout(db, layout);
+        } finally {
+          db.close();
+        }
+
+        setCurrentLayout();
+        window.location.replace(targetUrl());
+      }
+
+      main().catch((error) => {
+        console.error(error);
+        document.getElementById("status").textContent = `Could not open LARS visualizer: ${error.message}`;
+      });
+    </script>
+  </body>
+</html>

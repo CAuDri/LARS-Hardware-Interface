@@ -38,12 +38,27 @@
     // Mounting the /dev directory will allow the devcontainer to access all host devices (e.g. serial ports)
     // Comment out the following line if you encounter issues with other devices on your host system
     "mounts": [
-        "source=/dev,target=/dev,type=bind"
+        "source=/dev,target=/dev,type=bind",
+        "source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind"
     ],
     "runArgs": [
         "--privileged",
         "--hostname=hardware-interface-dev"
     ],
+    "forwardPorts": [
+        8080,
+        8765
+    ],
+    "portsAttributes": {
+        "8080": {
+            "label": "LARS ROS Visualizer",
+            "onAutoForward": "notify"
+        },
+        "8765": {
+            "label": "LARS Foxglove WebSocket Bridge",
+            "onAutoForward": "notify"
+        }
+    },
     // When a volume mount is used, the repository will be cloned into the container
     // Local changes will not be reflected in the container repository!!
     "postCreateCommand": "if [ ! -d /hardware_interface/.git ]; then git clone --recurse-submodules https://github.com/CAuDri/LARS-Hardware-Interface.git /hardware_interface; else echo 'Repository has already been cloned'; fi"
