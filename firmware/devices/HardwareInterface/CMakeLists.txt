@@ -66,6 +66,7 @@ target_sources(${PROJECT_NAME} PRIVATE
     ${LIB_DIR}/lights/animations/animation.cpp
 
     # ROS application nodes
+    ${LIB_DIR}/nodes/autonomous_control.cpp
     ${LIB_DIR}/nodes/motor_publisher.cpp
     ${LIB_DIR}/nodes/servo_publisher.cpp
 

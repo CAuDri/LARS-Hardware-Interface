@@ -7,6 +7,7 @@
 #include "main.h"
 
 // #include "blink_animation.hpp"
+#include "autonomous_control.hpp"
 #include "config/config.h"
 #include "gpio_light.hpp"
 #include "light_dispatcher.hpp"
@@ -46,9 +47,10 @@ GPIOLight debug_led_blue(DEBUG_LED_BLUE_GPIO_Port, DEBUG_LED_BLUE_Pin, COLOR_BLU
 
 LightDispatcher light_dispatcher("Light Dispatcher");
 
-ros::Client microros_client;    // micro-ROS client for communication with the ROS 2 agent
-ServoPublisher servo_publisher; // ROS 2 node for publishing servo feedback messages
-MotorPublisher motor_publisher; // ROS 2 node for publishing motor feedback and telemetry messages
+ros::Client microros_client;              // micro-ROS client for communication with the ROS 2 agent
+ServoPublisher servo_publisher;           // ROS 2 node for publishing servo feedback messages
+MotorPublisher motor_publisher;           // ROS 2 node for publishing motor feedback and telemetry messages
+AutonomousControl autonomous_control;     // ROS 2 node for receiving autonomous drive commands
 
 /**
  * @brief Main entry point called from the RTOS task in the auto-generated main.c
@@ -94,6 +96,8 @@ void mainTask() {
     servo.init(servo_config, servo_calibration);
     servo.start();
 
+    drive_controller.init(drive_controller_config, rc_receiver, motor, servo, onboard_led_1);
+
     /**
      * Initialize all micro-ROS nodes
      */
@@ -105,6 +109,8 @@ void mainTask() {
     motor_publisher.registerMotor(motor, "measure/motor_feedback", "telemetry/motor", "motor");
     motor_publisher.start();
 
+    autonomous_control.init(microros_client, drive_controller, autonomous_control_config);
+
     /**
      * Register components with the system check for monitoring
      */
@@ -115,12 +121,11 @@ void mainTask() {
     system_check.registerClient(microros_client);
     system_check.registerNode(servo_publisher.getNode());
     system_check.registerNode(motor_publisher.getNode());
+    system_check.registerNode(autonomous_control.getNode());
 
     /**
      * Initialize and start the system monitor and high-level drive control
      */
-    drive_controller.init(drive_controller_config, rc_receiver, motor, servo, onboard_led_1);
-
     osDelay(500);
 
     system_monitor.init(system_check, system_monitor_config);

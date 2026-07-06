@@ -9,6 +9,7 @@
 
 #pragma once
 
+#include "autonomous_control.hpp"
 #include "client.hpp"
 #include "drive_controller.hpp"
 #include "main.h"
@@ -66,6 +67,13 @@ MotorPublisher::Config motor_publisher_config{
     .thread_priority = osPriorityNormal,
 };
 
+AutonomousControl::Config autonomous_control_config{
+    .motor_rpm_topic = AUTONOMOUS_CONTROL_DEFAULT_MOTOR_RPM_TOPIC,
+    .motor_current_topic = AUTONOMOUS_CONTROL_DEFAULT_MOTOR_CURRENT_TOPIC,
+    .steering_angle_topic = AUTONOMOUS_CONTROL_DEFAULT_STEERING_ANGLE_TOPIC,
+    .subscriber_config = {},
+};
+
 /***************** System Configuration ****************/
 
 SystemMonitor::Config system_monitor_config{
@@ -78,6 +86,7 @@ DriveController::Config drive_controller_config{
     .throttle_channel = RC_THROTTLE_CHANNEL,
     .steering_channel = RC_STEERING_CHANNEL,
     .mode_switch_channel = RC_MODE_SWITCH_CHANNEL,
+    .autonomous_command_timeout_ms = DRIVE_CONTROLLER_DEFAULT_AUTONOMOUS_COMMAND_TIMEOUT_MS,
 };
 
 /***************** Driver Configurations *******************/
