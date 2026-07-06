@@ -58,6 +58,7 @@ class MotorPublisher {
 
     State getState() const;
     size_t getMotorCount() const;
+    const ros::Node& getNode() const;
 
    private:
     struct MotorSlot {

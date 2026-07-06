@@ -121,6 +121,7 @@ class Client {
 
     bool isConnected() const;
     bool isTimeSynchronized() const;
+    uint32_t getTimeSyncAgeMs() const;
     rmw_ret_t getLastTimeSyncError() const;
     builtin_interfaces__msg__Time getRosTime() const;
     bool waitForConnection(uint32_t timeout_ms = 0) const;

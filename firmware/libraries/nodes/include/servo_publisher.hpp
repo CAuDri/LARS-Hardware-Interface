@@ -59,6 +59,7 @@ class ServoPublisher {
 
     State getState() const;
     size_t getServoCount() const;
+    const ros::Node& getNode() const;
 
    private:
     struct ServoSlot {

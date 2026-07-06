@@ -112,6 +112,9 @@ void mainTask() {
     system_check.registerDriver(motor, true);
     system_check.registerDriver(servo, false);
     system_check.registerDriver(ws2812_top, false);
+    system_check.registerClient(microros_client);
+    system_check.registerNode(servo_publisher.getNode());
+    system_check.registerNode(motor_publisher.getNode());
 
     /**
      * Initialize and start the system monitor and high-level drive control

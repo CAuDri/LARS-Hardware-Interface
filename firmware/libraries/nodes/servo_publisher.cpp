@@ -158,6 +158,12 @@ ServoPublisher::State ServoPublisher::getState() const { return state; }
  */
 size_t ServoPublisher::getServoCount() const { return servo_count; }
 
+/**
+ * @brief Get the internal ROS node used by the publisher.
+ * @return Read-only reference to the internal ROS node.
+ */
+const ros::Node& ServoPublisher::getNode() const { return node; }
+
 rcl_ret_t ServoPublisher::initPublishers() {
     for (size_t i = 0; i < servo_count; ++i) {
         ServoSlot& slot = servos[i];

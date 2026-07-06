@@ -165,6 +165,12 @@ MotorPublisher::State MotorPublisher::getState() const { return state; }
  */
 size_t MotorPublisher::getMotorCount() const { return motor_count; }
 
+/**
+ * @brief Get the internal ROS node used by the publisher.
+ * @return Read-only reference to the internal ROS node.
+ */
+const ros::Node& MotorPublisher::getNode() const { return node; }
+
 rcl_ret_t MotorPublisher::initPublishers() {
     for (size_t i = 0; i < motor_count; ++i) {
         MotorSlot& slot = motors[i];

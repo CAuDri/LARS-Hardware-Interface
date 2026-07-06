@@ -238,6 +238,33 @@ bool Client::isConnected() const { return connection_state == ConnectionState::C
 bool Client::isTimeSynchronized() const { return time_synchronized; }
 
 /**
+ * @brief Get the age of the latest successful ROS time synchronization.
+ * @return Sync age in milliseconds, or UINT32_MAX while ROS time is unsynchronized.
+ */
+uint32_t Client::getTimeSyncAgeMs() const {
+    int64_t monotonic_ns = 0;
+    bool synchronized = false;
+
+    // Copy the shared timestamp atomically with respect to synchronizeTime().
+    taskENTER_CRITICAL();
+    synchronized = time_synchronized;
+    monotonic_ns = synchronized_monotonic_ns;
+    taskEXIT_CRITICAL();
+
+    if (!synchronized) {
+        return UINT32_MAX;
+    }
+
+    const int64_t age_ns = getMonotonicTimeNs() - monotonic_ns;
+    if (age_ns <= 0) {
+        return 0U;
+    }
+
+    const int64_t age_ms = age_ns / 1000000LL;
+    return age_ms > UINT32_MAX ? UINT32_MAX : static_cast<uint32_t>(age_ms);
+}
+
+/**
  * @brief Get the latest micro-ROS time synchronization result.
  * @return Result of the latest micro-ROS time synchronization attempt.
  */
