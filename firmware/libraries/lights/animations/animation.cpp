@@ -6,14 +6,14 @@
  * Light animations will be used by the LightDispatcher to apply
  * various effects to multiple Light instances at once.
  *
- * Animations should be able to be cancelled at any time by setting the STOP_ANIMATION_FLAG.
+ * Animations should be able to be cancelled at any time by setting the ANIMATION_STOP_FLAG.
  */
 #include "animation.hpp"
 
 /**
  * @brief Stop the animation
  *
- * This function signals the animation to stop by setting the STOP_ANIMATION_FLAG.
+ * This function signals the animation to stop by setting the ANIMATION_STOP_FLAG.
  * The actual stopping will occur in the context of the animation thread.
  *
  * @return true if the stop signal was sent successfully, false otherwise
@@ -23,7 +23,7 @@ bool Animation::stop() {
         LogWarning("Animation: Stop called but no animation is running");
         return false;
     }
-    osThreadFlagsSet(animation_thread, STOP_ANIMATION_FLAG);
+    osThreadFlagsSet(animation_thread, ANIMATION_STOP_FLAG);
     return true;
 }
 
@@ -38,11 +38,11 @@ bool Animation::exitOnDelay(uint32_t delay_ms) {
         LogWarning("Animation: exitOnDelay called from wrong thread");
         return true;
     }
-    auto flags = osThreadFlagsWait(STOP_ANIMATION_FLAG, osFlagsWaitAny, delay_ms);
+    auto flags = osThreadFlagsWait(ANIMATION_STOP_FLAG, osFlagsWaitAny, delay_ms);
     if (flags == osFlagsErrorTimeout) {
         return false;  // Normal timeout, no stop requested
     }
-    if ((flags & osFlagsError) != 0U || (flags & STOP_ANIMATION_FLAG) == 0U) {
+    if ((flags & osFlagsError) != 0U || (flags & ANIMATION_STOP_FLAG) == 0U) {
         LogError("Animation: Unexpected error waiting for thread flags, flags: 0x%08lX", flags);
         return true;
     }
@@ -84,6 +84,6 @@ bool Animation::init() {
     }
 
     animation_thread = osThreadGetId();
-    osThreadFlagsClear(STOP_ANIMATION_FLAG | START_ANIMATION_FLAG);
+    osThreadFlagsClear(ANIMATION_STOP_FLAG | ANIMATION_START_FLAG);
     return true;
 }

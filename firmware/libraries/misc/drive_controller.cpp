@@ -113,6 +113,11 @@ bool DriveController::init(const Config& config, RCReceiver& rc_receiver, VESC& 
     if (!light_dispatcher.registerLight(status_light)) {
         LogWarning("Drive Controller: Failed to register status light with light dispatcher");
     }
+    if (!light_dispatcher.start()) {
+        LogError("Drive Controller: Failed to start status light dispatcher");
+        setState(NodeState::ERROR);
+        return false;
+    }
 
     thread_attributes.name = "Drive Controller";
     thread_attributes.priority = config.thread_priority;

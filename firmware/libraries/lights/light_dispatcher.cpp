@@ -12,7 +12,27 @@
 /**
  * @brief Construct a new Light Dispatcher object
  */
-LightDispatcher::LightDispatcher(const char* name) : dispatcher_name(name) {
+LightDispatcher::LightDispatcher(const char* name) : dispatcher_name(name) {}
+
+/**
+ * @brief Destroy the Light Dispatcher object
+ */
+LightDispatcher::~LightDispatcher() {
+    if (dispatcher_thread_id != nullptr) {
+        osThreadTerminate(dispatcher_thread_id);
+    }
+}
+
+/**
+ * @brief Start the dispatcher thread
+ *
+ * @return true if the thread is running or was successfully created
+ */
+bool LightDispatcher::start() {
+    if (dispatcher_thread_id != nullptr) {
+        return true;
+    }
+
     dispatcher_thread_attributes.name = dispatcher_name;
     dispatcher_thread_attributes.priority = LIGHT_DISPATCHER_THREAD_PRIORITY;
     dispatcher_thread_attributes.stack_mem = &dispatcher_thread_stack;
@@ -32,15 +52,13 @@ LightDispatcher::LightDispatcher(const char* name) : dispatcher_name(name) {
 
     if (dispatcher_thread_id == nullptr) {
         LogError("Light Dispatcher: Failed to create dispatcher thread");
+        return false;
     } else {
         LogDebug("Light Dispatcher: Dispatcher thread created");
     }
-}
 
-/**
- * @brief Destroy the Light Dispatcher object
- */
-LightDispatcher::~LightDispatcher() { osThreadTerminate(dispatcher_thread_id); }
+    return true;
+}
 
 /**
  * @brief Register a Light instance with the dispatcher
@@ -161,6 +179,9 @@ bool LightDispatcher::runAnimation(Animation* animation) {
         LogWarning("Light Dispatcher: No lights registered to run animation");
         return false;
     }
+    if (!start()) {
+        return false;
+    }
     if (isAnimationRunning()) {
         if (!abortAnimation()) {
             return false;
@@ -168,7 +189,7 @@ bool LightDispatcher::runAnimation(Animation* animation) {
     }
 
     pending_animation = animation;
-    osThreadFlagsSet(dispatcher_thread_id, START_ANIMATION_FLAG);
+    osThreadFlagsSet(dispatcher_thread_id, ANIMATION_START_FLAG);
     return true;
 }
 
@@ -248,7 +269,7 @@ void LightDispatcher::dispatcherThread() {
 
     while (true) {
         // Wait for the caller to start an animation or control the lights
-        auto flags = osThreadFlagsWait(START_ANIMATION_FLAG, osFlagsWaitAny, osWaitForever);
+        auto flags = osThreadFlagsWait(ANIMATION_START_FLAG, osFlagsWaitAny, osWaitForever);
         if (flags & osFlagsError) {
             LogError("Light Dispatcher: Error waiting for thread flags, flags: 0x%08lX", flags);
             osDelay(100);  // Artificial delay to prevent tight error loop

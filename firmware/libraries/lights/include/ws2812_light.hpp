@@ -39,6 +39,7 @@ class WS2812Light : public Light {
     bool turnOn() override;
     bool turnOff() override;
     bool setColor(const Color& color, bool turn_on = true) override;
+    bool setColors(const Color* colors, uint32_t count, bool turn_on = true) override;
     bool setBrightness(uint8_t brightness) override;
 
     bool isOn() const override;
@@ -199,7 +200,36 @@ bool WS2812Light<LED_COUNT>::setColor(const Color& color, bool turn_on) {
     }
     frame_buffer.fill(color);
     if (turn_on) {
-        turnOn();
+        on_mask.set();
+    }
+    return updateDriver();
+}
+
+/**
+ * @brief Set all LED colors from a frame buffer and update the driver once
+ *
+ * @param colors Color array to copy into this light segment
+ * @param count Number of colors in the array. Must match this segment's LED count.
+ * @param turn_on Whether to mark all LEDs visible after setting their colors
+ * @return true if successful, false otherwise
+ */
+template <size_t LED_COUNT>
+bool WS2812Light<LED_COUNT>::setColors(const Color* colors, uint32_t count, bool turn_on) {
+    if (isNotLockOwner() || error_flag || colors == nullptr) {
+        return false;
+    }
+    if (count != LED_COUNT) {
+        LogWarning("WS2812Light: setColors count %lu does not match LED count %u", count, LED_COUNT);
+        return false;
+    }
+
+    for (size_t i = 0; i < LED_COUNT; ++i) {
+        frame_buffer[i] = colors[i];
+    }
+    if (turn_on) {
+        for (size_t i = 0; i < LED_COUNT; ++i) {
+            setOnState(i, colors[i] != COLOR_OFF);
+        }
     }
     return updateDriver();
 }

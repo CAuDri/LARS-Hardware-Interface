@@ -21,6 +21,7 @@ class GPIOLight : public Light {
     bool turnOn() override;
     bool turnOff() override;
     bool setColor(const Color& color, bool turn_on = true) override;
+    bool setColors(const Color* colors, uint32_t count, bool turn_on = true) override;
     bool setBrightness(uint8_t brightness) override;
 
     bool isOn() const override;

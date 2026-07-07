@@ -6,7 +6,7 @@
  * Light animations will be used by the LightDispatcher to apply
  * various effects to multiple Light instances at once.
  *
- * Animations should be able to be cancelled at any time by setting the STOP_ANIMATION_FLAG.
+ * Animations should be able to be cancelled at any time by setting the ANIMATION_STOP_FLAG.
  */
 #pragma once
 
@@ -16,8 +16,9 @@
 #include "light.hpp"
 #include "logger.h"
 
-constexpr uint32_t START_ANIMATION_FLAG = 0x400;  // Thread flag to start the animation (change on conflicts)
-constexpr uint32_t STOP_ANIMATION_FLAG = 0x800;   // Thread flag to stop the animation (change on conflicts)
+constexpr uint32_t ANIMATION_START_FLAG = 0x400;  // Thread flag to start the animation (change on conflicts)
+constexpr uint32_t ANIMATION_STOP_FLAG = 0x800;   // Thread flag to stop the animation (change on conflicts)
+constexpr uint32_t ANIMATION_MAX_LED_CAPACITY = 64; // Maximum number of LEDs for a single animation frame (only used for static buffers)
 
 /**
  * @brief Base class for light animations

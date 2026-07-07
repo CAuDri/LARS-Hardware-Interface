@@ -70,6 +70,24 @@ bool GPIOLight::setColor(const Color& color, bool turn_on) {
 }
 
 /**
+ * @brief Set the color from a frame buffer (single-color light, so only colors[0] is used)
+ *
+ * @param colors Color array to apply
+ * @param count Number of colors in the array
+ * @param turn_on Whether to turn on the light after setting the color
+ * @return true if successful, false otherwise
+ */
+bool GPIOLight::setColors(const Color* colors, uint32_t count, bool turn_on) {
+    if (colors == nullptr || count == 0) {
+        return false;
+    }
+    if (!turn_on || colors[0] == COLOR_OFF) {
+        return turnOff();
+    }
+    return setColor(colors[0], turn_on);
+}
+
+/**
  * @brief Set the brightness of the light (single-color light, so brightness is ignored)
  * 
  * LED will be turned on if brightness > 0

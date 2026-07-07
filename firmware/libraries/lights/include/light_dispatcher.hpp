@@ -23,6 +23,8 @@ public:
     LightDispatcher(const char* name = "Light Dispatcher");
     ~LightDispatcher();
 
+    bool start();
+
     bool registerLight(Light& light, Color default_color = COLOR_OFF);
     bool unregisterLight(Light& light);
 

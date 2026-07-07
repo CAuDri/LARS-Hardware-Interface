@@ -34,6 +34,7 @@ class Light {
     virtual bool turnOn() = 0;
     virtual bool turnOff() = 0;
     virtual bool setColor(const Color& color, bool turn_on = true) = 0;
+    virtual bool setColors(const Color* colors, uint32_t count, bool turn_on = true) = 0;
     virtual bool setBrightness(uint8_t brightness) = 0;
 
     virtual bool isOn() const = 0;
