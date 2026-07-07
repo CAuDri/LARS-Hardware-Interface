@@ -69,6 +69,7 @@ target_sources(${PROJECT_NAME} PRIVATE
     ${LIB_DIR}/nodes/autonomous_control.cpp
     ${LIB_DIR}/nodes/motor_publisher.cpp
     ${LIB_DIR}/nodes/servo_publisher.cpp
+    ${LIB_DIR}/nodes/system_node.cpp
 
     # micro-ROS wrapper
     ${LIB_DIR}/microros/cpp_wrapper/client.cpp

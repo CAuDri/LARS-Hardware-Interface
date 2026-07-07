@@ -15,6 +15,7 @@
 #include "motor_publisher.hpp"
 #include "pulse_animation.hpp"
 #include "servo_publisher.hpp"
+#include "system_node.hpp"
 #include "ws2812_light.hpp"
 
 /**
@@ -51,6 +52,7 @@ ros::Client microros_client;              // micro-ROS client for communication 
 ServoPublisher servo_publisher;           // ROS 2 node for publishing servo feedback messages
 MotorPublisher motor_publisher;           // ROS 2 node for publishing motor feedback and telemetry messages
 AutonomousControl autonomous_control;     // ROS 2 node for receiving autonomous drive commands
+SystemNode system_node;                   // ROS 2 node for heartbeat and hardware operation services
 
 /**
  * @brief Main entry point called from the RTOS task in the auto-generated main.c
@@ -111,6 +113,9 @@ void mainTask() {
 
     autonomous_control.init(microros_client, drive_controller, autonomous_control_config);
 
+    system_node.init(microros_client, drive_controller, system_node_config);
+    system_node.start();
+
     /**
      * Register components with the system check for monitoring
      */
@@ -122,6 +127,7 @@ void mainTask() {
     system_check.registerNode(servo_publisher);
     system_check.registerNode(motor_publisher);
     system_check.registerNode(autonomous_control);
+    system_check.registerNode(system_node);
 
     /**
      * Initialize and start the system monitor and high-level drive control

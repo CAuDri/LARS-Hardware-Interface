@@ -17,6 +17,7 @@
 #include "rc_receiver.hpp"
 #include "servo.hpp"
 #include "servo_publisher.hpp"
+#include "system_node.hpp"
 #include "system_monitor.hpp"
 #include "usb_cdc_transport.h"
 #include "usb_device.h"
@@ -72,6 +73,17 @@ AutonomousControl::Config autonomous_control_config{
     .motor_current_topic = AUTONOMOUS_CONTROL_DEFAULT_MOTOR_CURRENT_TOPIC,
     .steering_angle_topic = AUTONOMOUS_CONTROL_DEFAULT_STEERING_ANGLE_TOPIC,
     .subscriber_config = {},
+};
+
+SystemNode::Config system_node_config{
+    .heartbeat_topic = SYSTEM_NODE_HEARTBEAT_TOPIC,
+    .reset_service = SYSTEM_NODE_RESET_SERVICE,
+    .emergency_stop_service = SYSTEM_NODE_EMERGENCY_STOP_SERVICE,
+    .heartbeat_period_ms = SYSTEM_NODE_HEARTBEAT_PERIOD_MS,
+    .reset_delay_ms = SYSTEM_NODE_RESET_DELAY_MS,
+    .thread_priority = osPriorityLow,
+    .heartbeat_publisher_config = {true, 0},
+    .service_config = {},
 };
 
 /***************** System Configuration ****************/
