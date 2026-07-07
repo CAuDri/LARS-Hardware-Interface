@@ -30,22 +30,20 @@ MotorPublisher::MotorPublisher() = default;
  * @return RCL_RET_OK on success, otherwise an rcl error code.
  */
 rcl_ret_t MotorPublisher::init(ros::Client& client, const Config& config) {
-    if (state != State::UNINITIALIZED) {
+    if (getState() != ros::EntityState::UNINITIALIZED) {
         return RCL_RET_ALREADY_INIT;
     }
     if (config.publish_period_ms == 0U || config.telemetry_period_ms == 0U) {
         LogError("MotorPublisher: Invalid configuration");
-        state = State::ERROR;
         return RCL_RET_INVALID_ARGUMENT;
     }
 
     this->client = &client;
     this->config = config;
 
-    rcl_ret_t result = node.init(client, MOTOR_PUBLISHER_NODE_NAME);
+    rcl_ret_t result = ros::Node::init(client, MOTOR_PUBLISHER_NODE_NAME);
     if (result != RCL_RET_OK) {
         LogError("MotorPublisher: Failed to initialize ROS node: %d", static_cast<int>(result));
-        state = State::ERROR;
         return result;
     }
 
@@ -66,12 +64,10 @@ rcl_ret_t MotorPublisher::init(ros::Client& client, const Config& config) {
 
     if (thread_id == nullptr) {
         LogError("MotorPublisher: Failed to create publisher thread");
-        (void)node.fini();
-        state = State::ERROR;
+        (void)fini();
         return RCL_RET_ERROR;
     }
 
-    state = State::INITIALIZED;
     LogInfo("MotorPublisher: Initialized");
     return RCL_RET_OK;
 }
@@ -88,8 +84,12 @@ bool MotorPublisher::registerMotor(VESC& motor,
                                    const char* feedback_topic,
                                    const char* telemetry_topic,
                                    const char* frame_id) {
-    if (state != State::INITIALIZED) {
-        LogError("MotorPublisher: Cannot register motor while node is not initialized");
+    if (getState() == ros::EntityState::UNINITIALIZED || getState() == ros::EntityState::ERROR) {
+        LogError("MotorPublisher: Cannot register motor before initialization or in error state");
+        return false;
+    }
+    if (started) {
+        LogError("MotorPublisher: Cannot register motor after node has been started");
         return false;
     }
     if (motor_count >= MOTOR_PUBLISHER_MAX_MOTORS) {
@@ -122,54 +122,42 @@ bool MotorPublisher::registerMotor(VESC& motor,
  * @return RCL_RET_OK on success, otherwise an rcl error code.
  */
 rcl_ret_t MotorPublisher::start() {
-    if (state == State::RUNNING) {
+    if (started) {
         return RCL_RET_OK;
     }
-    if (state != State::INITIALIZED) {
+    if (getState() == ros::EntityState::UNINITIALIZED || getState() == ros::EntityState::ERROR) {
         LogError("MotorPublisher: Cannot start, node is not initialized");
         return RCL_RET_NOT_INIT;
     }
     if (motor_count == 0U) {
         LogError("MotorPublisher: Cannot start without registered motors");
-        state = State::ERROR;
+        markError(RCL_RET_INVALID_ARGUMENT);
         return RCL_RET_INVALID_ARGUMENT;
     }
 
     const rcl_ret_t result = initPublishers();
     if (result != RCL_RET_OK) {
         LogError("MotorPublisher: Failed to initialize publishers: %d", static_cast<int>(result));
-        state = State::ERROR;
+        markError(result);
         return result;
     }
 
     const uint32_t flags = osThreadFlagsSet(thread_id, MOTOR_PUBLISHER_START_FLAG);
     if ((flags & osFlagsError) != 0U) {
         LogError("MotorPublisher: Failed to start publisher thread, flags: 0x%08lX", flags);
-        state = State::ERROR;
+        markError(RCL_RET_ERROR);
         return RCL_RET_ERROR;
     }
 
-    state = State::RUNNING;
+    started = true;
     return RCL_RET_OK;
 }
-
-/**
- * @brief Get the node runtime state.
- * @return Current MotorPublisher state.
- */
-MotorPublisher::State MotorPublisher::getState() const { return state; }
 
 /**
  * @brief Get the number of registered VESC drivers.
  * @return Number of registered motors.
  */
 size_t MotorPublisher::getMotorCount() const { return motor_count; }
-
-/**
- * @brief Get the internal ROS node used by the publisher.
- * @return Read-only reference to the internal ROS node.
- */
-const ros::Node& MotorPublisher::getNode() const { return node; }
 
 rcl_ret_t MotorPublisher::initPublishers() {
     for (size_t i = 0; i < motor_count; ++i) {
@@ -188,7 +176,7 @@ rcl_ret_t MotorPublisher::initPublishers() {
         slot.telemetry_message.header.frame_id.size = std::strlen(slot.frame_id);
         slot.telemetry_message.header.frame_id.capacity = slot.telemetry_message.header.frame_id.size + 1U;
 
-        rcl_ret_t result = slot.feedback_publisher.init(node, slot.feedback_topic, MOTOR_PUBLISHER_CONFIG);
+        rcl_ret_t result = slot.feedback_publisher.init(*this, slot.feedback_topic, MOTOR_PUBLISHER_CONFIG);
         if (result != RCL_RET_OK) {
             LogError("MotorPublisher: Failed to register feedback publisher '%s': %d",
                      slot.feedback_topic,
@@ -196,7 +184,7 @@ rcl_ret_t MotorPublisher::initPublishers() {
             return result;
         }
 
-        result = slot.telemetry_publisher.init(node, slot.telemetry_topic, MOTOR_PUBLISHER_CONFIG);
+        result = slot.telemetry_publisher.init(*this, slot.telemetry_topic, MOTOR_PUBLISHER_CONFIG);
         if (result != RCL_RET_OK) {
             LogError("MotorPublisher: Failed to register telemetry publisher '%s': %d",
                      slot.telemetry_topic,
@@ -214,18 +202,17 @@ void MotorPublisher::thread() {
     const uint32_t flags = osThreadFlagsWait(MOTOR_PUBLISHER_START_FLAG, osFlagsWaitAny, osWaitForever);
     if ((flags & osFlagsError) != 0U) {
         LogError("MotorPublisher: Start flag wait failed: 0x%08lX", flags);
-        state = State::ERROR;
+        markError(RCL_RET_ERROR);
         osDelay(osWaitForever);
         return;
     }
 
-    state = State::RUNNING;
     LogSuccess("MotorPublisher: Started with %u motor(s)", static_cast<unsigned>(motor_count));
 
     while (true) {
         if (client == nullptr) {
             LogError("MotorPublisher: Client disappeared, stopping node");
-            state = State::ERROR;
+            markError(RCL_RET_ERROR);
             osDelay(osWaitForever);
             return;
         }

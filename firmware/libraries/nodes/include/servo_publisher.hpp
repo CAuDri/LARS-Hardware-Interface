@@ -30,13 +30,8 @@ constexpr uint32_t SERVO_PUBLISHER_DEFAULT_RECOVERY_PROBE_INTERVAL_MS = 1000;
  * sequentially from a dedicated RTOS thread, so a slow or failing servo only
  * affects its own topic and does not stop the other registered servos.
  */
-class ServoPublisher {
+class ServoPublisher : public ros::Node {
    public:
-    /**
-     * @brief Runtime state of the servo feedback publisher node.
-     */
-    enum class State { ERROR, UNINITIALIZED, INITIALIZED, RUNNING };
-
     /**
      * @brief Configuration for the servo feedback publisher node.
      */
@@ -57,9 +52,7 @@ class ServoPublisher {
     bool registerServo(Servo& servo, const char* topic_name, const char* frame_id);
     rcl_ret_t start();
 
-    State getState() const;
     size_t getServoCount() const;
-    const ros::Node& getNode() const;
 
    private:
     struct ServoSlot {
@@ -78,10 +71,9 @@ class ServoPublisher {
 
     ros::Client* client = nullptr;
     Config config{};
-    ros::Node node{};
     std::array<ServoSlot, SERVO_PUBLISHER_MAX_SERVOS> servos{};
     size_t servo_count = 0;
-    volatile State state = State::UNINITIALIZED;
+    bool started = false;
 
     osThreadId_t thread_id = nullptr;
     osThreadAttr_t thread_attributes{};

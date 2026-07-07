@@ -37,6 +37,7 @@ class Node {
     const char* getName() const;
     const char* getNamespace() const;
     bool isActive() const;
+    void markError(rcl_ret_t error);
 
    private:
     friend class Client;

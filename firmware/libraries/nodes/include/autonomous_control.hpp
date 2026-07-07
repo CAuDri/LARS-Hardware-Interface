@@ -26,7 +26,7 @@ constexpr const char* AUTONOMOUS_CONTROL_DEFAULT_STEERING_ANGLE_TOPIC = "command
  * mode checks, stale-command fallbacks, and actuator writes stay centralized in
  * DriveController.
  */
-class AutonomousControl {
+class AutonomousControl : public ros::Node {
    public:
     /**
      * @brief Configuration for autonomous command topics and subscriber QoS.
@@ -45,10 +45,7 @@ class AutonomousControl {
 
     rcl_ret_t init(ros::Client& client, DriveController& drive_controller, const Config& config);
 
-    const ros::Node& getNode() const;
-
    private:
-    ros::Node node{};
     DriveController* drive_controller = nullptr;
     Config config{};
 

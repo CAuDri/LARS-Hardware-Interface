@@ -137,6 +137,17 @@ const char* Node::getNamespace() const { return namespace_name.data(); }
  */
 bool Node::isActive() const { return rcl_active; }
 
+/**
+ * @brief Mark this node as unhealthy without unregistering it from the client.
+ * @param error Error code reported by the application-level node logic.
+ */
+void Node::markError(rcl_ret_t error) {
+    state = EntityState::ERROR;
+    last_error = error;
+    trace::setNodeState(trace_state, state);
+    trace::incrementErrors();
+}
+
 rcl_ret_t Node::composeNamespace() {
     const char* base_namespace = client == nullptr ? "" : client->getBaseNamespace();
     const char* local_namespace = local_namespace_name == nullptr ? "" : local_namespace_name;
@@ -207,6 +218,9 @@ rcl_ret_t Node::initRclcNode(rclc_support_t* support) {
     if (state == EntityState::UNINITIALIZED || support == nullptr) {
         return RCL_RET_NOT_INIT;
     }
+    if (state == EntityState::ERROR) {
+        return last_error == RCL_RET_OK ? RCL_RET_ERROR : last_error;
+    }
     if (rcl_active) {
         return RCL_RET_OK;
     }
@@ -233,7 +247,9 @@ rcl_ret_t Node::initRclcNode(rclc_support_t* support) {
 
 rcl_ret_t Node::finiRclcNode() {
     if (!rcl_active) {
-        state = registered ? EntityState::INITIALIZED : EntityState::UNINITIALIZED;
+        if (state != EntityState::ERROR) {
+            state = registered ? EntityState::INITIALIZED : EntityState::UNINITIALIZED;
+        }
         trace::setNodeState(trace_state, state);
         connection_state = registered ? ConnectionState::DISCONNECTED : ConnectionState::UNKNOWN;
         rcl_node = rcl_get_zero_initialized_node();
@@ -244,7 +260,9 @@ rcl_ret_t Node::finiRclcNode() {
     rcl_node = rcl_get_zero_initialized_node();
     rcl_active = false;
     trace::decrementActiveNodeCount();
-    state = registered ? EntityState::INITIALIZED : EntityState::UNINITIALIZED;
+    if (state != EntityState::ERROR) {
+        state = registered ? EntityState::INITIALIZED : EntityState::UNINITIALIZED;
+    }
     trace::setNodeState(trace_state, state);
     connection_state = registered ? ConnectionState::DISCONNECTED : ConnectionState::UNKNOWN;
     last_error = result;

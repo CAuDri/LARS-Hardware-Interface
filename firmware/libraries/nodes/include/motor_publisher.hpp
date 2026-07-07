@@ -31,13 +31,8 @@ constexpr uint32_t MOTOR_PUBLISHER_DEFAULT_TELEMETRY_PERIOD_MS = 200;
  * input-current, voltage, energy, and PID position are published at a lower
  * telemetry rate to keep the ROS transport load small.
  */
-class MotorPublisher {
+class MotorPublisher : public ros::Node {
    public:
-    /**
-     * @brief Runtime state of the motor feedback publisher node.
-     */
-    enum class State { ERROR, UNINITIALIZED, INITIALIZED, RUNNING };
-
     /**
      * @brief Configuration for the motor feedback publisher node.
      */
@@ -56,9 +51,7 @@ class MotorPublisher {
     bool registerMotor(VESC& motor, const char* feedback_topic, const char* telemetry_topic, const char* frame_id);
     rcl_ret_t start();
 
-    State getState() const;
     size_t getMotorCount() const;
-    const ros::Node& getNode() const;
 
    private:
     struct MotorSlot {
@@ -79,10 +72,9 @@ class MotorPublisher {
 
     ros::Client* client = nullptr;
     Config config{};
-    ros::Node node{};
     std::array<MotorSlot, MOTOR_PUBLISHER_MAX_MOTORS> motors{};
     size_t motor_count = 0;
-    volatile State state = State::UNINITIALIZED;
+    bool started = false;
 
     osThreadId_t thread_id = nullptr;
     osThreadAttr_t thread_attributes{};

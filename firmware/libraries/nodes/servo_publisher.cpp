@@ -28,23 +28,21 @@ ServoPublisher::ServoPublisher() = default;
  * @return RCL_RET_OK on success, otherwise an rcl error code.
  */
 rcl_ret_t ServoPublisher::init(ros::Client& client, const Config& config) {
-    if (state != State::UNINITIALIZED) {
+    if (getState() != ros::EntityState::UNINITIALIZED) {
         return RCL_RET_ALREADY_INIT;
     }
     if (config.publish_period_ms == 0U || config.read_failure_threshold == 0U ||
         config.recovery_probe_interval_ms == 0U) {
         LogError("ServoPublisher: Invalid configuration");
-        state = State::ERROR;
         return RCL_RET_INVALID_ARGUMENT;
     }
 
     this->client = &client;
     this->config = config;
 
-    rcl_ret_t result = node.init(client, SERVO_PUBLISHER_NODE_NAME);
+    rcl_ret_t result = ros::Node::init(client, SERVO_PUBLISHER_NODE_NAME);
     if (result != RCL_RET_OK) {
         LogError("ServoPublisher: Failed to initialize ROS node: %d", static_cast<int>(result));
-        state = State::ERROR;
         return result;
     }
 
@@ -65,12 +63,10 @@ rcl_ret_t ServoPublisher::init(ros::Client& client, const Config& config) {
 
     if (thread_id == nullptr) {
         LogError("ServoPublisher: Failed to create publisher thread");
-        (void)node.fini();
-        state = State::ERROR;
+        (void)fini();
         return RCL_RET_ERROR;
     }
 
-    state = State::INITIALIZED;
     LogInfo("ServoPublisher: Initialized");
     return RCL_RET_OK;
 }
@@ -83,8 +79,12 @@ rcl_ret_t ServoPublisher::init(ros::Client& client, const Config& config) {
  * @return true when the servo was registered.
  */
 bool ServoPublisher::registerServo(Servo& servo, const char* topic_name, const char* frame_id) {
-    if (state != State::INITIALIZED) {
-        LogError("ServoPublisher: Cannot register servo while node is not initialized");
+    if (getState() == ros::EntityState::UNINITIALIZED || getState() == ros::EntityState::ERROR) {
+        LogError("ServoPublisher: Cannot register servo before initialization or in error state");
+        return false;
+    }
+    if (started) {
+        LogError("ServoPublisher: Cannot register servo after node has been started");
         return false;
     }
     if (servo_count >= SERVO_PUBLISHER_MAX_SERVOS) {
@@ -115,54 +115,42 @@ bool ServoPublisher::registerServo(Servo& servo, const char* topic_name, const c
  * @return RCL_RET_OK on success, otherwise an rcl error code.
  */
 rcl_ret_t ServoPublisher::start() {
-    if (state == State::RUNNING) {
+    if (started) {
         return RCL_RET_OK;
     }
-    if (state != State::INITIALIZED) {
+    if (getState() == ros::EntityState::UNINITIALIZED || getState() == ros::EntityState::ERROR) {
         LogError("ServoPublisher: Cannot start, node is not initialized");
         return RCL_RET_NOT_INIT;
     }
     if (servo_count == 0U) {
         LogError("ServoPublisher: Cannot start without registered servos");
-        state = State::ERROR;
+        markError(RCL_RET_INVALID_ARGUMENT);
         return RCL_RET_INVALID_ARGUMENT;
     }
 
     const rcl_ret_t result = initPublishers();
     if (result != RCL_RET_OK) {
         LogError("ServoPublisher: Failed to initialize publishers: %d", static_cast<int>(result));
-        state = State::ERROR;
+        markError(result);
         return result;
     }
 
     const uint32_t flags = osThreadFlagsSet(thread_id, SERVO_PUBLISHER_START_FLAG);
     if ((flags & osFlagsError) != 0U) {
         LogError("ServoPublisher: Failed to start publisher thread, flags: 0x%08lX", flags);
-        state = State::ERROR;
+        markError(RCL_RET_ERROR);
         return RCL_RET_ERROR;
     }
 
-    state = State::RUNNING;
+    started = true;
     return RCL_RET_OK;
 }
-
-/**
- * @brief Get the node runtime state.
- * @return Current ServoPublisher state.
- */
-ServoPublisher::State ServoPublisher::getState() const { return state; }
 
 /**
  * @brief Get the number of registered servo drivers.
  * @return Number of registered servos.
  */
 size_t ServoPublisher::getServoCount() const { return servo_count; }
-
-/**
- * @brief Get the internal ROS node used by the publisher.
- * @return Read-only reference to the internal ROS node.
- */
-const ros::Node& ServoPublisher::getNode() const { return node; }
 
 rcl_ret_t ServoPublisher::initPublishers() {
     for (size_t i = 0; i < servo_count; ++i) {
@@ -178,7 +166,7 @@ rcl_ret_t ServoPublisher::initPublishers() {
         slot.message.header.frame_id.capacity = slot.message.header.frame_id.size + 1U;
         slot.message.data = 0.0F;
 
-        const rcl_ret_t result = slot.publisher.init(node, slot.topic_name, config.publisher_config);
+        const rcl_ret_t result = slot.publisher.init(*this, slot.topic_name, config.publisher_config);
         if (result != RCL_RET_OK) {
             LogError("ServoPublisher: Failed to register publisher '%s': %d", slot.topic_name, static_cast<int>(result));
             return result;
@@ -194,18 +182,17 @@ void ServoPublisher::thread() {
     const uint32_t flags = osThreadFlagsWait(SERVO_PUBLISHER_START_FLAG, osFlagsWaitAny, osWaitForever);
     if ((flags & osFlagsError) != 0U) {
         LogError("ServoPublisher: Start flag wait failed: 0x%08lX", flags);
-        state = State::ERROR;
+        markError(RCL_RET_ERROR);
         osDelay(osWaitForever);
         return;
     }
 
-    state = State::RUNNING;
     LogSuccess("ServoPublisher: Started with %u servo(s)", static_cast<unsigned>(servo_count));
 
     while (true) {
         if (client == nullptr) {
             LogError("ServoPublisher: Client disappeared, stopping node");
-            state = State::ERROR;
+            markError(RCL_RET_ERROR);
             osDelay(osWaitForever);
             return;
         }
