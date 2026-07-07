@@ -4,8 +4,8 @@
  * @brief CAuDri - Shared STM32 USB device helpers
  *
  * STM32CubeMX occasionally generates Get_SerialNum() without initializing its
- * local UID words. This implementation lives outside the generated board files
- * and replaces only the serial callback in the generated descriptor tables.
+ * local UID words. This helper provides a stable serial-number descriptor for
+ * both Full-Speed and High-Speed USB devices, plus CDC line-coding helpers.
  */
 
 #include "usb_device_helper.h"
