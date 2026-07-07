@@ -59,10 +59,21 @@ micro_ros_agent_available() {
     ros2 pkg prefix micro_ros_agent >/dev/null 2>&1
 }
 
+update_rosdep_index() {
+    if ! command -v rosdep >/dev/null 2>&1; then
+        echo "rosdep is not installed in this container."
+        return 1
+    fi
+
+    echo "Updating rosdep index..."
+    rosdep update || return 1
+}
+
 build_micro_ros_agent() {
     echo "Building micro-ROS agent workspace in ${MICROROS_AGENT_WS}"
 
     source_ros_environment || return 1
+    update_rosdep_index || return 1
 
     mkdir -p "${MICROROS_AGENT_WS}"
     pushd "${MICROROS_AGENT_WS}" >/dev/null || return 1
