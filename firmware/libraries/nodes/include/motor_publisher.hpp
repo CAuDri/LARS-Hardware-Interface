@@ -18,6 +18,12 @@
 #include "publisher.hpp"
 #include "vesc.hpp"
 
+using ros::BasePublisher;
+using ros::Client;
+using ros::EntityState;
+using ros::Node;
+using ros::Publisher;
+
 constexpr size_t MOTOR_PUBLISHER_MAX_MOTORS = 2;
 constexpr uint32_t MOTOR_PUBLISHER_THREAD_STACK_SIZE = 2048;
 constexpr uint32_t MOTOR_PUBLISHER_DEFAULT_PERIOD_MS = 20;
@@ -31,7 +37,7 @@ constexpr uint32_t MOTOR_PUBLISHER_DEFAULT_TELEMETRY_PERIOD_MS = 200;
  * input-current, voltage, energy, and PID position are published at a lower
  * telemetry rate to keep the ROS transport load small.
  */
-class MotorPublisher : public ros::Node {
+class MotorPublisher : public Node {
    public:
     /**
      * @brief Configuration for the motor feedback publisher node.
@@ -47,7 +53,7 @@ class MotorPublisher : public ros::Node {
     MotorPublisher(const MotorPublisher&) = delete;
     MotorPublisher& operator=(const MotorPublisher&) = delete;
 
-    rcl_ret_t init(ros::Client& client, const Config& config);
+    rcl_ret_t init(Client& client, const Config& config);
     bool registerMotor(VESC& motor, const char* feedback_topic, const char* telemetry_topic, const char* frame_id);
     rcl_ret_t start();
 
@@ -59,8 +65,8 @@ class MotorPublisher : public ros::Node {
         const char* feedback_topic = nullptr;
         const char* telemetry_topic = nullptr;
         const char* frame_id = nullptr;
-        ros::Publisher<lars_msgs__msg__MotorFeedback> feedback_publisher{};
-        ros::Publisher<lars_msgs__msg__MotorTelemetry> telemetry_publisher{};
+        Publisher<lars_msgs__msg__MotorFeedback> feedback_publisher{};
+        Publisher<lars_msgs__msg__MotorTelemetry> telemetry_publisher{};
         lars_msgs__msg__MotorFeedback feedback_message{};
         lars_msgs__msg__MotorTelemetry telemetry_message{};
         uint32_t last_telemetry_publish_ms = 0;
@@ -70,7 +76,7 @@ class MotorPublisher : public ros::Node {
         bool telemetry_publish_failure_reported = false;
     };
 
-    ros::Client* client = nullptr;
+    Client* client = nullptr;
     Config config{};
     std::array<MotorSlot, MOTOR_PUBLISHER_MAX_MOTORS> motors{};
     size_t motor_count = 0;

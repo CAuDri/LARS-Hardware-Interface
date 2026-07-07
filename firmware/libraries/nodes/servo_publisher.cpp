@@ -27,8 +27,8 @@ ServoPublisher::ServoPublisher() = default;
  * @param config Node configuration copied into this object.
  * @return RCL_RET_OK on success, otherwise an rcl error code.
  */
-rcl_ret_t ServoPublisher::init(ros::Client& client, const Config& config) {
-    if (getState() != ros::EntityState::UNINITIALIZED) {
+rcl_ret_t ServoPublisher::init(Client& client, const Config& config) {
+    if (getState() != EntityState::UNINITIALIZED) {
         return RCL_RET_ALREADY_INIT;
     }
     if (config.publish_period_ms == 0U || config.read_failure_threshold == 0U ||
@@ -40,7 +40,7 @@ rcl_ret_t ServoPublisher::init(ros::Client& client, const Config& config) {
     this->client = &client;
     this->config = config;
 
-    rcl_ret_t result = ros::Node::init(client, SERVO_PUBLISHER_NODE_NAME);
+    rcl_ret_t result = Node::init(client, SERVO_PUBLISHER_NODE_NAME);
     if (result != RCL_RET_OK) {
         LogError("ServoPublisher: Failed to initialize ROS node: %d", static_cast<int>(result));
         return result;
@@ -79,7 +79,7 @@ rcl_ret_t ServoPublisher::init(ros::Client& client, const Config& config) {
  * @return true when the servo was registered.
  */
 bool ServoPublisher::registerServo(Servo& servo, const char* topic_name, const char* frame_id) {
-    if (getState() == ros::EntityState::UNINITIALIZED || getState() == ros::EntityState::ERROR) {
+    if (getState() == EntityState::UNINITIALIZED || getState() == EntityState::ERROR) {
         LogError("ServoPublisher: Cannot register servo before initialization or in error state");
         return false;
     }
@@ -118,7 +118,7 @@ rcl_ret_t ServoPublisher::start() {
     if (started) {
         return RCL_RET_OK;
     }
-    if (getState() == ros::EntityState::UNINITIALIZED || getState() == ros::EntityState::ERROR) {
+    if (getState() == EntityState::UNINITIALIZED || getState() == EntityState::ERROR) {
         LogError("ServoPublisher: Cannot start, node is not initialized");
         return RCL_RET_NOT_INIT;
     }

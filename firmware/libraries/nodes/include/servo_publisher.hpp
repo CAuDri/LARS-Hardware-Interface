@@ -17,6 +17,12 @@
 #include "publisher.hpp"
 #include "servo.hpp"
 
+using ros::BasePublisher;
+using ros::Client;
+using ros::EntityState;
+using ros::Node;
+using ros::Publisher;
+
 constexpr size_t SERVO_PUBLISHER_MAX_SERVOS = 2;
 constexpr uint32_t SERVO_PUBLISHER_THREAD_STACK_SIZE = 2048;
 constexpr uint32_t SERVO_PUBLISHER_DEFAULT_PERIOD_MS = 20;
@@ -30,7 +36,7 @@ constexpr uint32_t SERVO_PUBLISHER_DEFAULT_RECOVERY_PROBE_INTERVAL_MS = 1000;
  * sequentially from a dedicated RTOS thread, so a slow or failing servo only
  * affects its own topic and does not stop the other registered servos.
  */
-class ServoPublisher : public ros::Node {
+class ServoPublisher : public Node {
    public:
     /**
      * @brief Configuration for the servo feedback publisher node.
@@ -40,7 +46,7 @@ class ServoPublisher : public ros::Node {
         uint32_t read_failure_threshold = SERVO_PUBLISHER_DEFAULT_READ_FAILURE_THRESHOLD;
         uint32_t recovery_probe_interval_ms = SERVO_PUBLISHER_DEFAULT_RECOVERY_PROBE_INTERVAL_MS;
         osPriority_t thread_priority = osPriorityNormal;
-        ros::BasePublisher::Config publisher_config{true, 0};
+        BasePublisher::Config publisher_config{true, 0};
     };
 
     ServoPublisher();
@@ -48,7 +54,7 @@ class ServoPublisher : public ros::Node {
     ServoPublisher(const ServoPublisher&) = delete;
     ServoPublisher& operator=(const ServoPublisher&) = delete;
 
-    rcl_ret_t init(ros::Client& client, const Config& config);
+    rcl_ret_t init(Client& client, const Config& config);
     bool registerServo(Servo& servo, const char* topic_name, const char* frame_id);
     rcl_ret_t start();
 
@@ -59,7 +65,7 @@ class ServoPublisher : public ros::Node {
         Servo* servo = nullptr;
         const char* topic_name = nullptr;
         const char* frame_id = nullptr;
-        ros::Publisher<lars_msgs__msg__Float32Stamped> publisher{};
+        Publisher<lars_msgs__msg__Float32Stamped> publisher{};
         lars_msgs__msg__Float32Stamped message{};
         uint32_t consecutive_read_failures = 0;
         uint32_t last_recovery_probe_ms = 0;
@@ -69,7 +75,7 @@ class ServoPublisher : public ros::Node {
         bool publish_failure_reported = false;
     };
 
-    ros::Client* client = nullptr;
+    Client* client = nullptr;
     Config config{};
     std::array<ServoSlot, SERVO_PUBLISHER_MAX_SERVOS> servos{};
     size_t servo_count = 0;

@@ -27,8 +27,8 @@ AutonomousControl::AutonomousControl() = default;
  * @param config Node topic and subscriber configuration.
  * @return RCL_RET_OK on success, otherwise an rcl error code.
  */
-rcl_ret_t AutonomousControl::init(ros::Client& client, DriveController& drive_controller, const Config& config) {
-    if (getState() != ros::EntityState::UNINITIALIZED) {
+rcl_ret_t AutonomousControl::init(Client& client, DriveController& drive_controller, const Config& config) {
+    if (getState() != EntityState::UNINITIALIZED) {
         return RCL_RET_ALREADY_INIT;
     }
     if (config.motor_rpm_topic == nullptr || config.motor_rpm_topic[0] == '\0' ||
@@ -41,7 +41,7 @@ rcl_ret_t AutonomousControl::init(ros::Client& client, DriveController& drive_co
     this->drive_controller = &drive_controller;
     this->config = config;
 
-    rcl_ret_t result = ros::Node::init(client, AUTONOMOUS_CONTROL_NODE_NAME);
+    rcl_ret_t result = Node::init(client, AUTONOMOUS_CONTROL_NODE_NAME);
     if (result != RCL_RET_OK) {
         LogError("AutonomousControl: Failed to initialize ROS node: %d", static_cast<int>(result));
         return result;

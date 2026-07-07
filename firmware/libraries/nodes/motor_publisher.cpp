@@ -16,7 +16,7 @@ ROS_DECLARE_MESSAGE_TYPE(lars_msgs, MotorTelemetry);
 
 static constexpr uint32_t MOTOR_PUBLISHER_START_FLAG = 0x01U;
 static constexpr const char* MOTOR_PUBLISHER_NODE_NAME = "motor_feedback";
-static constexpr ros::BasePublisher::Config MOTOR_PUBLISHER_CONFIG{true, 0};
+static constexpr BasePublisher::Config MOTOR_PUBLISHER_CONFIG{true, 0};
 
 /**
  * @brief Construct an uninitialized motor feedback publisher node.
@@ -29,8 +29,8 @@ MotorPublisher::MotorPublisher() = default;
  * @param config Node configuration copied into this object.
  * @return RCL_RET_OK on success, otherwise an rcl error code.
  */
-rcl_ret_t MotorPublisher::init(ros::Client& client, const Config& config) {
-    if (getState() != ros::EntityState::UNINITIALIZED) {
+rcl_ret_t MotorPublisher::init(Client& client, const Config& config) {
+    if (getState() != EntityState::UNINITIALIZED) {
         return RCL_RET_ALREADY_INIT;
     }
     if (config.publish_period_ms == 0U || config.telemetry_period_ms == 0U) {
@@ -41,7 +41,7 @@ rcl_ret_t MotorPublisher::init(ros::Client& client, const Config& config) {
     this->client = &client;
     this->config = config;
 
-    rcl_ret_t result = ros::Node::init(client, MOTOR_PUBLISHER_NODE_NAME);
+    rcl_ret_t result = Node::init(client, MOTOR_PUBLISHER_NODE_NAME);
     if (result != RCL_RET_OK) {
         LogError("MotorPublisher: Failed to initialize ROS node: %d", static_cast<int>(result));
         return result;
@@ -84,7 +84,7 @@ bool MotorPublisher::registerMotor(VESC& motor,
                                    const char* feedback_topic,
                                    const char* telemetry_topic,
                                    const char* frame_id) {
-    if (getState() == ros::EntityState::UNINITIALIZED || getState() == ros::EntityState::ERROR) {
+    if (getState() == EntityState::UNINITIALIZED || getState() == EntityState::ERROR) {
         LogError("MotorPublisher: Cannot register motor before initialization or in error state");
         return false;
     }
@@ -125,7 +125,7 @@ rcl_ret_t MotorPublisher::start() {
     if (started) {
         return RCL_RET_OK;
     }
-    if (getState() == ros::EntityState::UNINITIALIZED || getState() == ros::EntityState::ERROR) {
+    if (getState() == EntityState::UNINITIALIZED || getState() == EntityState::ERROR) {
         LogError("MotorPublisher: Cannot start, node is not initialized");
         return RCL_RET_NOT_INIT;
     }

@@ -14,6 +14,12 @@
 #include "node.hpp"
 #include "subscriber.hpp"
 
+using ros::BaseSubscriber;
+using ros::Client;
+using ros::EntityState;
+using ros::Node;
+using ros::Subscriber;
+
 constexpr const char* AUTONOMOUS_CONTROL_DEFAULT_MOTOR_RPM_TOPIC = "command/motor_rpm";
 constexpr const char* AUTONOMOUS_CONTROL_DEFAULT_MOTOR_CURRENT_TOPIC = "command/motor_current";
 constexpr const char* AUTONOMOUS_CONTROL_DEFAULT_STEERING_ANGLE_TOPIC = "command/steering_angle";
@@ -26,7 +32,7 @@ constexpr const char* AUTONOMOUS_CONTROL_DEFAULT_STEERING_ANGLE_TOPIC = "command
  * mode checks, stale-command fallbacks, and actuator writes stay centralized in
  * DriveController.
  */
-class AutonomousControl : public ros::Node {
+class AutonomousControl : public Node {
    public:
     /**
      * @brief Configuration for autonomous command topics and subscriber QoS.
@@ -35,7 +41,7 @@ class AutonomousControl : public ros::Node {
         const char* motor_rpm_topic = AUTONOMOUS_CONTROL_DEFAULT_MOTOR_RPM_TOPIC;
         const char* motor_current_topic = AUTONOMOUS_CONTROL_DEFAULT_MOTOR_CURRENT_TOPIC;
         const char* steering_angle_topic = AUTONOMOUS_CONTROL_DEFAULT_STEERING_ANGLE_TOPIC;
-        ros::BaseSubscriber::Config subscriber_config{};
+        BaseSubscriber::Config subscriber_config{};
     };
 
     AutonomousControl();
@@ -43,15 +49,15 @@ class AutonomousControl : public ros::Node {
     AutonomousControl(const AutonomousControl&) = delete;
     AutonomousControl& operator=(const AutonomousControl&) = delete;
 
-    rcl_ret_t init(ros::Client& client, DriveController& drive_controller, const Config& config);
+    rcl_ret_t init(Client& client, DriveController& drive_controller, const Config& config);
 
    private:
     DriveController* drive_controller = nullptr;
     Config config{};
 
-    ros::Subscriber<lars_msgs__msg__MotorRpmCommand, AutonomousControl> motor_rpm_subscriber{};
-    ros::Subscriber<lars_msgs__msg__MotorCurrentCommand, AutonomousControl> motor_current_subscriber{};
-    ros::Subscriber<lars_msgs__msg__SteeringAngleCommand, AutonomousControl> steering_angle_subscriber{};
+    Subscriber<lars_msgs__msg__MotorRpmCommand, AutonomousControl> motor_rpm_subscriber{};
+    Subscriber<lars_msgs__msg__MotorCurrentCommand, AutonomousControl> motor_current_subscriber{};
+    Subscriber<lars_msgs__msg__SteeringAngleCommand, AutonomousControl> steering_angle_subscriber{};
 
     bool motor_rpm_failure_reported = false;
     bool motor_current_failure_reported = false;
