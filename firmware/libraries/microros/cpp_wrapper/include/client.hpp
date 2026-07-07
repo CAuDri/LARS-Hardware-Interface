@@ -15,11 +15,17 @@
 #include <cstdint>
 
 #include "FreeRTOS.h"
-#include "state.hpp"
 #include "event_groups.h"
 #include "executor.hpp"
 #include "semphr.h"
+#include "state.hpp"
 #include "task.h"
+
+#ifndef RMW_MICROXRCEDDS_CONFIG_H
+    #error "No Micro XRCE-DDS configuration header found."
+    #error "Most likely, the static micro-ROS library has not been built for this target yet."
+    #error "Please run the build script (build -a <device_name>) or build the static library manually."
+#endif
 
 constexpr uint32_t ROS_CLIENT_THREAD_STACK_SIZE = 4096;
 constexpr uint32_t ROS_CONNECTION_RETRY_INTERVAL_MS = 1000;
@@ -37,10 +43,10 @@ constexpr uint32_t ROS_TEST_CONNECTION_FLAG = 0x04U;
 constexpr uint32_t ROS_STOP_CLIENT_FLAG = 0x08U;
 constexpr uint32_t ROS_CLIENT_STOPPED_FLAG = 0x10U;
 
-constexpr size_t ROS_MAX_NODES = 15;
-constexpr size_t ROS_MAX_PUBLISHERS = 40;
-constexpr size_t ROS_MAX_SUBSCRIPTIONS = 30;
-constexpr size_t ROS_MAX_SERVICES = 1;
+constexpr size_t ROS_MAX_NODES = RMW_UXRCE_MAX_NODES;
+constexpr size_t ROS_MAX_PUBLISHERS = RMW_UXRCE_MAX_PUBLISHERS;
+constexpr size_t ROS_MAX_SUBSCRIPTIONS = RMW_UXRCE_MAX_SUBSCRIPTIONS;
+constexpr size_t ROS_MAX_SERVICES = RMW_UXRCE_MAX_SERVICES;
 
 // The registries above mirror the RMW compile-time limits, but the executor
 // only needs storage for entities that are actually dispatched from the rclc
@@ -48,10 +54,6 @@ constexpr size_t ROS_MAX_SERVICES = 1;
 // separate avoids a large heap allocation during every session setup.
 constexpr size_t ROS_EXECUTOR_HANDLE_CAPACITY = 8;
 
-static_assert(ROS_MAX_NODES <= RMW_UXRCE_MAX_NODES);
-static_assert(ROS_MAX_PUBLISHERS <= RMW_UXRCE_MAX_PUBLISHERS);
-static_assert(ROS_MAX_SUBSCRIPTIONS <= RMW_UXRCE_MAX_SUBSCRIPTIONS);
-static_assert(ROS_MAX_SERVICES <= RMW_UXRCE_MAX_SERVICES);
 static_assert(ROS_EXECUTOR_HANDLE_CAPACITY <= RMW_UXRCE_MAX_SUBSCRIPTIONS + RMW_UXRCE_MAX_SERVICES);
 
 namespace ros {

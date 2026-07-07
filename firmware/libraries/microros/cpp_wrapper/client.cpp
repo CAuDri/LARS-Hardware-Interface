@@ -752,6 +752,9 @@ rcl_ret_t Client::registerNode(Node* node) {
         }
     }
     if (node_count >= nodes.size()) {
+        LogError("micro-ROS Client: Node limit reached (%lu/%lu), increase RMW_UXRCE_MAX_NODES in colcon.meta and rebuild the micro-ROS library",
+                 (uint32_t)node_count,
+                 (uint32_t)nodes.size());
         result = RCL_RET_ERROR;
     } else {
         nodes[node_count++] = node;
@@ -799,6 +802,9 @@ rcl_ret_t Client::registerPublisher(BasePublisher* publisher) {
         }
     }
     if (publisher_count >= publishers.size()) {
+        LogError("micro-ROS Client: Publisher limit reached (%lu/%lu), increase RMW_UXRCE_MAX_PUBLISHERS in colcon.meta and rebuild the micro-ROS library",
+                 (uint32_t)publisher_count,
+                 (uint32_t)publishers.size());
         result = RCL_RET_ERROR;
     } else {
         publishers[publisher_count++] = publisher;
@@ -844,6 +850,9 @@ rcl_ret_t Client::registerSubscriber(BaseSubscriber* subscriber) {
         }
     }
     if (subscription_count >= subscriptions.size()) {
+        LogError("micro-ROS Client: Subscription limit reached (%lu/%lu), increase RMW_UXRCE_MAX_SUBSCRIPTIONS in colcon.meta and rebuild the micro-ROS library",
+                 (uint32_t)subscription_count,
+                 (uint32_t)subscriptions.size());
         result = RCL_RET_ERROR;
     } else {
         subscriptions[subscription_count++] = subscriber;
@@ -889,6 +898,9 @@ rcl_ret_t Client::registerService(BaseService* service) {
         }
     }
     if (service_count >= services.size()) {
+        LogError("micro-ROS Client: Service limit reached (%lu/%lu), increase RMW_UXRCE_MAX_SERVICES in colcon.meta and rebuild the micro-ROS library",
+                 (uint32_t)service_count,
+                 (uint32_t)services.size());
         result = RCL_RET_ERROR;
     } else {
         services[service_count++] = service;
