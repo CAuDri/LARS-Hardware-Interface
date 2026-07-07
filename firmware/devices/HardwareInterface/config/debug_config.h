@@ -19,5 +19,6 @@
 
 /* ------ Trace Recorder Configuration ------ */
 
-// #define DEBUG_USE_TRACE_RECORDER    // Enable Tracealyzer trace recording
+// #define DEBUG_USE_TRACE_RECORDER  // Enable Tracealyzer trace recording
 #define DEBUG_WAIT_FOR_TRACEALYZER  // Halt the firmware and wait for Tracealyzer to connect
+#define DEBUG_TRACE_RECORDER_USB_HANDLE hUsbDebugPort

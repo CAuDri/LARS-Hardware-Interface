@@ -13,6 +13,12 @@
 #ifndef TRC_KERNEL_PORT_CONFIG_H
 #define TRC_KERNEL_PORT_CONFIG_H
 
+#include <debug_config.h>
+
+#ifndef DEBUG_TRACE_RECORDER_USB_HANDLE
+#define DEBUG_TRACE_RECORDER_USB_HANDLE hUsbDeviceHS
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif

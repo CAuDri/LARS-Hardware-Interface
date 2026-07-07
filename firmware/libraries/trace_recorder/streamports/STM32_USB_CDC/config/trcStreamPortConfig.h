@@ -41,7 +41,7 @@ extern "C" {
  *
  * @brief Defines if the internal buffer will attempt to transfer all data each time or limit it to a chunk size.
  */
-#define TRC_CFG_STREAM_PORT_INTERNAL_BUFFER_TRANSFER_MODE TRC_INTERNAL_EVENT_BUFFER_OPTION_TRANSFER_MODE_ALL
+#define TRC_CFG_STREAM_PORT_INTERNAL_BUFFER_TRANSFER_MODE TRC_INTERNAL_EVENT_BUFFER_OPTION_TRANSFER_MODE_CHUNK
 
 /**
  * @def TRC_CFG_STREAM_PORT_INTERNAL_BUFFER_CHUNK_SIZE
@@ -69,7 +69,7 @@ extern "C" {
  * transferred in the last loop.
  * This will increase throughput by immediately doing a transfer and not wait for another xTraceTzCtrl() loop.
  */
-#define TRC_CFG_STREAM_PORT_INTERNAL_BUFFER_CHUNK_TRANSFER_AGAIN_COUNT_LIMIT 5
+#define TRC_CFG_STREAM_PORT_INTERNAL_BUFFER_CHUNK_TRANSFER_AGAIN_COUNT_LIMIT 16
 
 #ifdef __cplusplus
 }

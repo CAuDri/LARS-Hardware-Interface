@@ -237,7 +237,7 @@ extern "C" {
  * not created if stack monitoring is disabled. TRC_CFG_CTRL_TASK_PRIORITY should
  * be low, to avoid disturbing any time-sensitive tasks.
  */
-#define TRC_CFG_CTRL_TASK_PRIORITY 1
+#define TRC_CFG_CTRL_TASK_PRIORITY 16
 
 /**
  * @def TRC_CFG_CTRL_TASK_DELAY
@@ -252,7 +252,7 @@ extern "C" {
  * The unit depends on the delay function used for the specific kernel port (trcKernelPort.c).
  * For example, FreeRTOS uses ticks while Zephyr uses ms.
  */
-#define TRC_CFG_CTRL_TASK_DELAY 10
+#define TRC_CFG_CTRL_TASK_DELAY 5
 
 /**
  * @def TRC_CFG_CTRL_TASK_STACK_SIZE

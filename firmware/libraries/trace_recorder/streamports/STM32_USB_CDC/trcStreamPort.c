@@ -19,38 +19,90 @@
 
 static void prvCDCInit(void);
 
-static int8_t CDC_Receive_FS_modified(uint8_t* pbuf, uint32_t *puiLength);
+static int8_t CDC_Receive_modified(uint8_t* pbuf, uint32_t *puiLength);
 
 extern USBD_CDC_ItfTypeDef USBD_Interface_fops_FS;
+extern USBD_CDC_ItfTypeDef USBD_Interface_fops_HS;
+extern USBD_HandleTypeDef hUsbDeviceFS;
+extern USBD_HandleTypeDef hUsbDeviceHS;
 
-static int8_t(*CDC_Receive_FS)(uint8_t* Buf, uint32_t* Len);
+static USBD_HandleTypeDef* volatile pxTraceUSBHandle = &DEBUG_TRACE_RECORDER_USB_HANDLE;
+static int8_t(*CDC_Receive)(uint8_t* Buf, uint32_t* Len);
+static uint32_t uiConsecutiveBusyTransmits = 0U;
 
 TraceStreamPortBuffer_t* pxUSBBuffers TRC_CFG_RECORDER_DATA_ATTRIBUTE;
 
-static int8_t CDC_Receive_FS_modified(uint8_t* pBuffer, uint32_t *puiLength)
+static int8_t CDC_Receive_modified(uint8_t* pBuffer, uint32_t *puiLength)
 {
 	for(uint32_t i = 0; i < *puiLength; i++)
 	{
+		if (pxUSBBuffers->idx >= sizeof(pxUSBBuffers->bufferUSB))
+		{
+			break;
+		}
+
 		pxUSBBuffers->bufferUSB[pxUSBBuffers->idx] = pBuffer[i];
 		pxUSBBuffers->idx++;
 	}
 
-	CDC_Receive_FS(pBuffer, puiLength);
+	CDC_Receive(pBuffer, puiLength);
 
 	return (USBD_OK);
 }
 
+static USBD_CDC_ItfTypeDef* prvGetCDCInterface(void)
+{
+	if (pxTraceUSBHandle == &hUsbDeviceHS)
+	{
+		return &USBD_Interface_fops_HS;
+	}
+
+	return &USBD_Interface_fops_FS;
+}
+
+static USBD_CDC_HandleTypeDef* prvGetCDCHandle(void)
+{
+	if (pxTraceUSBHandle == 0)
+	{
+		return 0;
+	}
+
+	return (USBD_CDC_HandleTypeDef*)pxTraceUSBHandle->pClassDataCmsit[pxTraceUSBHandle->classId];
+}
+
+static int32_t prvTraceCDCTransmitData(uint8_t* pBuffer, uint32_t uiLength)
+{
+	USBD_CDC_HandleTypeDef* pxCDCHandle = prvGetCDCHandle();
+
+	if (pxCDCHandle == 0 || pxTraceUSBHandle->dev_state != USBD_STATE_CONFIGURED)
+	{
+		return USBD_FAIL;
+	}
+
+	if (pxCDCHandle->TxState != 0U)
+	{
+		return USBD_BUSY;
+	}
+
+	if (USBD_CDC_SetTxBuffer(pxTraceUSBHandle, pBuffer, uiLength) != USBD_OK)
+	{
+		return USBD_FAIL;
+	}
+
+	return USBD_CDC_TransmitPacket(pxTraceUSBHandle);
+}
+
 static void prvCDCInit(void)
 {
+	USBD_CDC_ItfTypeDef* pxCDCInterface = prvGetCDCInterface();
+
 	/* Store the original "Receive" function, from the static initialization */
-	CDC_Receive_FS = USBD_Interface_fops_FS.Receive;
+	CDC_Receive = pxCDCInterface->Receive;
 
 	/* Update the function pointer with our modified variant */
-	USBD_Interface_fops_FS.Receive = CDC_Receive_FS_modified;
+	pxCDCInterface->Receive = CDC_Receive_modified;
 
 	pxUSBBuffers->idx = 0;
-
-	MX_USB_DEVICE_Init();
 }
 
 /* The READ function, used in trcStreamPort.h */
@@ -92,35 +144,36 @@ traceResult prvTraceCDCReceive(void *data, uint32_t uiSize, int32_t* piBytesRece
 /* The WRITE function, used in trcStreamPort.h */
 traceResult prvTraceCDCTransmit(void* pvData, uint32_t uiSize, int32_t * piBytesSent )
 {
-	static int fail_counter = 0;
-
 	int32_t result;
 
 	*piBytesSent = 0;
 
-	result = CDC_Transmit_FS(pvData, uiSize);
+	result = prvTraceCDCTransmitData(pvData, uiSize);
 	
 	if (result == USBD_OK)
 	{
-		fail_counter = 0;
+		uiConsecutiveBusyTransmits = 0U;
 		*piBytesSent = uiSize;
 		return TRC_SUCCESS;
 	}
-	else
+	else if (result == USBD_BUSY)
 	{
-		fail_counter++;
-
-		/* We keep trying to send more pvData. If busy, we delay for a while. This function will be called again afterwards. */
-		xTraceKernelPortDelay(TRC_CFG_STREAM_PORT_DELAY_ON_BUSY);
-
-		if (fail_counter >= 100)
+		uiConsecutiveBusyTransmits++;
+		if (uiConsecutiveBusyTransmits >= 100U)
 		{
-			/* If many unsuccessful attempts in a row, something is very wrong. Returning -1 will stop the recorder. */
-			return TRC_FAIL;
+			USBD_CDC_HandleTypeDef* pxCDCHandle = prvGetCDCHandle();
+			if (pxCDCHandle != 0)
+			{
+				pxCDCHandle->TxState = 0U;
+			}
+			uiConsecutiveBusyTransmits = 0U;
 		}
+		xTraceKernelPortDelay(TRC_CFG_STREAM_PORT_DELAY_ON_BUSY);
+		return TRC_SUCCESS;
 	}
 
-	return TRC_SUCCESS;
+	uiConsecutiveBusyTransmits = 0U;
+	return TRC_FAIL;
 }
 
 traceResult xTraceStreamPortInitialize(TraceStreamPortBuffer_t* pxBuffer)

@@ -22,6 +22,7 @@
 #include "usbd_cdc_if.h"
 
 /* USER CODE BEGIN INCLUDE */
+#include "usb_device_helper.h"
 
 /* USER CODE END INCLUDE */
 
@@ -62,6 +63,8 @@
   */
 
 /* USER CODE BEGIN PRIVATE_DEFINES */
+#define CDC_FS_DEFAULT_BITRATE 921600U
+#define CDC_HS_DEFAULT_BITRATE 921600U
 /* USER CODE END PRIVATE_DEFINES */
 
 /**
@@ -102,6 +105,8 @@ uint8_t UserRxBufferHS[APP_RX_DATA_SIZE];
 uint8_t UserTxBufferHS[APP_TX_DATA_SIZE];
 
 /* USER CODE BEGIN PRIVATE_VARIABLES */
+static usb_cdc_line_coding_t lineCodingFS;
+static usb_cdc_line_coding_t lineCodingHS;
 
 /* USER CODE END PRIVATE_VARIABLES */
 
@@ -180,6 +185,7 @@ static int8_t CDC_Init_FS(void)
   /* Set Application Buffers */
   USBD_CDC_SetTxBuffer(&hUsbDeviceFS, UserTxBufferFS, 0);
   USBD_CDC_SetRxBuffer(&hUsbDeviceFS, UserRxBufferFS);
+  usb_cdc_line_coding_init(&lineCodingFS, CDC_FS_DEFAULT_BITRATE);
   return (USBD_OK);
   /* USER CODE END 3 */
 }
@@ -245,10 +251,12 @@ static int8_t CDC_Control_FS(uint8_t cmd, uint8_t* pbuf, uint16_t length)
   /* 6      | bDataBits  |   1   | Number Data bits (5, 6, 7, 8 or 16).          */
   /*******************************************************************************/
     case CDC_SET_LINE_CODING:
+      usb_cdc_line_coding_store(&lineCodingFS, pbuf, length);
 
     break;
 
     case CDC_GET_LINE_CODING:
+      usb_cdc_line_coding_load(pbuf, &lineCodingFS, length);
 
     break;
 
@@ -350,6 +358,7 @@ static int8_t CDC_Init_HS(void)
   /* Set Application Buffers */
   USBD_CDC_SetTxBuffer(&hUsbDeviceHS, UserTxBufferHS, 0);
   USBD_CDC_SetRxBuffer(&hUsbDeviceHS, UserRxBufferHS);
+  usb_cdc_line_coding_init(&lineCodingHS, CDC_HS_DEFAULT_BITRATE);
   return (USBD_OK);
   /* USER CODE END 8 */
 }
@@ -416,10 +425,12 @@ static int8_t CDC_Control_HS(uint8_t cmd, uint8_t* pbuf, uint16_t length)
   /* 6      | bDataBits  |   1   | Number Data bits (5, 6, 7, 8 or 16).          */
   /*******************************************************************************/
   case CDC_SET_LINE_CODING:
+    usb_cdc_line_coding_store(&lineCodingHS, pbuf, length);
 
     break;
 
   case CDC_GET_LINE_CODING:
+    usb_cdc_line_coding_load(pbuf, &lineCodingHS, length);
 
     break;
 

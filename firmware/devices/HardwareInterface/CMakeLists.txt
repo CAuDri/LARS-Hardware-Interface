@@ -52,7 +52,7 @@ target_sources(${PROJECT_NAME} PRIVATE
     ${LIB_DIR}/common/thread_safe_can.c
     ${LIB_DIR}/common/thread_safe_i2c.c
     ${LIB_DIR}/common/thread_safe_adc.c
-    ${LIB_DIR}/common/usb_serial_descriptor.c
+    ${LIB_DIR}/common/usb_device_helper.c
 
     # Drivers
     ${LIB_DIR}/drivers/rc_receiver.cpp
@@ -110,6 +110,7 @@ target_include_directories(${PROJECT_NAME} PRIVATE
 # If you need a specific stream port, set it before the add_subdirectory call, e.g.:
 set(TRC_STREAMPORT "STM32_USB_CDC")
 set(BOARD_DIR "${CMAKE_CURRENT_LIST_DIR}/board")
+set(TRACE_RECORDER_APP_CONFIG_DIR "${CMAKE_CURRENT_LIST_DIR}/config")
 add_subdirectory("${LIB_DIR}/trace_recorder" "${CMAKE_BINARY_DIR}/trace_recorder")
 
 # Pull object files into firmware and enable the include guard in FreeRTOSConfig.h

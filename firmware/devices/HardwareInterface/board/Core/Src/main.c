@@ -28,7 +28,7 @@
 #include "thread_safe_can.h"
 #include "thread_safe_i2c.h"
 #include "thread_safe_adc.h"
-#include "usb_serial_descriptor.h"
+#include "usb_device_helper.h"
 #include "usbd_desc.h"
 
 /* USER CODE END Includes */
@@ -136,6 +136,9 @@ int main(void)
 {
 
   /* USER CODE BEGIN 1 */
+
+  // CAuDri - Some debug reset paths leave BASEPRI raised, which masks the HAL tick.
+  __set_BASEPRI(0U);
 
   /* USER CODE END 1 */
 
