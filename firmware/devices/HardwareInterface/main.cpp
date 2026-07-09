@@ -12,6 +12,9 @@
 #include "gpio_light.hpp"
 #include "light_dispatcher.hpp"
 #include "logger.h"
+#if DEBUG_LOG_OUTPUT == LOG_OUTPUT_ROS
+    #include "logger_node.hpp"
+#endif
 #include "motor_publisher.hpp"
 #include "pulse_animation.hpp"
 #include "servo_publisher.hpp"
@@ -49,6 +52,10 @@ GPIOLight debug_led_blue(DEBUG_LED_BLUE_GPIO_Port, DEBUG_LED_BLUE_Pin, COLOR_BLU
 LightDispatcher light_dispatcher("Light Dispatcher");
 
 ros::Client microros_client;              // micro-ROS client for communication with the ROS 2 agent
+
+#if DEBUG_LOG_OUTPUT == LOG_OUTPUT_ROS
+LoggerNode logger_node;                   // ROS 2 node for publishing firmware log messages to /rosout
+#endif
 ServoPublisher servo_publisher;           // ROS 2 node for publishing servo feedback messages
 MotorPublisher motor_publisher;           // ROS 2 node for publishing motor feedback and telemetry messages
 AutonomousControl autonomous_control;     // ROS 2 node for receiving autonomous drive commands
@@ -103,6 +110,10 @@ void mainTask() {
     /**
      * Initialize all micro-ROS nodes
      */
+    #if DEBUG_LOG_OUTPUT == LOG_OUTPUT_ROS
+    logger_node.init(microros_client);
+    #endif
+
     servo_publisher.init(microros_client, servo_publisher_config);
     servo_publisher.registerServo(servo, "measure/steering_angle", "servo");
     servo_publisher.start();
@@ -124,6 +135,9 @@ void mainTask() {
     system_check.registerDriver(servo, false);
     system_check.registerDriver(ws2812_top, false);
     system_check.registerClient(microros_client);
+    #if DEBUG_LOG_OUTPUT == LOG_OUTPUT_ROS
+    system_check.registerNode(logger_node);
+    #endif
     system_check.registerNode(servo_publisher);
     system_check.registerNode(motor_publisher);
     system_check.registerNode(autonomous_control);

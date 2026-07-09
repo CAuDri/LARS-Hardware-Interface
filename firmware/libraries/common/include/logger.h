@@ -45,12 +45,11 @@
 // Device specific config that contains the macro definitions
 #include "debug_config.h"
 
+#include <stdbool.h>
+#include <stdio.h>
+
 #include <stm32f4xx_hal.h>
 #include <cmsis_os.h>
-#include <rmw_microros/rmw_microros.h>
-
-#include "trcRecorder.h"
-
 // Log level needs to be set with DEGUB_LOG_LEVEL
 #define LOG_LEVEL_NONE    0
 #define LOG_LEVEL_ERROR   1
@@ -95,6 +94,14 @@
 // Default log timestamp
 #ifndef DEBUG_LOG_TIMESTAMP
     #define DEBUG_LOG_TIMESTAMP LOG_TIMESTAMP_SYS
+#endif
+
+#if DEBUG_LOG_TIMESTAMP == LOG_TIMESTAMP_ROS
+    #include <rmw_microros/rmw_microros.h>
+#endif
+
+#if DEBUG_LOG_OUTPUT == LOG_OUTPUT_TRACE
+    #include "trcRecorder.h"
 #endif
 
 // Default log handle
@@ -235,6 +242,20 @@ extern void logger_clear_terminal(void);
     #define _LOG_INLINE(message, ...)  do { printf(LOG_COLOR_RED); printf("[%08ld]",  HAL_GetTick()); \
                                             printf(message __VA_OPT__(,) __VA_ARGS__); printf("%s\n", LOG_COLOR_RESET); } while(0)
 
+/**
+ * @brief Implementation of the log output using ROS /rosout.
+ *
+ * The logger thread buffers messages until the LoggerNode publisher is ready.
+ */
+#elif DEBUG_LOG_OUTPUT == LOG_OUTPUT_ROS
+    #define _LOG_ERROR(message, ...)   do { logger_log_message(LOG_LEVEL_ERROR,   message __VA_OPT__(,) __VA_ARGS__); } while(0)
+    #define _LOG_WARNING(message, ...) do { logger_log_message(LOG_LEVEL_WARNING, message __VA_OPT__(,) __VA_ARGS__); } while(0)
+    #define _LOG_INFO(message, ...)    do { logger_log_message(LOG_LEVEL_INFO,    message __VA_OPT__(,) __VA_ARGS__); } while(0)
+    #define _LOG_DEBUG(message, ...)   do { logger_log_message(LOG_LEVEL_DEBUG,   message __VA_OPT__(,) __VA_ARGS__); } while(0)
+
+    #define _LOG_SUCCESS(message, ...) do { logger_log_message(LOG_LEVEL_SUCCESS, message __VA_OPT__(,) __VA_ARGS__); } while(0)
+    #define _LOG_CLEAR()
+    #define _LOG_INLINE(message, ...)
 
 /**
  * @brief Implementation of the log output using Percepio Tracealyzer.
