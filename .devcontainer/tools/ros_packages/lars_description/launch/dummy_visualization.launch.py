@@ -24,5 +24,11 @@ def generate_launch_description():
                     }
                 ],
             ),
+            Node(
+                package="lars_description",
+                executable="steering_joint_state_bridge.py",
+                name="lars_steering_joint_state_bridge",
+                output="screen",
+            ),
         ]
     )

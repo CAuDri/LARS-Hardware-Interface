@@ -89,6 +89,11 @@ light command payloads in the Lichtblick panel settings. The current defaults
 match the development namespace `/hardware`, publish teleop commands at 20 Hz,
 and use the firmware-side safety checks as the final authority.
 
+The 3D panel loads the temporary `lars_description` URDF from the ROS 2
+`/robot_description` topic. In the layout this topic is enabled under the 3D
+panel's `topics` config so Lichtblick treats it as a URDF renderable, not just
+as a raw `std_msgs/String` topic.
+
 ## Files
 
 - `lars_default_layout.json`: the LARS dashboard layout.

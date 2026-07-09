@@ -75,6 +75,9 @@ cleanup_stale_visualizer_processes() {
     # joints and RViz shows visible jitter.
     pkill -f "${LARS_ROS_WS}/install/lars_visualization/lib/lars_visualization/joint_state_bridge.py" 2>/dev/null || true
     pkill -f "${LARS_ROS_WS}/install/lars_visualization/lib/lars_visualization/mock_hardware.py" 2>/dev/null || true
+    pkill -f "${LARS_ROS_WS}/install/lars_description/lib/lars_description/mock_joint_states.py" 2>/dev/null || true
+    pkill -f "${LARS_ROS_WS}/install/lars_description/lib/lars_description/mock_scene_markers.py" 2>/dev/null || true
+    pkill -f "${LARS_ROS_WS}/install/lars_description/lib/lars_description/steering_joint_state_bridge.py" 2>/dev/null || true
 }
 
 while [ $# -gt 0 ]; do

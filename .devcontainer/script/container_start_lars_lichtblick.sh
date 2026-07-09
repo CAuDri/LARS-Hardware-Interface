@@ -551,6 +551,12 @@ start_bridge() {
     bridge_pid=$!
 }
 
+cleanup_stale_description_processes() {
+    pkill -f "${LARS_ROS_WS}/install/lars_description/lib/lars_description/mock_joint_states.py" 2>/dev/null || true
+    pkill -f "${LARS_ROS_WS}/install/lars_description/lib/lars_description/mock_scene_markers.py" 2>/dev/null || true
+    pkill -f "${LARS_ROS_WS}/install/lars_description/lib/lars_description/steering_joint_state_bridge.py" 2>/dev/null || true
+}
+
 start_dummy_description() {
     if [ "${LARS_LICHTBLICK_DUMMY_MODEL}" != "true" ]; then
         return 0
@@ -558,6 +564,7 @@ start_dummy_description() {
 
     ensure_robot_state_publisher_available || return 1
     source_ros_environment
+    cleanup_stale_description_processes
 
     ros2 launch lars_description dummy_visualization.launch.py &
     description_pid=$!

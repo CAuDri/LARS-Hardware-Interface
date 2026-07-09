@@ -11,6 +11,9 @@ available.
 - Launch file: `launch/dummy_visualization.launch.py`
 - The Lichtblick launcher starts this model by default with
   `LARS_LICHTBLICK_DUMMY_MODEL=true`.
+- The dummy launch maps real `/hardware/measure/steering_angle_front` feedback
+  onto front wheel joint states for visualization. It must not publish fake
+  servo angle or motor speed data.
 
 ## Follow-up work
 
@@ -18,11 +21,8 @@ available.
 - Add meshes/materials to `lars_description`.
 - Keep stable base frames where possible:
   - `base_link`
-  - `chassis_link`
   - wheel links
-  - steering/servo links
   - `imu_link`
   - ToF/sensor frames
-- Add dynamic joint support for steering angles and wheel motion once those
-  states are available from the hardware interface.
+- Replace the temporary simplified geometry with the real model once available.
 - Update RViz/Lichtblick layouts if frame or topic names change.

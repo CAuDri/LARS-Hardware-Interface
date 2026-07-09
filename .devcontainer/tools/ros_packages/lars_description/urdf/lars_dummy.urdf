@@ -6,29 +6,17 @@
   <material name="lars_dark">
     <color rgba="0.02 0.025 0.03 1.0"/>
   </material>
-  <material name="lars_accent">
-    <color rgba="0.95 0.75 0.15 1.0"/>
-  </material>
-  <material name="lars_sensor">
-    <color rgba="0.1 0.8 0.9 0.85"/>
+  <material name="lars_tread">
+    <color rgba="0.12 0.13 0.14 1.0"/>
   </material>
 
-  <link name="base_link"/>
-
-  <link name="chassis_link">
+  <link name="base_link">
     <visual>
       <origin xyz="0 0 0.12" rpy="0 0 0"/>
       <geometry>
         <box size="0.55 0.32 0.10"/>
       </geometry>
       <material name="lars_body_blue"/>
-    </visual>
-    <visual>
-      <origin xyz="0.18 0 0.22" rpy="0 0 0"/>
-      <geometry>
-        <box size="0.20 0.26 0.08"/>
-      </geometry>
-      <material name="lars_accent"/>
     </visual>
     <collision>
       <origin xyz="0 0 0.12" rpy="0 0 0"/>
@@ -38,76 +26,6 @@
     </collision>
   </link>
 
-  <joint name="base_to_chassis" type="fixed">
-    <parent link="base_link"/>
-    <child link="chassis_link"/>
-    <origin xyz="0 0 0" rpy="0 0 0"/>
-  </joint>
-
-  <link name="front_bumper_link">
-    <visual>
-      <origin xyz="0 0 0" rpy="0 1.57079632679 0"/>
-      <geometry>
-        <cylinder radius="0.025" length="0.36"/>
-      </geometry>
-      <material name="lars_dark"/>
-    </visual>
-  </link>
-
-  <joint name="front_bumper_joint" type="fixed">
-    <parent link="base_link"/>
-    <child link="front_bumper_link"/>
-    <origin xyz="0.32 0 0.105" rpy="0 0 0"/>
-  </joint>
-
-  <link name="tof_preview_link">
-    <visual>
-      <origin xyz="0 0 0" rpy="0 0 0"/>
-      <geometry>
-        <box size="0.04 0.18 0.035"/>
-      </geometry>
-      <material name="lars_sensor"/>
-    </visual>
-  </link>
-
-  <joint name="tof_preview_joint" type="fixed">
-    <parent link="base_link"/>
-    <child link="tof_preview_link"/>
-    <origin xyz="0.34 0 0.18" rpy="0 0 0"/>
-  </joint>
-
-  <link name="front_left_servo_link">
-    <visual>
-      <origin xyz="0 0 0" rpy="0 0 0"/>
-      <geometry>
-        <box size="0.07 0.045 0.035"/>
-      </geometry>
-      <material name="lars_accent"/>
-    </visual>
-  </link>
-
-  <joint name="front_left_servo_joint" type="fixed">
-    <parent link="base_link"/>
-    <child link="front_left_servo_link"/>
-    <origin xyz="0.21 0.18 0.055" rpy="0 0 0"/>
-  </joint>
-
-  <link name="front_right_servo_link">
-    <visual>
-      <origin xyz="0 0 0" rpy="0 0 0"/>
-      <geometry>
-        <box size="0.07 0.045 0.035"/>
-      </geometry>
-      <material name="lars_accent"/>
-    </visual>
-  </link>
-
-  <joint name="front_right_servo_joint" type="fixed">
-    <parent link="base_link"/>
-    <child link="front_right_servo_link"/>
-    <origin xyz="0.21 -0.18 0.055" rpy="0 0 0"/>
-  </joint>
-
   <link name="front_left_wheel_link">
     <visual>
       <origin xyz="0 0 0" rpy="1.57079632679 0 0"/>
@@ -116,12 +34,21 @@
       </geometry>
       <material name="lars_dark"/>
     </visual>
+    <visual>
+      <origin xyz="0 0 0" rpy="1.57079632679 0 0"/>
+      <geometry>
+        <cylinder radius="0.04" length="0.048"/>
+      </geometry>
+      <material name="lars_tread"/>
+    </visual>
   </link>
 
-  <joint name="front_left_wheel_joint" type="fixed">
-    <parent link="front_left_servo_link"/>
+  <joint name="front_left_wheel_joint" type="revolute">
+    <parent link="base_link"/>
     <child link="front_left_wheel_link"/>
-    <origin xyz="0 0.035 0" rpy="0 0 0"/>
+    <origin xyz="0.21 0.215 0.055" rpy="0 0 0"/>
+    <axis xyz="0 0 1"/>
+    <limit lower="-0.65" upper="0.65" effort="2.0" velocity="3.0"/>
   </joint>
 
   <link name="front_right_wheel_link">
@@ -132,12 +59,21 @@
       </geometry>
       <material name="lars_dark"/>
     </visual>
+    <visual>
+      <origin xyz="0 0 0" rpy="1.57079632679 0 0"/>
+      <geometry>
+        <cylinder radius="0.04" length="0.048"/>
+      </geometry>
+      <material name="lars_tread"/>
+    </visual>
   </link>
 
-  <joint name="front_right_wheel_joint" type="fixed">
-    <parent link="front_right_servo_link"/>
+  <joint name="front_right_wheel_joint" type="revolute">
+    <parent link="base_link"/>
     <child link="front_right_wheel_link"/>
-    <origin xyz="0 -0.035 0" rpy="0 0 0"/>
+    <origin xyz="0.21 -0.215 0.055" rpy="0 0 0"/>
+    <axis xyz="0 0 1"/>
+    <limit lower="-0.65" upper="0.65" effort="2.0" velocity="3.0"/>
   </joint>
 
   <link name="rear_left_wheel_link">
@@ -147,6 +83,13 @@
         <cylinder radius="0.065" length="0.045"/>
       </geometry>
       <material name="lars_dark"/>
+    </visual>
+    <visual>
+      <origin xyz="0 0 0" rpy="1.57079632679 0 0"/>
+      <geometry>
+        <cylinder radius="0.04" length="0.048"/>
+      </geometry>
+      <material name="lars_tread"/>
     </visual>
   </link>
 
@@ -164,27 +107,18 @@
       </geometry>
       <material name="lars_dark"/>
     </visual>
+    <visual>
+      <origin xyz="0 0 0" rpy="1.57079632679 0 0"/>
+      <geometry>
+        <cylinder radius="0.04" length="0.048"/>
+      </geometry>
+      <material name="lars_tread"/>
+    </visual>
   </link>
 
   <joint name="rear_right_wheel_joint" type="fixed">
     <parent link="base_link"/>
     <child link="rear_right_wheel_link"/>
     <origin xyz="-0.21 -0.215 0.055" rpy="0 0 0"/>
-  </joint>
-
-  <link name="imu_link">
-    <visual>
-      <origin xyz="0 0 0" rpy="0 0 0"/>
-      <geometry>
-        <box size="0.05 0.04 0.015"/>
-      </geometry>
-      <material name="lars_sensor"/>
-    </visual>
-  </link>
-
-  <joint name="imu_joint" type="fixed">
-    <parent link="base_link"/>
-    <child link="imu_link"/>
-    <origin xyz="-0.08 0 0.19" rpy="0 0 0"/>
   </joint>
 </robot>
