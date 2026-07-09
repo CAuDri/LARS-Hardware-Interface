@@ -75,6 +75,7 @@ class SystemMonitor {
 
     SystemCheck::SystemState getSystemState();
     bool getSystemCheckResult(SystemCheck::Result& result);
+    bool getLastSystemCheckResult(SystemCheck::Result& result, uint32_t* age_ms = nullptr) const;
 
     bool registerSystemStateCallback(SystemStateCallback callback);
     bool waitForSystemError(uint32_t timeout_ms);
@@ -88,6 +89,9 @@ class SystemMonitor {
 
     SystemCheck::Result last_check_result{};
     uint32_t last_check_time_ms = 0;
+    osMutexId_t result_mutex = nullptr;
+    osMutexAttr_t result_mutex_attributes{};
+    StaticSemaphore_t result_mutex_control_block{};
 
     SystemStateCallback system_state_callback = nullptr;
 

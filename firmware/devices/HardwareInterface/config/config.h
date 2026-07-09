@@ -77,12 +77,15 @@ AutonomousControl::Config autonomous_control_config{
 
 SystemNode::Config system_node_config{
     .heartbeat_topic = SYSTEM_NODE_HEARTBEAT_TOPIC,
+    .diagnostics_topic = SYSTEM_NODE_DIAGNOSTICS_TOPIC,
     .reset_service = SYSTEM_NODE_RESET_SERVICE,
     .emergency_stop_service = SYSTEM_NODE_EMERGENCY_STOP_SERVICE,
     .heartbeat_period_ms = SYSTEM_NODE_HEARTBEAT_PERIOD_MS,
+    .diagnostics_period_ms = SYSTEM_NODE_DIAGNOSTICS_PERIOD_MS,
     .reset_delay_ms = SYSTEM_NODE_RESET_DELAY_MS,
     .thread_priority = osPriorityLow,
     .heartbeat_publisher_config = {true, 0},
+    .diagnostics_publisher_config = {false, 5},
     .service_config = {},
 };
 

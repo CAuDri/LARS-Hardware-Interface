@@ -124,7 +124,7 @@ void mainTask() {
 
     autonomous_control.init(microros_client, drive_controller, autonomous_control_config);
 
-    system_node.init(microros_client, drive_controller, system_node_config);
+    system_node.init(microros_client, drive_controller, system_monitor, system_node_config);
     system_node.start();
 
     /**

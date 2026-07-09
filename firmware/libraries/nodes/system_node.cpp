@@ -6,6 +6,8 @@
 
 #include "system_node.hpp"
 
+#include <diagnostic_msgs/msg/diagnostic_status.h>
+
 #include <cstring>
 
 #include "logger.h"
@@ -17,23 +19,176 @@ ROS_DECLARE_MESSAGE_TYPE(std_msgs, Empty);
 static constexpr uint32_t SYSTEM_NODE_START_FLAG = 0x01U;
 static constexpr uint32_t SYSTEM_NODE_THREAD_POLL_MS = 50U;
 static constexpr const char* SYSTEM_NODE_NAME = "system";
+static constexpr const char* SYSTEM_NODE_HARDWARE_ID = "hardware_interface";
 
 SystemNode::SystemNode() = default;
 
-rcl_ret_t SystemNode::init(Client& client, DriveController& drive_controller, const Config& config) {
+namespace {
+
+const char* systemStateString(SystemCheck::SystemState state) {
+    switch (state) {
+        case SystemCheck::SystemState::OK:
+            return "OK";
+        case SystemCheck::SystemState::WARNING:
+            return "WARNING";
+        case SystemCheck::SystemState::ERROR:
+            return "ERROR";
+    }
+    return "INVALID";
+}
+
+uint8_t systemDiagnosticLevel(SystemCheck::SystemState state) {
+    switch (state) {
+        case SystemCheck::SystemState::OK:
+            return diagnostic_msgs__msg__DiagnosticStatus__OK;
+        case SystemCheck::SystemState::WARNING:
+            return diagnostic_msgs__msg__DiagnosticStatus__WARN;
+        case SystemCheck::SystemState::ERROR:
+            return diagnostic_msgs__msg__DiagnosticStatus__ERROR;
+    }
+    return diagnostic_msgs__msg__DiagnosticStatus__ERROR;
+}
+
+const char* driverStateString(Driver::State state) {
+    switch (state) {
+        case Driver::State::ERROR:
+            return "ERROR";
+        case Driver::State::UNINITIALIZED:
+            return "UNINITIALIZED";
+        case Driver::State::INITIALIZED:
+            return "INITIALIZED";
+        case Driver::State::RUNNING:
+            return "RUNNING";
+    }
+    return "INVALID";
+}
+
+const char* driverConnectionString(Driver::ConnectionState state) {
+    switch (state) {
+        case Driver::ConnectionState::DISCONNECTED:
+            return "DISCONNECTED";
+        case Driver::ConnectionState::CONNECTING:
+            return "CONNECTING";
+        case Driver::ConnectionState::CONNECTED:
+            return "CONNECTED";
+        case Driver::ConnectionState::UNKNOWN:
+            return "UNKNOWN";
+    }
+    return "INVALID";
+}
+
+uint8_t driverDiagnosticLevel(const SystemCheck::DriverStatus& status) {
+    if (status.state == Driver::State::ERROR) {
+        if (status.system_critical) {
+            return diagnostic_msgs__msg__DiagnosticStatus__ERROR;
+        }
+        return diagnostic_msgs__msg__DiagnosticStatus__WARN;
+    }
+    if (status.connection_state == Driver::ConnectionState::DISCONNECTED) {
+        if (status.system_critical) {
+            return diagnostic_msgs__msg__DiagnosticStatus__ERROR;
+        }
+        return diagnostic_msgs__msg__DiagnosticStatus__WARN;
+    }
+    if (status.state != Driver::State::RUNNING ||
+        (status.connection_state != Driver::ConnectionState::CONNECTED &&
+         status.connection_state != Driver::ConnectionState::UNKNOWN)) {
+        return diagnostic_msgs__msg__DiagnosticStatus__WARN;
+    }
+    return diagnostic_msgs__msg__DiagnosticStatus__OK;
+}
+
+const char* rosClientStateString(ros::Client::State state) {
+    switch (state) {
+        case ros::Client::State::ERROR:
+            return "ERROR";
+        case ros::Client::State::UNINITIALIZED:
+            return "UNINITIALIZED";
+        case ros::Client::State::INITIALIZED:
+            return "INITIALIZED";
+        case ros::Client::State::CONNECTING:
+            return "CONNECTING";
+        case ros::Client::State::CONNECTED:
+            return "CONNECTED";
+        case ros::Client::State::DISCONNECTED:
+            return "DISCONNECTED";
+        case ros::Client::State::STOPPING:
+            return "STOPPING";
+        case ros::Client::State::STOPPED:
+            return "STOPPED";
+    }
+    return "INVALID";
+}
+
+const char* rosExecutorStateString(ros::Executor::State state) {
+    switch (state) {
+        case ros::Executor::State::ERROR:
+            return "ERROR";
+        case ros::Executor::State::UNINITIALIZED:
+            return "UNINITIALIZED";
+        case ros::Executor::State::INITIALIZED:
+            return "INITIALIZED";
+        case ros::Executor::State::SPINNING:
+            return "SPINNING";
+        case ros::Executor::State::STOPPED:
+            return "STOPPED";
+    }
+    return "INVALID";
+}
+
+uint8_t clientDiagnosticLevel(const SystemCheck::ClientStatus& status) {
+    if (!status.registered) {
+        return diagnostic_msgs__msg__DiagnosticStatus__STALE;
+    }
+    if (status.client_state == ros::Client::State::ERROR ||
+        status.executor_state == ros::Executor::State::ERROR) {
+        return diagnostic_msgs__msg__DiagnosticStatus__ERROR;
+    }
+    if (status.client_state != ros::Client::State::CONNECTED ||
+        status.connection_state != ros::ConnectionState::CONNECTED ||
+        status.executor_state != ros::Executor::State::SPINNING ||
+        !status.time_synchronized) {
+        return diagnostic_msgs__msg__DiagnosticStatus__WARN;
+    }
+    return diagnostic_msgs__msg__DiagnosticStatus__OK;
+}
+
+const char* diagnosticMessage(uint8_t level) {
+    switch (level) {
+        case diagnostic_msgs__msg__DiagnosticStatus__OK:
+            return "OK";
+        case diagnostic_msgs__msg__DiagnosticStatus__WARN:
+            return "Warning";
+        case diagnostic_msgs__msg__DiagnosticStatus__ERROR:
+            return "Error";
+        case diagnostic_msgs__msg__DiagnosticStatus__STALE:
+            return "Stale";
+    }
+    return "Unknown";
+}
+
+}  // namespace
+
+rcl_ret_t SystemNode::init(Client& client,
+                           DriveController& drive_controller,
+                           SystemMonitor& system_monitor,
+                           const Config& config) {
     if (getState() != EntityState::UNINITIALIZED) {
         return RCL_RET_ALREADY_INIT;
     }
     if (config.heartbeat_topic == nullptr || config.heartbeat_topic[0] == '\0' ||
+        config.diagnostics_topic == nullptr || config.diagnostics_topic[0] == '\0' ||
         config.reset_service == nullptr || config.reset_service[0] == '\0' ||
         config.emergency_stop_service == nullptr || config.emergency_stop_service[0] == '\0' ||
-        config.heartbeat_period_ms == 0U || config.reset_delay_ms == 0U) {
+        config.heartbeat_period_ms == 0U || config.diagnostics_period_ms == 0U ||
+        config.reset_delay_ms == 0U) {
         LogError("SystemNode: Invalid configuration");
         return RCL_RET_INVALID_ARGUMENT;
     }
 
     this->client = &client;
     this->drive_controller = &drive_controller;
+    this->system_monitor = &system_monitor;
     this->config = config;
 
     rcl_ret_t result = Node::init(client, SYSTEM_NODE_NAME);
@@ -45,6 +200,12 @@ rcl_ret_t SystemNode::init(Client& client, DriveController& drive_controller, co
     result = heartbeat_publisher.init(*this, config.heartbeat_topic, config.heartbeat_publisher_config);
     if (result != RCL_RET_OK) {
         LogError("SystemNode: Failed to initialize heartbeat publisher: %d", static_cast<int>(result));
+        return result;
+    }
+
+    result = diagnostics_publisher.init(*this, config.diagnostics_topic, config.diagnostics_publisher_config);
+    if (result != RCL_RET_OK) {
+        LogError("SystemNode: Failed to initialize diagnostics publisher: %d", static_cast<int>(result));
         return result;
     }
 
@@ -153,6 +314,7 @@ void SystemNode::thread() {
     }
 
     uint32_t last_heartbeat_ms = osKernelGetTickCount() - config.heartbeat_period_ms;
+    uint32_t last_diagnostics_ms = osKernelGetTickCount() - config.diagnostics_period_ms;
 
     while (true) {
         const uint32_t now_ms = osKernelGetTickCount();
@@ -160,6 +322,11 @@ void SystemNode::thread() {
         if ((now_ms - last_heartbeat_ms) >= config.heartbeat_period_ms) {
             publishHeartbeat();
             last_heartbeat_ms = now_ms;
+        }
+
+        if ((now_ms - last_diagnostics_ms) >= config.diagnostics_period_ms) {
+            publishDiagnostics();
+            last_diagnostics_ms = now_ms;
         }
 
         handlePendingReset(now_ms);
@@ -180,6 +347,69 @@ void SystemNode::publishHeartbeat() {
         LogWarning("SystemNode: Failed to publish heartbeat: %d", static_cast<int>(result));
         heartbeat_publish_failure_reported = true;
     }
+}
+
+void SystemNode::publishDiagnostics() {
+    if (client == nullptr || system_monitor == nullptr) {
+        return;
+    }
+
+    diagnostics_publisher.beginArray(client->getRosTime());
+
+    SystemCheck::Result result{};
+    uint32_t snapshot_age_ms = 0U;
+    if (!system_monitor->getLastSystemCheckResult(result, &snapshot_age_ms)) {
+        return;
+    }
+
+    publishSystemDiagnostic(result, snapshot_age_ms);
+    publishClientDiagnostic(result.client_status);
+    for (size_t i = 0; i < result.driver_count; i++) {
+        publishDriverDiagnostic(result.driver_status[i]);
+    }
+
+    const rcl_ret_t publish_result = diagnostics_publisher.publish();
+    if (publish_result == RCL_RET_OK) {
+        diagnostics_publish_failure_reported = false;
+    } else if (publish_result != RCL_RET_NOT_INIT && !diagnostics_publish_failure_reported) {
+        LogWarning("SystemNode: Failed to publish diagnostics: %d", static_cast<int>(publish_result));
+        diagnostics_publish_failure_reported = true;
+    }
+}
+
+void SystemNode::publishSystemDiagnostic(const SystemCheck::Result& result, uint32_t age_ms) {
+    const uint8_t level = systemDiagnosticLevel(result.system_state);
+    if (!diagnostics_publisher.beginStatus("system", level, diagnosticMessage(level), SYSTEM_NODE_HARDWARE_ID)) {
+        return;
+    }
+
+    diagnostics_publisher.addValue("state", systemStateString(result.system_state));
+    diagnostics_publisher.addValue("snapshot_age_ms", age_ms);
+    diagnostics_publisher.addValue("drivers", static_cast<uint32_t>(result.driver_count));
+    diagnostics_publisher.addValue("ros_nodes", static_cast<uint32_t>(result.node_count));
+}
+
+void SystemNode::publishClientDiagnostic(const SystemCheck::ClientStatus& status) {
+    const uint8_t level = clientDiagnosticLevel(status);
+    if (!diagnostics_publisher.beginStatus("micro_ros", level, diagnosticMessage(level), SYSTEM_NODE_HARDWARE_ID)) {
+        return;
+    }
+
+    diagnostics_publisher.addValue("client", rosClientStateString(status.client_state));
+    diagnostics_publisher.addValue("executor", rosExecutorStateString(status.executor_state));
+    diagnostics_publisher.addValue("time_sync_age_ms_2", status.time_sync_age_ms);
+}
+
+void SystemNode::publishDriverDiagnostic(const SystemCheck::DriverStatus& status) {
+    const uint8_t level = driverDiagnosticLevel(status);
+    const char* name = status.name == nullptr ? "driver" : status.name;
+    if (!diagnostics_publisher.beginStatus(name, level, diagnosticMessage(level), SYSTEM_NODE_HARDWARE_ID)) {
+        return;
+    }
+
+    diagnostics_publisher.addValue("critical", status.system_critical);
+    diagnostics_publisher.addValue("state", driverStateString(status.state));
+    diagnostics_publisher.addValue("connection", driverConnectionString(status.connection_state));
 }
 
 void SystemNode::handlePendingReset(uint32_t now_ms) {

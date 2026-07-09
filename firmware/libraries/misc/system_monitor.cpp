@@ -51,6 +51,9 @@ SystemMonitor::~SystemMonitor() {
     if (monitor_thread_id != nullptr) {
         osThreadTerminate(monitor_thread_id);
     }
+    if (result_mutex != nullptr) {
+        osMutexDelete(result_mutex);
+    }
 }
 
 /**
@@ -77,6 +80,17 @@ bool SystemMonitor::init(SystemCheck& system_check, const Config& config) {
     system_event_flags = osEventFlagsNew(&event_flags_attributes);
     if (system_event_flags == nullptr) {
         LogError("System Monitor: Failed to create event flags");
+        return false;
+    }
+
+    result_mutex_attributes.name = "System Result";
+    result_mutex_attributes.attr_bits = osMutexPrioInherit;
+    result_mutex_attributes.cb_mem = &result_mutex_control_block;
+    result_mutex_attributes.cb_size = sizeof(result_mutex_control_block);
+
+    result_mutex = osMutexNew(&result_mutex_attributes);
+    if (result_mutex == nullptr) {
+        LogError("System Monitor: Failed to create result mutex");
         return false;
     }
 
@@ -130,12 +144,12 @@ bool SystemMonitor::start() {
  * @return The current SystemState after performing the check
  */
 SystemCheck::SystemState SystemMonitor::getSystemState() {
-    if (!performSystemCheck()) {
-        LogWarning("System Monitor: Failed to perform system check");
+    SystemCheck::Result result{};
+    if (!getSystemCheckResult(result)) {
         return SystemCheck::SystemState::ERROR;
     }
 
-    return last_check_result.system_state;
+    return result.system_state;
 }
 
 /**
@@ -150,7 +164,36 @@ bool SystemMonitor::getSystemCheckResult(SystemCheck::Result& result) {
         return false;
     }
 
+    if (result_mutex == nullptr || osMutexAcquire(result_mutex, osWaitForever) != osOK) {
+        LogWarning("System Monitor: Failed to lock result mutex");
+        return false;
+    }
     result = last_check_result;
+    (void)osMutexRelease(result_mutex);
+    return true;
+}
+
+/**
+ * @brief Return the latest background system check result without performing a new check.
+ *
+ * @param result Reference to a Result struct to populate with the last result.
+ * @param age_ms Optional output for the snapshot age in milliseconds.
+ * @return true when a background check has populated the snapshot.
+ */
+bool SystemMonitor::getLastSystemCheckResult(SystemCheck::Result& result, uint32_t* age_ms) const {
+    if (result_mutex == nullptr || osMutexAcquire(result_mutex, osWaitForever) != osOK) {
+        return false;
+    }
+    if (last_check_time_ms == 0U) {
+        (void)osMutexRelease(result_mutex);
+        return false;
+    }
+
+    result = last_check_result;
+    if (age_ms != nullptr) {
+        *age_ms = osKernelGetTickCount() - last_check_time_ms;
+    }
+    (void)osMutexRelease(result_mutex);
     return true;
 }
 
@@ -379,8 +422,13 @@ bool SystemMonitor::performSystemCheck() {
         return false;
     }
 
+    if (result_mutex == nullptr || osMutexAcquire(result_mutex, osWaitForever) != osOK) {
+        LogError("System Monitor: Failed to lock result mutex");
+        return false;
+    }
     this->last_check_result = result;
     this->last_check_time_ms = osKernelGetTickCount();
+    (void)osMutexRelease(result_mutex);
     return true;
 }
 

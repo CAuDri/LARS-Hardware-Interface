@@ -78,6 +78,7 @@ target_sources(${PROJECT_NAME} PRIVATE
     ${LIB_DIR}/microros/cpp_wrapper/microros_trace.cpp
     ${LIB_DIR}/microros/cpp_wrapper/node.cpp
     ${LIB_DIR}/microros/cpp_wrapper/publisher.cpp
+    ${LIB_DIR}/microros/cpp_wrapper/diagnostics.cpp
     ${LIB_DIR}/microros/cpp_wrapper/service.cpp
     ${LIB_DIR}/microros/cpp_wrapper/subscriber.cpp
     ${LIB_DIR}/microros/runtime/microros_allocator.c
