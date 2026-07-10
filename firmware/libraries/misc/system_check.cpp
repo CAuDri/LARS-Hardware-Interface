@@ -396,7 +396,10 @@ bool SystemCheck::performCheck(Result& result) {
         status.executor_last_error = client->getExecutor().getLastError();
         status.time_sync_last_error = client->getLastTimeSyncError();
 
-        if (!isClientHealthy(status)) {
+        if (status.client_state == ros::Client::State::ERROR ||
+            status.executor_state == ros::Executor::State::ERROR) {
+            critical_error_found = true;
+        } else if (!isClientHealthy(status)) {
             warning_found = true;
         }
     }

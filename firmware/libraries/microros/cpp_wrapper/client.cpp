@@ -69,6 +69,7 @@ rcl_ret_t Client::init(const Config& client_config) {
 
     instance = this;
     config = &client_config;
+    automatic_reconnect_count = 0;
 
     // Recursive locking is required because a connection operation may call a
     // helper such as pingAgent(), which protects itself with the same mutex.
@@ -380,10 +381,9 @@ void Client::executorError(void* context, rcl_ret_t error) {
 
 void Client::thread() {
     bool waiting_for_agent_logged = false;
+    bool fatal_error = false;
 
-    while (!stop_requested) {
-        // Remember whether this iteration owned a complete session. Failed
-        // discovery attempts are expected and should not flood the info log.
+    while (!stop_requested && !fatal_error) {
         bool session_connected = false;
         state = State::CONNECTING;
         trace::setClientState(static_cast<size_t>(state));
@@ -392,6 +392,7 @@ void Client::thread() {
             LogInfo("micro-ROS Client: Waiting for agent");
             waiting_for_agent_logged = true;
         }
+        
         rcl_ret_t result = connectSession();
 
         if (result == RCL_RET_OK) {
@@ -453,6 +454,20 @@ void Client::thread() {
             trace::setClientState(static_cast<size_t>(state));
             if (session_connected) {
                 trace::incrementReconnects();
+                if (config->max_automatic_reconnects > 0U) {
+                    automatic_reconnect_count++;
+                    if (automatic_reconnect_count >= config->max_automatic_reconnects) {
+                        last_error = result == RCL_RET_OK ? RCL_RET_ERROR : result;
+                        state = State::ERROR;
+                        trace::setClientState(static_cast<size_t>(state));
+                        trace::incrementErrors();
+                        LogError("micro-ROS Client: Reconnect limit reached (%u/%u), latching ERROR state",
+                                 automatic_reconnect_count,
+                                 config->max_automatic_reconnects);
+                        fatal_error = true;
+                        break;
+                    }
+                }
                 LogInfo("micro-ROS Client: Disconnected; reconnecting automatically");
                 waiting_for_agent_logged = false;
             }
@@ -468,7 +483,7 @@ void Client::thread() {
         (void)disconnectSession(isConnected());
     }
     publishConnectionState(ConnectionState::DISCONNECTED);
-    state = State::STOPPED;
+    state = fatal_error ? State::ERROR : State::STOPPED;
     trace::setClientState(static_cast<size_t>(state));
     (void)osEventFlagsSet(connection_events, ROS_CLIENT_STOPPED_FLAG);
     osThreadExit();

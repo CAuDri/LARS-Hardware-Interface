@@ -36,6 +36,7 @@ constexpr uint32_t ROS_INITIAL_TIME_SYNC_RETRY_INTERVAL_MS = 1000;
 constexpr uint32_t ROS_TIME_SYNC_INTERVAL_MS = 30000;
 constexpr int ROS_TIME_SYNC_TIMEOUT_MS = 250;
 constexpr uint8_t ROS_TIME_SYNC_FAILURE_RECONNECT_THRESHOLD = 3;
+constexpr uint8_t ROS_MAX_AUTOMATIC_RECONNECTS = 3;
 
 constexpr uint32_t ROS_CONNECTION_ESTABLISHED_FLAG = 0x01U;
 constexpr uint32_t ROS_CONNECTION_LOST_FLAG = 0x02U;
@@ -96,6 +97,7 @@ class Client {
      * @param connection_health_interval_ms Connected-state wake interval for event and time-sync checks (default: 1000 ms)
      * @param ping_timeout_ms Timeout for pinging the agent (default: 50 ms)
      * @param ping_attempts Number of ping attempts before considering the agent unavailable (default: 1)
+     * @param max_automatic_reconnects Maximum number of completed-session reconnects before latching ERROR (0 disables)
      * @param base_namespace Optional namespace prefix joined with every node namespace
      */
     struct Config {
@@ -107,6 +109,7 @@ class Client {
         uint32_t connection_health_interval_ms = ROS_CONNECTION_HEALTH_INTERVAL_MS;
         int ping_timeout_ms = ROS_AGENT_PING_TIMEOUT_MS;
         uint8_t ping_attempts = ROS_AGENT_PING_ATTEMPTS;
+        uint8_t max_automatic_reconnects = ROS_MAX_AUTOMATIC_RECONNECTS;
     };
 
     Client();
@@ -148,6 +151,7 @@ class Client {
     volatile ConnectionState connection_state = ConnectionState::UNKNOWN;
     volatile bool stop_requested = false;
     rcl_ret_t last_error = RCL_RET_OK;
+    uint8_t automatic_reconnect_count = 0;
 
     volatile bool time_synchronized = false;
     rmw_ret_t last_time_sync_error = RMW_RET_ERROR;
