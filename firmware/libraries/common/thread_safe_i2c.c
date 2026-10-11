@@ -75,6 +75,34 @@ bool I2C_Init() {
 }
 
 /**
+ * @brief Check whether an I2C address acknowledges while holding the bus mutex.
+ *
+ * @param hi2c Pointer to a supported I2C1 or I2C2 handle.
+ * @param address Left-shifted 7-bit address expected by the STM32 HAL.
+ * @param trials Number of address attempts performed by the HAL.
+ * @param timeout_ms Timeout for each HAL attempt.
+ * @return HAL_OK when the address acknowledged, otherwise the HAL status.
+ */
+HAL_StatusTypeDef I2C_IsDeviceReady(I2C_HandleTypeDef* hi2c,
+                                    uint16_t address,
+                                    uint32_t trials,
+                                    uint32_t timeout_ms) {
+    if (!i2c_initialized || hi2c == NULL ||
+        (hi2c->Instance != I2C1 && hi2c->Instance != I2C2) || trials == 0U) {
+        return HAL_ERROR;
+    }
+
+    osMutexId_t mutex = hi2c->Instance == I2C1 ? i2c1_mutex : i2c2_mutex;
+    if (osMutexAcquire(mutex, I2C_MUTEX_TIMEOUT_MS) != osOK) {
+        return HAL_TIMEOUT;
+    }
+
+    const HAL_StatusTypeDef status = HAL_I2C_IsDeviceReady(hi2c, address, trials, timeout_ms);
+    osMutexRelease(mutex);
+    return status;
+}
+
+/**
  * @brief Thread-safe I2C master transmit
  *
  * Same usage as HAL_I2C_Master_Transmit_IT, but thread-safe.

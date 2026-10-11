@@ -13,6 +13,10 @@ extern "C" {
 #endif
 
 bool I2C_Init();
+HAL_StatusTypeDef I2C_IsDeviceReady(I2C_HandleTypeDef* hi2c,
+                                    uint16_t address,
+                                    uint32_t trials,
+                                    uint32_t timeout_ms);
 HAL_StatusTypeDef I2C_Transmit(I2C_HandleTypeDef* hi2c, uint16_t address, uint8_t* data, uint16_t size);
 HAL_StatusTypeDef I2C_Receive(I2C_HandleTypeDef* hi2c, uint16_t address, uint8_t* data, uint16_t size);
 HAL_StatusTypeDef I2C_MemWrite(I2C_HandleTypeDef* hi2c, uint16_t address, uint16_t memAddress, uint8_t* data, uint16_t size);

@@ -6,6 +6,7 @@
 #include "system_monitor.hpp"
 
 #include "logger.h"
+#include "thread_safe_i2c.h"
 #include "trcRecorder.h"
 #include "usbd_core.h"
 
@@ -18,6 +19,9 @@
 constexpr uint32_t SYSTEM_RESET_DELAY_MS = 2000;      // Delay before system reset in milliseconds
 constexpr uint32_t ENTER_BOOTLOADER_DELAY_MS = 2000;  // Delay before entering bootloader in milliseconds
 constexpr uint32_t DEFAULT_EXT_RESET_TIME_MS = 500;   // Default time to hold external power reset low in milliseconds
+constexpr uint32_t I2C_SCAN_TIMEOUT_MS = 1;
+constexpr uint8_t I2C_FIRST_USABLE_ADDRESS = 0x08;
+constexpr uint8_t I2C_LAST_USABLE_ADDRESS = 0x77;
 
 constexpr uint32_t THREAD_START_FLAG = 0x01;
 
@@ -293,6 +297,41 @@ bool SystemMonitor::resetPeripherals(uint32_t timeout_ms = DEFAULT_EXT_RESET_TIM
     osDelay(100);  // Wait a bit for peripherals to stabilize
 
     return false;
+}
+
+/**
+ * @brief Scan an I2C bus and log every address that acknowledges.
+ *
+ * Reserved 7-bit addresses are skipped. Each probe uses the thread-safe I2C
+ * wrapper, allowing this diagnostic to run while other drivers exist on the
+ * same bus without overlapping transfers.
+ *
+ * @param hi2c Initialized I2C1 or I2C2 HAL handle.
+ * @return Number of responding devices, or zero for an invalid bus.
+ */
+uint32_t SystemMonitor::scanI2CDevices(I2C_HandleTypeDef* hi2c) {
+    if (hi2c == nullptr || (hi2c->Instance != I2C1 && hi2c->Instance != I2C2)) {
+        LogError("System Monitor: Cannot scan invalid I2C bus");
+        return 0U;
+    }
+
+    const unsigned bus = hi2c->Instance == I2C1 ? 1U : 2U;
+    uint32_t device_count = 0U;
+    LogInfo("System Monitor: Scanning I2C%u", bus);
+
+    for (uint16_t address = I2C_FIRST_USABLE_ADDRESS; address <= I2C_LAST_USABLE_ADDRESS; ++address) {
+        if (I2C_IsDeviceReady(hi2c, address << 1U, 1U, I2C_SCAN_TIMEOUT_MS) == HAL_OK) {
+            LogInfo("System Monitor: I2C%u device found at 0x%02X", bus, address);
+            device_count++;
+        }
+    }
+
+    if (device_count == 0U) {
+        LogInfo("System Monitor: No devices found on I2C%u", bus);
+    } else {
+        LogInfo("System Monitor: Found %lu device(s) on I2C%u", device_count, bus);
+    }
+    return device_count;
 }
 
 /**

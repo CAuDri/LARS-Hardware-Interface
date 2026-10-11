@@ -73,6 +73,13 @@ class SystemMonitor {
     static void enterBootloader();
     static SystemWakeupReason getWakeupReason();
 
+    /**
+     * @brief Scan a supported I2C bus and log every responding 7-bit address.
+     * @param hi2c Initialized I2C1 or I2C2 HAL handle.
+     * @return Number of responding devices, or zero for an invalid bus.
+     */
+    static uint32_t scanI2CDevices(I2C_HandleTypeDef* hi2c);
+
     SystemCheck::SystemState getSystemState();
     bool getSystemCheckResult(SystemCheck::Result& result);
     bool getLastSystemCheckResult(SystemCheck::Result& result, uint32_t* age_ms = nullptr) const;
