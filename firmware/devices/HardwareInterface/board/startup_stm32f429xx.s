@@ -93,6 +93,20 @@ FillZerobss:
 LoopFillZerobss:
   cmp r2, r4
   bcc FillZerobss
+
+/* CAuDri - Zero fill the NOLOAD CCMRAM section. */
+  ldr r2, =_sccmram
+  ldr r4, =_eccmram
+  movs r3, #0
+  b LoopFillZeroCcmram
+
+FillZeroCcmram:
+  str  r3, [r2]
+  adds r2, r2, #4
+
+LoopFillZeroCcmram:
+  cmp r2, r4
+  bcc FillZeroCcmram
   
 /* Call static constructors */
     bl __libc_init_array
