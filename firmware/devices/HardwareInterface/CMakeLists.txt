@@ -50,6 +50,7 @@ target_sources(${PROJECT_NAME} PRIVATE
     ${LIB_DIR}/common/global_symbols.cpp
     ${LIB_DIR}/common/logger.c
     ${LIB_DIR}/common/thread_safe_can.c
+    ${LIB_DIR}/common/thread_safe_gpio.c
     ${LIB_DIR}/common/thread_safe_i2c.c
     ${LIB_DIR}/common/thread_safe_adc.c
     ${LIB_DIR}/common/usb_device_helper.c
