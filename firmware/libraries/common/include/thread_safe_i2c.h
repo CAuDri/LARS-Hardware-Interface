@@ -17,6 +17,8 @@ HAL_StatusTypeDef I2C_Transmit(I2C_HandleTypeDef* hi2c, uint16_t address, uint8_
 HAL_StatusTypeDef I2C_Receive(I2C_HandleTypeDef* hi2c, uint16_t address, uint8_t* data, uint16_t size);
 HAL_StatusTypeDef I2C_MemWrite(I2C_HandleTypeDef* hi2c, uint16_t address, uint16_t memAddress, uint8_t* data, uint16_t size);
 HAL_StatusTypeDef I2C_MemRead(I2C_HandleTypeDef* hi2c, uint16_t address, uint16_t memAddress, uint8_t* data, uint16_t size);
+HAL_StatusTypeDef I2C_MemWrite8(I2C_HandleTypeDef* hi2c, uint16_t address, uint8_t memAddress, uint8_t* data, uint16_t size);
+HAL_StatusTypeDef I2C_MemRead8(I2C_HandleTypeDef* hi2c, uint16_t address, uint8_t memAddress, uint8_t* data, uint16_t size);
 
 #ifdef __cplusplus
 }

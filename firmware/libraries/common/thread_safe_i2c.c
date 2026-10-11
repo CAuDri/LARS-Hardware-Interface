@@ -130,14 +130,14 @@ HAL_StatusTypeDef I2C_Transmit(I2C_HandleTypeDef* hi2c, uint16_t address, uint8_
             if ((flags & osFlagsError) != 0U) {
                 // If the abort fails, the I2C bus might be deadlocked
                 // Not much we can do here except logging the error
-                LogWarning("I2C: Abort transmit timeout, I2C state: 0x%02X", HAL_I2C_GetState(hi2c));
+                LogDebug("I2C: Abort transmit timeout, I2C state: 0x%02X", HAL_I2C_GetState(hi2c));
             }
         }
 
         osThreadFlagsClear(I2C_THREAD_FLAGS);
         osMutexRelease(mutex);
 
-        // LogWarning("I2C: Transmit error in thread '%s', flags: 0x%08lX, HAL error: %ld",
+        // Logebug("I2C: Transmit error in thread '%s', flags: 0x%08lX, HAL error: %ld",
         //            osThreadGetName(osThreadGetId()),
         //            flags,
         //            HAL_I2C_GetError(hi2c));
@@ -211,17 +211,17 @@ HAL_StatusTypeDef I2C_Receive(I2C_HandleTypeDef* hi2c, uint16_t address, uint8_t
             if ((flags & osFlagsError) != 0U) {
                 // If the abort fails, the I2C bus might be deadlocked
                 // Not much we can do here except logging the error
-                LogWarning("I2C: Abort receive timeout, I2C state: 0x%02X", HAL_I2C_GetState(hi2c));
+                LogDebug("I2C: Abort receive timeout, I2C state: 0x%02X", HAL_I2C_GetState(hi2c));
             }
         }
 
         osThreadFlagsClear(I2C_THREAD_FLAGS);
         osMutexRelease(mutex);
 
-        // LogWarning("I2C: Receive error in thread '%s', flags: 0x%08lX, HAL error: %ld",
-        //            osThreadGetName(osThreadGetId()),
-        //            flags,
-        //            HAL_I2C_GetError(hi2c));
+        LogDebug("I2C: Receive error in thread '%s', flags: 0x%08lX, HAL error: %ld",
+                   osThreadGetName(osThreadGetId()),
+                   flags,
+                   HAL_I2C_GetError(hi2c));
         return HAL_ERROR;
     }
 
@@ -271,6 +271,11 @@ HAL_StatusTypeDef I2C_MemWrite(I2C_HandleTypeDef* hi2c, uint16_t address, uint16
 
     status = HAL_I2C_Mem_Write_IT(hi2c, address, memAddress, I2C_MEMADD_SIZE, data, size);
     if (status != HAL_OK) {
+        if (hi2c->Instance == I2C1) {
+            i2c1_thread_id = NULL;
+        } else {
+            i2c2_thread_id = NULL;
+        }
         osMutexRelease(mutex);
         return status;
     }
@@ -286,6 +291,8 @@ HAL_StatusTypeDef I2C_MemWrite(I2C_HandleTypeDef* hi2c, uint16_t address, uint16
     }
 
     if ((flags & osFlagsError) != 0U || (flags & I2C_ERROR_FLAG) != 0U) {
+        const uint32_t transfer_flags = flags;
+        const uint32_t hal_error = HAL_I2C_GetError(hi2c);
         HAL_I2C_StateTypeDef state = HAL_I2C_GetState(hi2c);
         if (state == HAL_I2C_STATE_BUSY || state == HAL_I2C_STATE_BUSY_TX) {
             // Reset the HAL state and I2C peripheral to stop any ongoing transfers
@@ -295,17 +302,22 @@ HAL_StatusTypeDef I2C_MemWrite(I2C_HandleTypeDef* hi2c, uint16_t address, uint16
             if ((flags & osFlagsError) != 0U) {
                 // If the abort fails, the I2C bus might be deadlocked
                 // Not much we can do here except logging the error
-                LogWarning("I2C: Abort mem write timeout, I2C state: 0x%02X", HAL_I2C_GetState(hi2c));
+                LogDebug("I2C: Abort mem write timeout, I2C state: 0x%02X", HAL_I2C_GetState(hi2c));
             }
         }
 
         osThreadFlagsClear(I2C_THREAD_FLAGS);
+        if (hi2c->Instance == I2C1) {
+            i2c1_thread_id = NULL;
+        } else {
+            i2c2_thread_id = NULL;
+        }
         osMutexRelease(mutex);
 
-        LogWarning("I2C: Mem write error in thread '%s', flags: 0x%08lX, HAL error: %ld",
+        LogDebug("I2C: Mem write error in thread '%s', flags: 0x%08lX, HAL error: %ld",
                    osThreadGetName(osThreadGetId()),
-                   flags,
-                   HAL_I2C_GetError(hi2c));
+                   transfer_flags,
+                   hal_error);
         return HAL_ERROR;
     }
 
@@ -355,6 +367,11 @@ HAL_StatusTypeDef I2C_MemRead(I2C_HandleTypeDef* hi2c, uint16_t address, uint16_
 
     status = HAL_I2C_Mem_Read_IT(hi2c, address, memAddress, I2C_MEMADD_SIZE, data, size);
     if (status != HAL_OK) {
+        if (hi2c->Instance == I2C1) {
+            i2c1_thread_id = NULL;
+        } else {
+            i2c2_thread_id = NULL;
+        }
         osMutexRelease(mutex);
         return status;
     }
@@ -368,6 +385,8 @@ HAL_StatusTypeDef I2C_MemRead(I2C_HandleTypeDef* hi2c, uint16_t address, uint16_
     }
 
     if ((flags & osFlagsError) != 0U || (flags & I2C_ERROR_FLAG) != 0U) {
+        const uint32_t transfer_flags = flags;
+        const uint32_t hal_error = HAL_I2C_GetError(hi2c);
         HAL_I2C_StateTypeDef state = HAL_I2C_GetState(hi2c);
         if (state == HAL_I2C_STATE_BUSY || state == HAL_I2C_STATE_BUSY_RX) {
             // Reset the HAL state and I2C peripheral to stop any ongoing transfers
@@ -377,21 +396,195 @@ HAL_StatusTypeDef I2C_MemRead(I2C_HandleTypeDef* hi2c, uint16_t address, uint16_
             if ((flags & osFlagsError) != 0U) {
                 // If the abort fails, the I2C bus might be deadlocked
                 // Not much we can do here except logging the error
-                LogWarning("I2C: Abort mem read timeout, I2C state: 0x%02X", HAL_I2C_GetState(hi2c));
+                LogDebug("I2C: Abort mem read timeout, I2C state: 0x%02X", HAL_I2C_GetState(hi2c));
             }
         }
 
         osThreadFlagsClear(I2C_THREAD_FLAGS);
+        if (hi2c->Instance == I2C1) {
+            i2c1_thread_id = NULL;
+        } else {
+            i2c2_thread_id = NULL;
+        }
         osMutexRelease(mutex);
 
-        LogWarning("I2C: Mem read error in thread '%s', flags: 0x%08lX, HAL error: %ld",
+        LogDebug("I2C: Mem read error in thread '%s', flags: 0x%08lX, HAL error: %ld",
                    osThreadGetName(osThreadGetId()),
-                   flags,
-                   HAL_I2C_GetError(hi2c));
+                   transfer_flags,
+                   hal_error);
         return HAL_ERROR;
     }
 
     LogVerbose("I2C: Mem read complete in thread '%s'", osThreadGetName(osThreadGetId()));
+
+    if (hi2c->Instance == I2C1) {
+        i2c1_thread_id = NULL;
+    } else {
+        i2c2_thread_id = NULL;
+    }
+    osMutexRelease(mutex);
+    return HAL_OK;
+}
+
+/**
+ * @brief Thread-safe I2C memory write with an 8-bit register address.
+ *
+ * Same usage as HAL_I2C_Mem_Write_IT, but thread-safe and using
+ * I2C_MEMADD_SIZE_8BIT for devices with 8-bit register maps.
+ */
+HAL_StatusTypeDef I2C_MemWrite8(I2C_HandleTypeDef* hi2c, uint16_t address, uint8_t memAddress, uint8_t* data, uint16_t size) {
+    if (!i2c_initialized) {
+        LogError("I2C: I2C_MemWrite8 called before I2C_Init");
+        return HAL_ERROR;
+    }
+
+    HAL_StatusTypeDef status;
+    osMutexId_t mutex = (hi2c->Instance == I2C1) ? i2c1_mutex : i2c2_mutex;
+    if (osMutexAcquire(mutex, I2C_MUTEX_TIMEOUT_MS) != osOK) {
+        LogDebug("I2C: Mutex acquire failed on mem write8 in thread '%s'", osThreadGetName(osThreadGetId()));
+        return HAL_TIMEOUT;
+    }
+
+    if (hi2c->Instance == I2C1) {
+        i2c1_thread_id = osThreadGetId();
+    } else {
+        i2c2_thread_id = osThreadGetId();
+    }
+
+    osThreadFlagsClear(I2C_THREAD_FLAGS);
+
+    status = HAL_I2C_Mem_Write_IT(hi2c, address, memAddress, I2C_MEMADD_SIZE_8BIT, data, size);
+    if (status != HAL_OK) {
+        if (hi2c->Instance == I2C1) {
+            i2c1_thread_id = NULL;
+        } else {
+            i2c2_thread_id = NULL;
+        }
+        osMutexRelease(mutex);
+        return status;
+    }
+
+    uint32_t flags = osThreadFlagsWait(
+        I2C_COMPLETE_FLAG | I2C_ERROR_FLAG, osFlagsWaitAny, I2C_MAX_TX_TIMEOUT_MS * size);
+
+    if (flags == osFlagsErrorTimeout) {
+        LogDebug("I2C: Mem write8 timeout in thread '%s'", osThreadGetName(osThreadGetId()));
+        HAL_I2C_Master_Abort_IT(hi2c, address);
+    }
+
+    if ((flags & osFlagsError) != 0U || (flags & I2C_ERROR_FLAG) != 0U) {
+        const uint32_t transfer_flags = flags;
+        const uint32_t hal_error = HAL_I2C_GetError(hi2c);
+        HAL_I2C_StateTypeDef state = HAL_I2C_GetState(hi2c);
+        if (state == HAL_I2C_STATE_BUSY || state == HAL_I2C_STATE_BUSY_TX) {
+            HAL_I2C_Master_Abort_IT(hi2c, address);
+
+            flags = osThreadFlagsWait(I2C_ABORT_FLAG, osFlagsWaitAny, I2C_MAX_TX_TIMEOUT_MS);
+            if ((flags & osFlagsError) != 0U) {
+                LogDebug("I2C: Abort mem write8 timeout, I2C state: 0x%02X", HAL_I2C_GetState(hi2c));
+            }
+        }
+
+        osThreadFlagsClear(I2C_THREAD_FLAGS);
+        if (hi2c->Instance == I2C1) {
+            i2c1_thread_id = NULL;
+        } else {
+            i2c2_thread_id = NULL;
+        }
+        osMutexRelease(mutex);
+
+        LogDebug("I2C: Mem write8 error in thread '%s', flags: 0x%08lX, HAL error: %ld",
+                   osThreadGetName(osThreadGetId()),
+                   transfer_flags,
+                   hal_error);
+        return HAL_ERROR;
+    }
+
+    LogVerbose("I2C: Mem write8 complete in thread '%s'", osThreadGetName(osThreadGetId()));
+
+    if (hi2c->Instance == I2C1) {
+        i2c1_thread_id = NULL;
+    } else {
+        i2c2_thread_id = NULL;
+    }
+    osMutexRelease(mutex);
+    return HAL_OK;
+}
+
+/**
+ * @brief Thread-safe I2C memory read with an 8-bit register address.
+ *
+ * Same usage as HAL_I2C_Mem_Read_IT, but thread-safe and using
+ * I2C_MEMADD_SIZE_8BIT for devices with 8-bit register maps.
+ */
+HAL_StatusTypeDef I2C_MemRead8(I2C_HandleTypeDef* hi2c, uint16_t address, uint8_t memAddress, uint8_t* data, uint16_t size) {
+    if (!i2c_initialized) {
+        LogError("I2C: I2C_MemRead8 called before I2C_Init");
+        return HAL_ERROR;
+    }
+
+    HAL_StatusTypeDef status;
+    osMutexId_t mutex = (hi2c->Instance == I2C1) ? i2c1_mutex : i2c2_mutex;
+    if (osMutexAcquire(mutex, I2C_MUTEX_TIMEOUT_MS) != osOK) {
+        LogDebug("I2C: Mutex acquire failed on mem read8 in thread '%s'", osThreadGetName(osThreadGetId()));
+        return HAL_TIMEOUT;
+    }
+
+    if (hi2c->Instance == I2C1) {
+        i2c1_thread_id = osThreadGetId();
+    } else {
+        i2c2_thread_id = osThreadGetId();
+    }
+
+    osThreadFlagsClear(I2C_THREAD_FLAGS);
+
+    status = HAL_I2C_Mem_Read_IT(hi2c, address, memAddress, I2C_MEMADD_SIZE_8BIT, data, size);
+    if (status != HAL_OK) {
+        if (hi2c->Instance == I2C1) {
+            i2c1_thread_id = NULL;
+        } else {
+            i2c2_thread_id = NULL;
+        }
+        osMutexRelease(mutex);
+        return status;
+    }
+
+    uint32_t flags = osThreadFlagsWait(
+        I2C_COMPLETE_FLAG | I2C_ERROR_FLAG, osFlagsWaitAny, I2C_MAX_RX_TIMEOUT_MS * size);
+
+    if (flags == osFlagsErrorTimeout) {
+        LogDebug("I2C: Mem read8 timeout in thread '%s'", osThreadGetName(osThreadGetId()));
+    }
+
+    if ((flags & osFlagsError) != 0U || (flags & I2C_ERROR_FLAG) != 0U) {
+        const uint32_t transfer_flags = flags;
+        const uint32_t hal_error = HAL_I2C_GetError(hi2c);
+        HAL_I2C_StateTypeDef state = HAL_I2C_GetState(hi2c);
+        if (state == HAL_I2C_STATE_BUSY || state == HAL_I2C_STATE_BUSY_RX) {
+            HAL_I2C_Master_Abort_IT(hi2c, address);
+
+            flags = osThreadFlagsWait(I2C_ABORT_FLAG, osFlagsWaitAny, I2C_MAX_RX_TIMEOUT_MS);
+            if ((flags & osFlagsError) != 0U) {
+                LogDebug("I2C: Abort mem read8 timeout, I2C state: 0x%02X", HAL_I2C_GetState(hi2c));
+            }
+        }
+
+        osThreadFlagsClear(I2C_THREAD_FLAGS);
+        if (hi2c->Instance == I2C1) {
+            i2c1_thread_id = NULL;
+        } else {
+            i2c2_thread_id = NULL;
+        }
+        osMutexRelease(mutex);
+
+        LogDebug("I2C: Mem read8 error in thread '%s', flags: 0x%08lX, HAL error: %ld",
+                   osThreadGetName(osThreadGetId()),
+                   transfer_flags,
+                   hal_error);
+        return HAL_ERROR;
+    }
+
+    LogVerbose("I2C: Mem read8 complete in thread '%s'", osThreadGetName(osThreadGetId()));
 
     if (hi2c->Instance == I2C1) {
         i2c1_thread_id = NULL;
