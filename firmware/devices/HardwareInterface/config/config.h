@@ -158,7 +158,8 @@ AutonomousControl::Config autonomous_control_config{
 };
 
 SystemNode::Config system_node_config{
-    .thread_priority = osPriorityLow,
+    // TODO: Revert after demo
+    .thread_priority = osPriorityAboveNormal2,
     .heartbeat_publisher_config = {true, 0},
     .diagnostics_publisher_config = {false, 5},
     .service_config = {},
