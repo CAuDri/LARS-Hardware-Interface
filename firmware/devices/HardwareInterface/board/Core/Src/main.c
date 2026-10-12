@@ -156,6 +156,11 @@ int main(void)
 
   /* USER CODE BEGIN SysInit */
   
+  // CAuDri - Initialize the trace recorder for debugging with Tracealyzer
+  #ifdef DEBUG_USE_TRACE_RECORDER
+    xTraceInitialize();
+  #endif
+
   /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */
@@ -179,10 +184,7 @@ int main(void)
   // CAuDri - Replace CubeMX's occasionally broken generated USB serial callback
   usb_serial_descriptor_install(&FS_Desc, &HS_Desc);
 
-  // CAuDri - Initialize the trace recorder for debugging with Tracealyzer
-  #ifdef DEBUG_USE_TRACE_RECORDER
-    xTraceInitialize();
-  #endif
+
 
   /* USER CODE END 2 */
 
