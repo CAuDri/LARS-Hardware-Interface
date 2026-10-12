@@ -15,7 +15,21 @@
 #include <cstdio>
 #include <cstddef>
 
+#include "debug_config.h"
+#include "FreeRTOS.h"
+
+#ifdef DEBUG_USE_TRACE_RECORDER
+#ifdef DEBUG_TRACE_LOG_DRIVER_STATE
+#define LOG_DRIVER_STATE
+#endif
+#ifdef DEBUG_TRACE_LOG_DRIVER_CONNECTION
+#define LOG_CONNECTION_STATE
+#endif
+#endif
+
+#if defined(LOG_DRIVER_STATE) || defined(LOG_CONNECTION_STATE)
 #include <trcRecorder.h>
+#endif
 
 constexpr size_t TRACE_OBJECT_NAME_MAX_LENGTH = 28;
 constexpr size_t DRIVER_STATE_TRACE_STATE_COUNT = 4;
@@ -80,18 +94,11 @@ class Driver {
     /**
      * @brief Constructor for the common driver interface
      * 
-     * Initializes the driver state to UNINITIALIZED and sets up Tracealyzer state machines for state changes.
+     * Initializes the driver state to UNINITIALIZED.
      * 
      * @param name The name of the driver
      */
-    explicit Driver(const char* name) : name(name) {
-        // Tracealyzer state machines can only be initialized once the recorder is running.
-        // Should the driver be constructed before that, we defer initialization until the first state change.
-        if (initTraceStateMachines()) {
-            tracing_initialized = true;
-            tracing_enabled = true;
-        }
-    }
+    explicit Driver(const char* name) : name(name) {}
 
     /**
      * @brief Set the current state of the driver
@@ -109,17 +116,14 @@ class Driver {
         }
         state = new_state;
 
-        // Try to initialize Tracealyzer state machines on the first state change if not already done.
-        if (!tracing_initialized) {
-            if (initTraceStateMachines()) {
-                tracing_enabled = true;
-            }
-            tracing_initialized = true;
+#ifdef LOG_DRIVER_STATE
+        if (!state_tracing_initialized) {
+            state_tracing_initialized = true;
+            static constexpr const char* names[] = {"ERROR", "UNINITIALIZED", "INITIALIZED", "RUNNING"};
+            (void)initStateMachine(state_machine, state_handles, names, "Drv ", " State");
         }
-
-        if (tracing_enabled) {
-            traceState(state_machine, state_handles, stateToIndex(state));
-        }
+        traceState(state_machine, state_handles, stateToIndex(state));
+#endif
     }
 
     /**
@@ -135,29 +139,29 @@ class Driver {
         }
         connection_state = new_connection;
 
-        // Try to initialize Tracealyzer state machines on the first state change if not already done.
-        if (!tracing_initialized) {
-            if (initTraceStateMachines()) {
-                tracing_enabled = true;
-            }
-            tracing_initialized = true;
+#ifdef LOG_CONNECTION_STATE
+        if (!connection_tracing_initialized) {
+            connection_tracing_initialized = true;
+            static constexpr const char* names[] = {"DISCONNECTED", "CONNECTING", "CONNECTED", "UNKNOWN"};
+            (void)initStateMachine(connection_machine, connection_handles, names, "Drv ", " Conn");
         }
-
-        if (tracing_enabled) {
-            traceState(connection_machine, connection_handles, connectionToIndex(connection_state));
-        }
+        traceState(connection_machine, connection_handles, connectionToIndex(connection_state));
+#endif
     }
 
    private:
     const char* name = nullptr;
-    std::array<char, TRACE_OBJECT_NAME_MAX_LENGTH> trace_name{};
-
-    bool tracing_initialized = false;
-    bool tracing_enabled = false;
+#ifdef LOG_DRIVER_STATE
+    bool state_tracing_initialized = false;
     TraceStateMachineHandle_t state_machine = nullptr;
-    TraceStateMachineHandle_t connection_machine = nullptr;
     std::array<TraceStateMachineStateHandle_t, DRIVER_STATE_TRACE_STATE_COUNT> state_handles{};
+#endif
+#ifdef LOG_CONNECTION_STATE
+    bool connection_tracing_initialized = false;
+    TraceStateMachineHandle_t connection_machine = nullptr;
     std::array<TraceStateMachineStateHandle_t, DRIVER_CONNECTION_TRACE_STATE_COUNT> connection_handles{};
+#endif
+#if defined(LOG_DRIVER_STATE) || defined(LOG_CONNECTION_STATE)
 
     /**
      * @brief Convert a driver state to the matching TraceRecorder state index
@@ -194,20 +198,6 @@ class Driver {
     }
 
     /**
-     * @brief Build a short TraceRecorder object name within the configured symbol limit
-     */
-    void composeTraceName(const char* prefix, const char* suffix) {
-        const char* driver_name = name == nullptr ? "Unknown" : name;
-        const int written =
-            snprintf(trace_name.data(), trace_name.size(), "%s%s%s", prefix, driver_name, suffix);
-        if (written < 0) {
-            trace_name[0] = '\0';
-            return;
-        }
-        trace_name[trace_name.size() - 1U] = '\0';
-    }
-
-    /**
      * @brief Report trace setup failures without depending on registered log channels
      */
     void reportTraceFailure(uint32_t code) {
@@ -223,7 +213,9 @@ class Driver {
                           const char* const* state_names,
                           const char* name_prefix,
                           const char* name_suffix) {
-        composeTraceName(name_prefix, name_suffix);
+        std::array<char, TRACE_OBJECT_NAME_MAX_LENGTH> trace_name{};
+        snprintf(trace_name.data(), trace_name.size(), "%s%s%s", name_prefix,
+                 name == nullptr ? "Unknown" : name, name_suffix);
         if (xTraceStateMachineCreate(trace_name.data(), &machine) != TRC_SUCCESS || machine == nullptr) {
             reportTraceFailure(1U);
             return false;
@@ -253,27 +245,5 @@ class Driver {
         }
     }
 
-    /**
-     * @brief Initialize Tracealyzer state machines for driver state and connection state
-     */
-    bool initTraceStateMachines() {
-        if (tracing_initialized) {
-            return true;
-        }
-
-        static constexpr const char* STATE_NAMES[] = {"ERROR", "UNINITIALIZED", "INITIALIZED", "RUNNING"};
-        static constexpr const char* CONNECTION_NAMES[] = {"DISCONNECTED", "CONNECTING", "CONNECTED", "UNKNOWN"};
-
-        if (!initStateMachine(state_machine, state_handles, STATE_NAMES, "Drv ", " State")) {
-            return false;
-        }
-        if (!initStateMachine(connection_machine, connection_handles, CONNECTION_NAMES, "Drv ", " Conn")) {
-            return false;
-        }
-
-        traceState(state_machine, state_handles, stateToIndex(state));
-        traceState(connection_machine, connection_handles, connectionToIndex(connection_state));
-
-        return true;
-    }
+#endif
 };

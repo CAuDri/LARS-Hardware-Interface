@@ -12,9 +12,18 @@
 #include <cstdint>
 
 #include "state.hpp"
+#include "debug_config.h"
 
 #ifndef MICROROS_TRACE_ENABLED
 #define MICROROS_TRACE_ENABLED 1
+#endif
+
+#ifdef DEBUG_USE_TRACE_RECORDER
+#ifdef DEBUG_TRACE_LOG_NODE_STATE
+#if MICROROS_TRACE_ENABLED
+#define MICROROS_NODE_TRACE_ENABLED
+#endif
+#endif
 #endif
 
 namespace ros::trace {
@@ -36,6 +45,12 @@ struct StateMachine {
     bool failed = false;
 };
 
+#ifdef MICROROS_NODE_TRACE_ENABLED
+using NodeStateMachine = StateMachine;
+#else
+struct NodeStateMachine {};
+#endif
+
 /**
  * @brief Opaque wrapper around a TraceRecorder counter.
  */
@@ -50,8 +65,8 @@ void setClientState(size_t state_index);
 void setConnectionState(ConnectionState state);
 void setExecutorState(size_t state_index);
 
-void initNode(StateMachine& node_trace, const char* node_name);
-void setNodeState(StateMachine& node_trace, EntityState state);
+void initNode(NodeStateMachine& node_trace, const char* node_name);
+void setNodeState(NodeStateMachine& node_trace, EntityState state);
 
 void incrementConnectionAttempts();
 void incrementReconnects();

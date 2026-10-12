@@ -22,3 +22,8 @@
 // #define DEBUG_USE_TRACE_RECORDER  // Enable Tracealyzer trace recording
 #define DEBUG_WAIT_FOR_TRACEALYZER  // Halt the firmware and wait for Tracealyzer to connect
 #define DEBUG_TRACE_RECORDER_USB_HANDLE hUsbDebugPort
+
+// Uncomment to enable specific state machine tracing
+// #define DEBUG_TRACE_LOG_NODE_STATE
+// #define DEBUG_TRACE_LOG_DRIVER_STATE
+// #define DEBUG_TRACE_LOG_DRIVER_CONNECTION

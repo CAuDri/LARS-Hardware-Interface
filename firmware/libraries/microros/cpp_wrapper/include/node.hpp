@@ -55,7 +55,7 @@ class Node {
     rcl_ret_t last_error = RCL_RET_OK;
     bool registered = false;
     bool rcl_active = false;
-    trace::StateMachine trace_state{};
+    trace::NodeStateMachine trace_state{};
 
     rcl_ret_t composeNamespace();
     rcl_ret_t initRclcNode(rclc_support_t* support);

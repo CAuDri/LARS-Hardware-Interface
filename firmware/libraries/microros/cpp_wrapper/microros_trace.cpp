@@ -12,6 +12,7 @@
 #include <trcRecorder.h>
 #endif
 
+#include "logger.h"
 #include <climits>
 
 namespace ros::trace {
@@ -44,6 +45,7 @@ constexpr const char* EXECUTOR_STATES[] = {
     "STOPPED",
 };
 
+#ifdef MICROROS_NODE_TRACE_ENABLED
 constexpr const char* NODE_STATES[] = {
     "ERROR",
     "UNINITIALIZED",
@@ -51,11 +53,15 @@ constexpr const char* NODE_STATES[] = {
     "RUNNING",
 };
 
+#endif
+
 constexpr size_t CLIENT_STATE_COUNT = sizeof(CLIENT_STATES) / sizeof(CLIENT_STATES[0]);
 constexpr size_t CONNECTION_STATE_COUNT = sizeof(CONNECTION_STATES) / sizeof(CONNECTION_STATES[0]);
 constexpr size_t EXECUTOR_STATE_COUNT = sizeof(EXECUTOR_STATES) / sizeof(EXECUTOR_STATES[0]);
+#ifdef MICROROS_NODE_TRACE_ENABLED
 constexpr size_t NODE_STATE_COUNT = sizeof(NODE_STATES) / sizeof(NODE_STATES[0]);
 constexpr size_t TRACE_NAME_BUFFER_SIZE = 28;
+#endif
 
 StateMachine client_state_machine;
 StateMachine connection_state_machine;
@@ -83,7 +89,7 @@ TraceCounterHandle_t toCounterHandle(void* handle) {
 void printRegistrationError(uint32_t code) {
     // Compact user events do not need a registered string channel. That makes
     // them useful when the failure itself was caused by entry-table exhaustion.
-    (void)xTracePrintCompactF1("micro-ROS Trace", "Registration failed: %u", code);
+    LogWarning("micro-ROS Trace: Registration failed: %lu", code);
 }
 
 void initStateMachine(StateMachine& state_machine, const char* name, const char* const* states, size_t state_count) {
@@ -187,6 +193,7 @@ size_t toIndex(ConnectionState state) {
     return 0;
 }
 
+#ifdef MICROROS_NODE_TRACE_ENABLED
 size_t toIndex(EntityState state) {
     switch (state) {
         case EntityState::ERROR:
@@ -201,10 +208,13 @@ size_t toIndex(EntityState state) {
     return 0;
 }
 
+#endif
+
 int32_t clampCounterValue(size_t value) {
     return value > static_cast<size_t>(INT_MAX) ? INT_MAX : static_cast<int32_t>(value);
 }
 
+#ifdef MICROROS_NODE_TRACE_ENABLED
 void composeNodeTraceName(char* buffer, size_t size, const char* node_name) {
     if (buffer == nullptr || size == 0U) {
         return;
@@ -223,6 +233,8 @@ void composeNodeTraceName(char* buffer, size_t size, const char* node_name) {
     }
     buffer[index] = '\0';
 }
+
+#endif
 
 }  // namespace
 
@@ -253,15 +265,21 @@ void setExecutorState(size_t state_index) {
     setState(executor_state_machine, state_index);
 }
 
-void initNode(StateMachine& node_trace, const char* node_name) {
+#ifdef MICROROS_NODE_TRACE_ENABLED
+void initNode(NodeStateMachine& node_trace, const char* node_name) {
     char trace_name[TRACE_NAME_BUFFER_SIZE] = {};
     composeNodeTraceName(trace_name, sizeof(trace_name), node_name);
     initStateMachine(node_trace, trace_name, NODE_STATES, NODE_STATE_COUNT);
 }
 
-void setNodeState(StateMachine& node_trace, EntityState state) {
+void setNodeState(NodeStateMachine& node_trace, EntityState state) {
     setState(node_trace, toIndex(state));
 }
+
+#else
+void initNode(NodeStateMachine&, const char*) {}
+void setNodeState(NodeStateMachine&, EntityState) {}
+#endif
 
 void incrementConnectionAttempts() {
     initClient();
