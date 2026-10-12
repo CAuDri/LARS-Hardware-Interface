@@ -60,6 +60,7 @@ target_sources(${PROJECT_NAME} PRIVATE
     ${LIB_DIR}/drivers/vesc.cpp
     ${LIB_DIR}/drivers/servo.cpp
     ${LIB_DIR}/drivers/ws2812.cpp
+    ${LIB_DIR}/drivers/bno055.cpp
 
     # Light implementations and helpers
     ${LIB_DIR}/lights/gpio_light.cpp
@@ -68,6 +69,7 @@ target_sources(${PROJECT_NAME} PRIVATE
 
     # ROS application nodes
     ${LIB_DIR}/nodes/autonomous_control.cpp
+    ${LIB_DIR}/nodes/imu_publisher.cpp
     ${LIB_DIR}/nodes/logger_node.cpp
     ${LIB_DIR}/nodes/motor_publisher.cpp
     ${LIB_DIR}/nodes/servo_publisher.cpp

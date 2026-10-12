@@ -8,8 +8,10 @@
 
 // #include "blink_animation.hpp"
 #include "autonomous_control.hpp"
+#include "bno055.hpp"
 #include "config/config.h"
 #include "gpio_light.hpp"
+#include "imu_publisher.hpp"
 #include "light_dispatcher.hpp"
 #include "logger.h"
 #if DEBUG_LOG_OUTPUT == LOG_OUTPUT_ROS
@@ -35,6 +37,7 @@ WS2812<13> ws2812_top("WS2812 Top");  // WS2812 driver for the top LED string
 RCReceiver rc_receiver;      // RC Receiver driver for handling remote control input
 VESC motor("VESC Driver");   // VESC driver for motor control
 Servo servo("Servo Front");  // Servo driver for steering control and feedback
+BNO055 imu("BNO055 IMU");  // BNO055 driver for inertial measurements
 
 DriveController drive_controller;  // Drive controller for managing vehicle drive modes and high-level control
 
@@ -58,6 +61,7 @@ LoggerNode logger_node;                   // ROS 2 node for publishing firmware 
 #endif
 ServoPublisher servo_publisher;           // ROS 2 node for publishing servo feedback messages
 MotorPublisher motor_publisher;           // ROS 2 node for publishing motor feedback and telemetry messages
+ImuPublisher imu_publisher;  // ROS 2 node for publishing inertial measurements
 AutonomousControl autonomous_control;     // ROS 2 node for receiving autonomous drive commands
 SystemNode system_node;                   // ROS 2 node for heartbeat and hardware operation services
 
@@ -105,6 +109,9 @@ void mainTask() {
     servo.init(servo_config, servo_calibration);
     servo.start();
 
+    imu.init(bno055_config);
+    imu.start();
+
     drive_controller.init(drive_controller_config, rc_receiver, motor, servo, onboard_led_1);
 
     /**
@@ -122,6 +129,10 @@ void mainTask() {
     motor_publisher.registerMotor(motor, "measure/motor_feedback", "telemetry/motor", "motor");
     motor_publisher.start();
 
+    imu_publisher.init(microros_client, imu_publisher_config);
+    imu_publisher.registerImu(imu, "measure/imu", "imu");
+    imu_publisher.start();
+
     autonomous_control.init(microros_client, drive_controller, autonomous_control_config);
 
     system_node.init(microros_client, drive_controller, system_monitor, system_node_config);
@@ -133,6 +144,7 @@ void mainTask() {
     system_check.registerDriver(rc_receiver, true);
     system_check.registerDriver(motor, true);
     system_check.registerDriver(servo, false);
+    // system_check.registerDriver(imu, false);
     system_check.registerDriver(ws2812_top, false);
     system_check.registerClient(microros_client);
     #if DEBUG_LOG_OUTPUT == LOG_OUTPUT_ROS
@@ -140,6 +152,7 @@ void mainTask() {
     #endif
     system_check.registerNode(servo_publisher);
     system_check.registerNode(motor_publisher);
+    // system_check.registerNode(imu_publisher);
     system_check.registerNode(autonomous_control);
     system_check.registerNode(system_node);
 

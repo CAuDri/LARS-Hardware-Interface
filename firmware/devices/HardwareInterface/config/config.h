@@ -10,8 +10,10 @@
 #pragma once
 
 #include "autonomous_control.hpp"
+#include "bno055.hpp"
 #include "client.hpp"
 #include "drive_controller.hpp"
+#include "imu_publisher.hpp"
 #include "main.h"
 #include "motor_publisher.hpp"
 #include "rc_receiver.hpp"
@@ -53,6 +55,12 @@ ros::Client::Config microros_client_config{
 };
 
 /***************** ROS Node Configuration ****************/
+
+ImuPublisher::Config imu_publisher_config{
+    .publish_period_ms = IMU_PUBLISHER_DEFAULT_PERIOD_MS,
+    .thread_priority = osPriorityNormal1,
+    .publisher_config = {true, 0},
+};
 
 ServoPublisher::Config servo_publisher_config{
     .publish_period_ms = SERVO_PUBLISHER_DEFAULT_PERIOD_MS,
@@ -105,6 +113,15 @@ DriveController::Config drive_controller_config{
 };
 
 /***************** Driver Configurations *******************/
+
+BNO055::Config bno055_config{
+    .hi2c = &hi2c2,
+    .address = BNO055_I2C_ADDR_LO,
+    .reset_port = I2C2_GPIO4_GPIO_Port,
+    .reset_pin = I2C2_GPIO4_Pin,
+    .interrupt_port = I2C2_GPIO3_GPIO_Port,
+    .interrupt_pin = I2C2_GPIO3_Pin,
+};
 
 RCReceiver::Config rc_config{
     .huart = &huart2,
