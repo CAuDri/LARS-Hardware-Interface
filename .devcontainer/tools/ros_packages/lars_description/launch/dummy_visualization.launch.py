@@ -30,5 +30,11 @@ def generate_launch_description():
                 name="lars_steering_joint_state_bridge",
                 output="screen",
             ),
+            Node(
+                package="lars_description",
+                executable="imu_orientation_tf_bridge.py",
+                name="lars_imu_orientation_tf_bridge",
+                output="screen",
+            ),
         ]
     )

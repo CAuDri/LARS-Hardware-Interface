@@ -10,6 +10,7 @@ install(
 
 install(
     PROGRAMS
+        scripts/imu_orientation_tf_bridge.py
         scripts/steering_joint_state_bridge.py
     DESTINATION lib/${PROJECT_NAME}
 )

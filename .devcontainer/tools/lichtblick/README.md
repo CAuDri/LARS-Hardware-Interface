@@ -115,7 +115,11 @@ and use the firmware-side safety checks as the final authority.
 The 3D panel loads the temporary `lars_description` URDF from the ROS 2
 `/robot_description` topic. In the layout this topic is enabled under the 3D
 panel's `topics` config so Lichtblick treats it as a URDF renderable, not just
-as a raw `std_msgs/String` topic.
+as a raw `std_msgs/String` topic. A host-side bridge publishes the orientation
+from `/hardware/measure/imu` as the visualization-only transform
+`imu_visualization_world -> vehicle_visualization_frame`; the model and its
+steering joints remain below that frame. A semi-transparent 10 cm grid stays
+fixed in `imu_visualization_world` as a level reference.
 
 ## Files
 

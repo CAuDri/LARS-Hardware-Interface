@@ -10,6 +10,15 @@
     <color rgba="0.12 0.13 0.14 1.0"/>
   </material>
 
+  <!-- Host-only root used to apply the measured IMU orientation to the model. -->
+  <link name="vehicle_visualization_frame"/>
+
+  <joint name="vehicle_visualization_joint" type="fixed">
+    <parent link="vehicle_visualization_frame"/>
+    <child link="base_link"/>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+  </joint>
+
   <link name="base_link">
     <visual>
       <origin xyz="0 0 0.12" rpy="0 0 0"/>

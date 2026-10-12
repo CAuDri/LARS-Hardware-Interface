@@ -39,7 +39,7 @@
       "expandedKeys": [
         "name:Topics"
       ],
-      "followMode": "follow-pose",
+      "followMode": "follow-position",
       "followTf": "base_link",
       "modifiedNamespaceTopics": [],
       "pinTopics": false,
@@ -73,7 +73,31 @@
           "maxValue": 4
         }
       },
-      "layers": {},
+      "layers": {
+        "lars-imu-reference-grid": {
+          "visible": true,
+          "frameLocked": true,
+          "label": "IMU reference grid",
+          "instanceId": "lars-imu-reference-grid",
+          "layerId": "foxglove.Grid",
+          "frameId": "imu_visualization_world",
+          "divisions": 20,
+          "lineWidth": 0.2,
+          "color": "#8793a84d",
+          "position": [
+            0,
+            0,
+            -0.01
+          ],
+          "rotation": [
+            0,
+            0,
+            0
+          ],
+          "order": 1,
+          "size": 2
+        }
+      },
       "publish": {
         "type": "point",
         "poseTopic": "/move_base_simple/goal",

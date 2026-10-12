@@ -101,7 +101,8 @@ ensure_lars_ros_overlay() {
     ensure_lars_ros_workspace_layout
 
     if [ -f "${LARS_ROS_WS}/install/lars_msgs/share/lars_msgs/package.bash" ] \
-        && [ -f "${LARS_ROS_WS}/install/lars_description/share/lars_description/package.bash" ]; then
+        && [ -f "${LARS_ROS_WS}/install/lars_description/share/lars_description/package.bash" ] \
+        && [ -x "${LARS_ROS_WS}/install/lars_description/lib/lars_description/imu_orientation_tf_bridge.py" ]; then
         return 0
     fi
 
@@ -558,6 +559,7 @@ start_bridge() {
 cleanup_stale_description_processes() {
     pkill -f "${LARS_ROS_WS}/install/lars_description/lib/lars_description/mock_joint_states.py" 2>/dev/null || true
     pkill -f "${LARS_ROS_WS}/install/lars_description/lib/lars_description/mock_scene_markers.py" 2>/dev/null || true
+    pkill -f "${LARS_ROS_WS}/install/lars_description/lib/lars_description/imu_orientation_tf_bridge.py" 2>/dev/null || true
     pkill -f "${LARS_ROS_WS}/install/lars_description/lib/lars_description/steering_joint_state_bridge.py" 2>/dev/null || true
 }
 
