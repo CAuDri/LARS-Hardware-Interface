@@ -328,9 +328,19 @@ lichtblick_extension_package_stale() {
         return 0
     fi
 
+    local package_input
+    for package_input in src package.json package-lock.json tsconfig.json README.md CHANGELOG.md; do
+        if [ ! -e "${LARS_LICHTBLICK_EXTENSION_DIR}/${package_input}" ]; then
+            return 0
+        fi
+    done
+
     find "${LARS_LICHTBLICK_EXTENSION_DIR}/src" \
         "${LARS_LICHTBLICK_EXTENSION_DIR}/package.json" \
+        "${LARS_LICHTBLICK_EXTENSION_DIR}/package-lock.json" \
         "${LARS_LICHTBLICK_EXTENSION_DIR}/tsconfig.json" \
+        "${LARS_LICHTBLICK_EXTENSION_DIR}/README.md" \
+        "${LARS_LICHTBLICK_EXTENSION_DIR}/CHANGELOG.md" \
         -newer "${LARS_LICHTBLICK_EXTENSION_PACKAGE}" -print -quit | grep -q .
 }
 
@@ -347,13 +357,21 @@ ensure_lichtblick_extension_package() {
     ensure_node_available || return 1
 
     echo "Packaging LARS Lichtblick extension in ${LARS_LICHTBLICK_EXTENSION_DIR}"
-    pushd "${LARS_LICHTBLICK_EXTENSION_DIR}" >/dev/null
+    pushd "${LARS_LICHTBLICK_EXTENSION_DIR}" >/dev/null || return 1
 
     if [ ! -d node_modules ]; then
-        npm install
+        if ! npm install; then
+            popd >/dev/null
+            echo "Could not install LARS Lichtblick extension dependencies."
+            return 1
+        fi
     fi
 
-    npm run package
+    if ! npm run package; then
+        popd >/dev/null
+        echo "Could not package the LARS Lichtblick extension."
+        return 1
+    fi
     popd >/dev/null
 
     if [ -f "${LARS_LICHTBLICK_EXTENSION_PACKAGE}" ]; then
