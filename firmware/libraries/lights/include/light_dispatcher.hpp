@@ -16,7 +16,7 @@
 #define LIGHT_DISPATCHER_MAX_LIGHTS 4
 
 #define LIGHT_DISPATCHER_THREAD_STACK_SIZE 1024
-#define LIGHT_DISPATCHER_THREAD_PRIORITY osPriorityLow
+#define LIGHT_DISPATCHER_THREAD_PRIORITY osPriorityBelowNormal
 
 class LightDispatcher {
 public:

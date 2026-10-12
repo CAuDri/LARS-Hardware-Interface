@@ -38,7 +38,7 @@ class LoggerNode : public Node {
     struct Config {
         const char* topic = LOGGER_NODE_ROSOUT_TOPIC;
         const char* logger_name = LOGGER_NODE_LOGGER_NAME;
-        BasePublisher::Config publisher_config{true, 0};
+        BasePublisher::Config publisher_config{false, 0};
     };
 
     LoggerNode();

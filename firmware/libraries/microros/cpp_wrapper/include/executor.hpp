@@ -15,7 +15,7 @@
 #include "event_groups.h"
 #include "task.h"
 
-constexpr uint32_t ROS_EXECUTOR_SPIN_PERIOD_MS = 1;
+constexpr uint32_t ROS_EXECUTOR_SPIN_PERIOD_MS = 5;
 constexpr uint64_t ROS_EXECUTOR_SPIN_TIMEOUT_NS = 10000;
 constexpr uint32_t ROS_EXECUTOR_THREAD_STACK_SIZE = 8192;
 constexpr uint32_t ROS_EXECUTOR_WAKE_FLAG = 0x01U;

@@ -29,7 +29,7 @@ extern bool logger_ros_publish(uint32_t level, uint32_t timestamp_ms, const char
 
 // Thread configuration
 #define LOG_THREAD_STACK_SIZE 2048
-#define LOG_THREAD_PRIORITY osPriorityLow
+#define LOG_THREAD_PRIORITY osPriorityLow1
 
 // Nr of messages that can be stored in the log message queue
 // If this number is too low, log messages might be dropped on high system load

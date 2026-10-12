@@ -52,7 +52,7 @@ ros::Client::Config microros_client_config{
             .read = usb_cdc_transport_read,
         },
     .base_namespace = "/hardware",
-    .client_thread_priority = osPriorityNormal1,
+    .client_thread_priority = osPriorityHigh,
     .executor_thread_priority = osPriorityRealtime,
 };
 
@@ -74,14 +74,14 @@ ServoPublisher::Config servo_publisher_config{
     .publish_period_ms = SERVO_PUBLISHER_DEFAULT_PERIOD_MS,
     .read_failure_threshold = SERVO_PUBLISHER_DEFAULT_READ_FAILURE_THRESHOLD,
     .recovery_probe_interval_ms = SERVO_PUBLISHER_DEFAULT_RECOVERY_PROBE_INTERVAL_MS,
-    .thread_priority = osPriorityNormal,
+    .thread_priority = osPriorityAboveNormal,
     .publisher_config = {true, 0},
 };
 
 MotorPublisher::Config motor_publisher_config{
     .publish_period_ms = MOTOR_PUBLISHER_DEFAULT_PERIOD_MS,
     .telemetry_period_ms = MOTOR_PUBLISHER_DEFAULT_TELEMETRY_PERIOD_MS,
-    .thread_priority = osPriorityNormal,
+    .thread_priority = osPriorityAboveNormal1,
 };
 
 AutonomousControl::Config autonomous_control_config{
@@ -143,7 +143,7 @@ BNO055::Config bno055_config{
 RCReceiver::Config rc_config{
     .huart = &huart2,
     .baud_rate = 420000,
-    .task_priority = osPriorityHigh,
+    .task_priority = osPriorityRealtime1,
 };
 
 VESC::Config vesc_config{

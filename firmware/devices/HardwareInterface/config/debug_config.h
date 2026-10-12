@@ -12,7 +12,7 @@
 
 /* ------ Logger Configuration ------ */
 
-#define DEBUG_LOG_LEVEL LOG_LEVEL_DEBUG        // Set the log level
+#define DEBUG_LOG_LEVEL LOG_LEVEL_INFO         // Set the log level
 #define DEBUG_LOG_OUTPUT LOG_OUTPUT_UART       // Set the log output
 #define DEBUG_LOG_HANDLE huart3                // Set the handle for the log output (e.g., huartX)
 #define DEBUG_LOG_TIMESTAMP LOG_TIMESTAMP_SYS  // Set the log timestamp

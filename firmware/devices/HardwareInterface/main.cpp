@@ -14,9 +14,7 @@
 #include "imu_publisher.hpp"
 #include "light_dispatcher.hpp"
 #include "logger.h"
-#if DEBUG_LOG_OUTPUT == LOG_OUTPUT_ROS
-    #include "logger_node.hpp"
-#endif
+#include "logger_node.hpp"
 #include "motor_publisher.hpp"
 #include "pulse_animation.hpp"
 #include "servo_publisher.hpp"
@@ -58,9 +56,7 @@ LightDispatcher light_dispatcher("Light Dispatcher");
 
 ros::Client microros_client;              // micro-ROS client for communication with the ROS 2 agent
 
-#if DEBUG_LOG_OUTPUT == LOG_OUTPUT_ROS
 LoggerNode logger_node;                   // ROS 2 node for publishing firmware log messages to /rosout
-#endif
 ServoPublisher servo_publisher;           // ROS 2 node for publishing servo feedback messages
 MotorPublisher motor_publisher;           // ROS 2 node for publishing motor feedback and telemetry messages
 ImuPublisher imu_publisher;  // ROS 2 node for publishing inertial measurements
@@ -89,7 +85,7 @@ void mainTask() {
         LogInfo("Main: Resetting peripherals...");
         SystemMonitor::resetPeripherals(500);
     } else {
-        SystemMonitor::resetPeripherals(0);
+        SystemMonitor::resetPeripherals(1000);
     }
 
     /**
@@ -118,14 +114,11 @@ void mainTask() {
     tof_front.init(vl53l5cx_config);
     tof_front.start();
 
-    drive_controller.init(drive_controller_config, rc_receiver, motor, servo, onboard_led_1);
 
     /**
      * Initialize all micro-ROS nodes
      */
-    #if DEBUG_LOG_OUTPUT == LOG_OUTPUT_ROS
     logger_node.init(microros_client);
-    #endif
 
     servo_publisher.init(microros_client, servo_publisher_config);
     servo_publisher.registerServo(servo, "measure/steering_angle", "servo");
@@ -176,6 +169,8 @@ void mainTask() {
     system_monitor.init(system_check, system_monitor_config);
     system_monitor.registerSystemStateCallback(onSystemStateChange);
     system_monitor.start();
+
+    drive_controller.init(drive_controller_config, rc_receiver, motor, servo, onboard_led_1);
 
     LogInfo("Main: Initialization complete");
 
