@@ -92,6 +92,14 @@ target_sources(${PROJECT_NAME} PRIVATE
     ${LIB_DIR}/misc/drive_controller.cpp
 )
 
+# The CubeMX USB library uses a shared static memory pool for all USB devices.
+# This can lead to memory corruption when multiple USB devices are hotplugged.
+# We need to wrap our custom allocation functions to avoid tempering with auto-generated code.
+target_link_options(${PROJECT_NAME} PRIVATE
+    -Wl,--wrap=USBD_static_malloc
+    -Wl,--wrap=USBD_static_free
+)
+
 target_include_directories(${PROJECT_NAME} PRIVATE
     config
     microros_lib/inc
