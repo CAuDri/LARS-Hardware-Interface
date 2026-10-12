@@ -19,6 +19,7 @@ RUN apt-get update && apt-get install -y \
     curl \
     udev \
     dos2unix \
+    openssh-client \
     # Build tools
     build-essential \
     cmake \
