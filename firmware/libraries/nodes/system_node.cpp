@@ -254,7 +254,7 @@ rcl_ret_t SystemNode::start() {
     if (started) {
         return RCL_RET_OK;
     }
-    if (getState() != EntityState::INITIALIZED) {
+    if (getState() == EntityState::UNINITIALIZED || getState() == EntityState::ERROR) {
         LogError("SystemNode: Cannot start, node is not initialized");
         return RCL_RET_NOT_INIT;
     }
