@@ -6,6 +6,7 @@
 #pragma once
 
 #include <cmsis_os2.h>
+#include <sensor_msgs/msg/temperature.h>
 #include <std_msgs/msg/empty.h>
 #include <std_srvs/srv/trigger.h>
 
@@ -33,14 +34,16 @@ using ros::Publisher;
 using ros::Service;
 using ros::service_types::std_srvs_Trigger;
 
-constexpr const char* SYSTEM_NODE_HEARTBEAT_TOPIC = "heartbeat";
 constexpr const char* SYSTEM_NODE_RESET_SERVICE = "reset";
 constexpr const char* SYSTEM_NODE_EMERGENCY_STOP_SERVICE = "emergency_stop";
+constexpr const char* SYSTEM_NODE_HEARTBEAT_TOPIC = "heartbeat";
 constexpr uint32_t SYSTEM_NODE_HEARTBEAT_PERIOD_MS = 1000;
-constexpr const char* SYSTEM_NODE_DIAGNOSTICS_TOPIC = "/diagnostics";
+constexpr const char* SYSTEM_NODE_DIAGNOSTICS_TOPIC = "diagnostics";
 constexpr uint32_t SYSTEM_NODE_DIAGNOSTICS_PERIOD_MS = 250;
+constexpr const char* SYSTEM_NODE_CPU_TEMPERATURE_TOPIC = "cpu_temp";
+constexpr uint32_t SYSTEM_NODE_CPU_TEMPERATURE_PERIOD_MS = 5000;
 constexpr uint32_t SYSTEM_NODE_RESET_DELAY_MS = 500;
-constexpr uint32_t SYSTEM_NODE_THREAD_STACK_SIZE = 1536;
+constexpr uint32_t SYSTEM_NODE_THREAD_STACK_SIZE = 1600;
 constexpr size_t SYSTEM_NODE_RESPONSE_BUFFER_SIZE = 96;
 
 /**
@@ -56,6 +59,7 @@ class SystemNode : public Node {
     struct Config {
         const char* heartbeat_topic = SYSTEM_NODE_HEARTBEAT_TOPIC;
         const char* diagnostics_topic = SYSTEM_NODE_DIAGNOSTICS_TOPIC;
+        const char* cpu_temperature_topic = SYSTEM_NODE_CPU_TEMPERATURE_TOPIC;
         const char* reset_service = SYSTEM_NODE_RESET_SERVICE;
         const char* emergency_stop_service = SYSTEM_NODE_EMERGENCY_STOP_SERVICE;
 
@@ -63,7 +67,7 @@ class SystemNode : public Node {
         uint32_t diagnostics_period_ms = SYSTEM_NODE_DIAGNOSTICS_PERIOD_MS;
         uint32_t reset_delay_ms = SYSTEM_NODE_RESET_DELAY_MS;
 
-        osPriority_t thread_priority = osPriorityLow;
+        osPriority_t thread_priority = osPriorityAboveNormal2;
         BasePublisher::Config heartbeat_publisher_config{true, 0};
         BasePublisher::Config diagnostics_publisher_config{true, 0};
         BaseService::Config service_config{};
@@ -90,6 +94,8 @@ class SystemNode : public Node {
     Publisher<std_msgs__msg__Empty> heartbeat_publisher{};
     std_msgs__msg__Empty heartbeat_message{};
     ros::diagnostics::DiagnosticPublisher diagnostics_publisher{};
+    Publisher<sensor_msgs__msg__Temperature> cpu_temperature_publisher{};
+    sensor_msgs__msg__Temperature cpu_temperature_message{};
 
     Service<std_srvs_Trigger, SystemNode> reset_service{};
     Service<std_srvs_Trigger, SystemNode> emergency_stop_service{};
@@ -100,6 +106,7 @@ class SystemNode : public Node {
     volatile uint32_t reset_request_time_ms = 0;
     bool heartbeat_publish_failure_reported = false;
     bool diagnostics_publish_failure_reported = false;
+    bool cpu_temperature_publish_failure_reported = false;
 
     osThreadId_t thread_id = nullptr;
     osThreadAttr_t thread_attributes{};
@@ -112,6 +119,7 @@ class SystemNode : public Node {
     void thread();
     void publishHeartbeat();
     void publishDiagnostics();
+    void publishCpuTemp();
     void publishSystemDiagnostic(const SystemCheck::Result& result, uint32_t age_ms);
     void publishClientDiagnostic(const SystemCheck::ClientStatus& status);
     void publishDriverDiagnostic(const SystemCheck::DriverStatus& status);

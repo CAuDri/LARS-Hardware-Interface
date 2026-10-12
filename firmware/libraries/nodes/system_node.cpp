@@ -11,15 +11,25 @@
 #include <cstring>
 
 #include "logger.h"
+#include "main.h"
 #include "system_monitor.hpp"
+#include "thread_safe_adc.h"
 #include "type_support.hpp"
 
+
 ROS_DECLARE_MESSAGE_TYPE(std_msgs, Empty);
+ROS_DECLARE_MESSAGE_TYPE(sensor_msgs, Temperature);
 
 static constexpr uint32_t SYSTEM_NODE_START_FLAG = 0x01U;
 static constexpr uint32_t SYSTEM_NODE_THREAD_POLL_MS = 50U;
 static constexpr const char* SYSTEM_NODE_NAME = "system";
 static constexpr const char* SYSTEM_NODE_HARDWARE_ID = "hardware_interface";
+static constexpr uint32_t CPU_TEMPERATURE_SAMPLE_COUNT = 10U;
+static constexpr uint32_t CPU_TEMPERATURE_SAMPLE_INTERVAL_MS = 20U;
+
+// Taken from STM32F4 reference manual
+static constexpr uintptr_t CPU_TEMPERATURE_CAL_30_ADDRESS = 0x1FFF7A2CU;
+static constexpr uintptr_t CPU_TEMPERATURE_CAL_110_ADDRESS = 0x1FFF7A2EU;
 
 SystemNode::SystemNode() = default;
 
@@ -178,6 +188,7 @@ rcl_ret_t SystemNode::init(Client& client,
     }
     if (config.heartbeat_topic == nullptr || config.heartbeat_topic[0] == '\0' ||
         config.diagnostics_topic == nullptr || config.diagnostics_topic[0] == '\0' ||
+        config.cpu_temperature_topic == nullptr || config.cpu_temperature_topic[0] == '\0' ||
         config.reset_service == nullptr || config.reset_service[0] == '\0' ||
         config.emergency_stop_service == nullptr || config.emergency_stop_service[0] == '\0' ||
         config.heartbeat_period_ms == 0U || config.diagnostics_period_ms == 0U ||
@@ -190,6 +201,14 @@ rcl_ret_t SystemNode::init(Client& client,
     this->drive_controller = &drive_controller;
     this->system_monitor = &system_monitor;
     this->config = config;
+
+    // Preserve the existing TIM5/DMA acquisition. HAL enables TSVREFE and
+    // disables the multiplexed VBAT input when given ADC_CHANNEL_TEMPSENSOR.
+    // The internal sensor requires at least 10 us acquisition time.
+    if (ADC_RegisterChannelWithSamplingTime(&hadc1, ADC_CHANNEL_TEMPSENSOR, ADC_SAMPLETIME_480CYCLES) != HAL_OK) {
+        LogError("SystemNode: Failed to register CPU temperature ADC channel");
+        return RCL_RET_ERROR;
+    }
 
     rcl_ret_t result = Node::init(client, SYSTEM_NODE_NAME);
     if (result != RCL_RET_OK) {
@@ -208,6 +227,17 @@ rcl_ret_t SystemNode::init(Client& client,
         LogError("SystemNode: Failed to initialize diagnostics publisher: %d", static_cast<int>(result));
         return result;
     }
+
+    result = cpu_temperature_publisher.init(*this, config.cpu_temperature_topic, BasePublisher::Config{true, 0});
+    if (result != RCL_RET_OK) {
+        LogError("SystemNode: Failed to initialize CPU temperature publisher: %d", static_cast<int>(result));
+        return result;
+    }
+    static char temperature_frame_id[] = "mcu";
+    cpu_temperature_message.header.frame_id.data = temperature_frame_id;
+    cpu_temperature_message.header.frame_id.size = sizeof(temperature_frame_id) - 1U;
+    cpu_temperature_message.header.frame_id.capacity = sizeof(temperature_frame_id);
+    cpu_temperature_message.variance = 0.0;  // Unknown measurement variance.
 
     result = reset_service.init(*this, config.reset_service, this, &SystemNode::onResetRequest, config.service_config);
     if (result != RCL_RET_OK) {
@@ -315,6 +345,7 @@ void SystemNode::thread() {
 
     uint32_t last_heartbeat_ms = osKernelGetTickCount() - config.heartbeat_period_ms;
     uint32_t last_diagnostics_ms = osKernelGetTickCount() - config.diagnostics_period_ms;
+    uint32_t last_temperature_ms = osKernelGetTickCount();
 
     while (true) {
         const uint32_t now_ms = osKernelGetTickCount();
@@ -330,7 +361,56 @@ void SystemNode::thread() {
         }
 
         handlePendingReset(now_ms);
+        if ((now_ms - last_temperature_ms) >= SYSTEM_NODE_CPU_TEMPERATURE_PERIOD_MS) {
+            // Schedule from the window start, so the 200 ms are part of the
+            // five-second period rather than being added to it.
+            last_temperature_ms = now_ms;
+            publishCpuTemp();
+        }
         osDelay(SYSTEM_NODE_THREAD_POLL_MS);
+    }
+}
+
+void SystemNode::publishCpuTemp() {
+
+    // Factory calibration values at 30 and 110°C are stored in system memory
+    const uint16_t cal_30 = *reinterpret_cast<const uint16_t*>(CPU_TEMPERATURE_CAL_30_ADDRESS);
+    const uint16_t cal_110 = *reinterpret_cast<const uint16_t*>(CPU_TEMPERATURE_CAL_110_ADDRESS);
+    if (cal_110 <= cal_30 || client == nullptr) {
+        return;
+    }
+
+    uint32_t sum = 0U;
+    uint32_t sample_count = 0U;
+
+    // Sample the CPU temperature sensor multiple times to reduce noise
+    for (uint32_t i = 0U; i < CPU_TEMPERATURE_SAMPLE_COUNT; ++i) {
+        uint16_t raw = 0U;
+        if (ADC_GetValue(&hadc1, ADC_CHANNEL_TEMPSENSOR, &raw) == HAL_OK) {
+            sum += raw;
+            ++sample_count;
+        }
+        HAL_Delay(CPU_TEMPERATURE_SAMPLE_INTERVAL_MS);
+    }
+    if (sample_count != CPU_TEMPERATURE_SAMPLE_COUNT) {
+        LogWarning("SystemNode: Failed to sample CPU temperature sensor, only %lu/%lu samples collected",
+                   static_cast<unsigned long>(sample_count),
+                   static_cast<unsigned long>(CPU_TEMPERATURE_SAMPLE_COUNT));
+        return;
+    }
+
+    // STM32F429 factory calibration: 30/110 degrees C at VDDA = 3.3 V.
+    const double mean_raw = static_cast<double>(sum) / sample_count;
+    cpu_temperature_message.temperature = 30.0 + (mean_raw - cal_30) * 80.0 / (cal_110 - cal_30);
+    cpu_temperature_message.header.stamp = client->getRosTime();
+
+    // Publish using sensor_msgs/Temperature type, variance is unknown
+    const rcl_ret_t result = cpu_temperature_publisher.publish(cpu_temperature_message);
+    if (result == RCL_RET_OK) {
+        cpu_temperature_publish_failure_reported = false;
+    } else if (result != RCL_RET_NOT_INIT && !cpu_temperature_publish_failure_reported) {
+        LogWarning("SystemNode: Failed to publish CPU temperature: %d", static_cast<int>(result));
+        cpu_temperature_publish_failure_reported = true;
     }
 }
 
