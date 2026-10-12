@@ -101,7 +101,6 @@ bool MotorPublisher::registerMotor(VESC& motor,
         LogError("MotorPublisher: Invalid motor topic or frame id");
         return false;
     }
-
     MotorSlot& slot = motors[motor_count];
     slot.motor = &motor;
     slot.feedback_topic = feedback_topic;
@@ -133,6 +132,13 @@ rcl_ret_t MotorPublisher::start() {
         LogError("MotorPublisher: Cannot start without registered motors");
         markError(RCL_RET_INVALID_ARGUMENT);
         return RCL_RET_INVALID_ARGUMENT;
+    }
+    for (size_t i = 0; i < motor_count; ++i) {
+        if (motors[i].motor == nullptr || motors[i].motor->getState() != Driver::State::RUNNING) {
+            LogError("MotorPublisher: Motor '%s' is not running",
+                     motors[i].motor != nullptr ? motors[i].motor->getName() : "unknown");
+            return RCL_RET_NOT_INIT;
+        }
     }
 
     const rcl_ret_t result = initPublishers();

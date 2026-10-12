@@ -95,7 +95,6 @@ bool ServoPublisher::registerServo(Servo& servo, const char* topic_name, const c
         LogError("ServoPublisher: Invalid servo topic or frame id");
         return false;
     }
-
     ServoSlot& slot = servos[servo_count];
     slot.servo = &servo;
     slot.topic_name = topic_name;
@@ -126,6 +125,13 @@ rcl_ret_t ServoPublisher::start() {
         LogError("ServoPublisher: Cannot start without registered servos");
         markError(RCL_RET_INVALID_ARGUMENT);
         return RCL_RET_INVALID_ARGUMENT;
+    }
+    for (size_t i = 0; i < servo_count; ++i) {
+        if (servos[i].servo == nullptr || servos[i].servo->getState() != Driver::State::RUNNING) {
+            LogError("ServoPublisher: Servo '%s' is not running",
+                     servos[i].servo != nullptr ? servos[i].servo->getName() : "unknown");
+            return RCL_RET_NOT_INIT;
+        }
     }
 
     const rcl_ret_t result = initPublishers();
