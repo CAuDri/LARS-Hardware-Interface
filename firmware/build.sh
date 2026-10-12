@@ -39,6 +39,7 @@ OPENOCD_CFG="${BASE_DIR}/firmware/toolchain/openocd.cfg"
 
 # Start address for the firmware in flash memory (currently used for all devices in DFU mode)
 FIRMWARE_START_ADDR=0x08000000
+STM32_BOOTLOADER_VID_PID="0483:df11"  # STM32 bootloader VID:PID for DFU mode
 
 # Initialize device-specific variables
 _init_vars() {
@@ -302,7 +303,7 @@ flash() {
     # Check if a device is connected in DFU mode (/dev/bootloader symlink) and flash via USB
     if [ -e /dev/bootloader ]; then
         echo -e "Device detected in DFU mode, flashing via USB...\n"
-        sudo dfu-util -a 0 -s ${FIRMWARE_START_ADDR}:leave -D ${BUILD_DIR}/${DEVICE_NAME}.bin
+        sudo dfu-util -d ${STM32_BOOTLOADER_VID_PID} -a 0 -s ${FIRMWARE_START_ADDR}:leave -D ${BUILD_DIR}/${DEVICE_NAME}.bin
         if [ $? -eq 0 ]; then
             echo -e "\n${COLOR_GREEN}Firmware has been successfully flashed to the ${DEVICE_NAME}!${COLOR_RESET}\n"
         else
