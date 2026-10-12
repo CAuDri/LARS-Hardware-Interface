@@ -197,6 +197,7 @@ class Client {
     bool synchronizeTime();
     void clearSynchronizedTime();
     void publishConnectionState(ConnectionState new_state);
+    bool canInitializeEntity() const;
 
     rcl_ret_t initEntities();
     rcl_ret_t finiEntities();

@@ -206,7 +206,8 @@ rcl_ret_t Executor::addSubscription(rcl_subscription_t* subscription,
                                     rclc_subscription_callback_with_context_t callback,
                                     void* context,
                                     rclc_executor_handle_invocation_t invocation) {
-    if (state != State::INITIALIZED || subscription == nullptr || message == nullptr || callback == nullptr) {
+    if ((state != State::INITIALIZED && state != State::SPINNING) || subscription == nullptr || message == nullptr ||
+        callback == nullptr) {
         return RCL_RET_INVALID_ARGUMENT;
     }
 
@@ -235,7 +236,8 @@ rcl_ret_t Executor::addService(rcl_service_t* service,
                                void* response,
                                rclc_service_callback_with_context_t callback,
                                void* context) {
-    if (state != State::INITIALIZED || service == nullptr || request == nullptr || response == nullptr || callback == nullptr) {
+    if ((state != State::INITIALIZED && state != State::SPINNING) || service == nullptr || request == nullptr ||
+        response == nullptr || callback == nullptr) {
         return RCL_RET_INVALID_ARGUMENT;
     }
 

@@ -44,17 +44,21 @@ rcl_ret_t BasePublisher::init(Node& parent_node,
     config = publisher_config;
     connection_state = ConnectionState::DISCONNECTED;
 
+    // The client may materialize this publisher in an already active session
+    // during registration, so the wrapper must be initialized first.
+    registered = true;
+    state = EntityState::INITIALIZED;
+
     Client* client = node->getClient();
     const rcl_ret_t result = client->registerPublisher(this);
     if (result != RCL_RET_OK) {
+        registered = false;
         state = EntityState::ERROR;
         last_error = result;
         LogError("micro-ROS Publisher: Failed to register '%s': %d", topic_name, (int)result);
         return result;
     }
 
-    registered = true;
-    state = EntityState::INITIALIZED;
     last_error = RCL_RET_OK;
     LogDebug("micro-ROS Publisher: Registered '%s'", topic_name);
     return RCL_RET_OK;
@@ -134,6 +138,10 @@ rcl_ret_t BasePublisher::publishRaw(const void* message) {
         return RCL_RET_NOT_INIT;
     }
 
+    // rcl_publish by itself is already thread safe.
+    // We release the session mutex *before* publishing or we will suffer a huge performance decrease for all publishers.
+    // Essentially we only want to check if the mutex is already taken, to avoid publishing while other ROS entities are currently initialising.
+    // This can and will leave the ROS client in a unexpected state.
     client->unlockSession();
 
     result = rcl_publish(&rcl_publisher, message, nullptr);

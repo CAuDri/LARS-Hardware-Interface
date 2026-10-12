@@ -53,8 +53,16 @@ rcl_ret_t Node::init(Client& node_client, const char* node_name, const char* nod
     }
     connection_state = ConnectionState::DISCONNECTED;
 
+    // Registration may create the rcl node immediately when the client has
+    // already established a session. Expose the fully configured wrapper to
+    // that path before handing it to the client.
+    registered = true;
+    state = EntityState::INITIALIZED;
+    trace::setNodeState(trace_state, state);
+
     const rcl_ret_t result = client->registerNode(this);
     if (result != RCL_RET_OK) {
+        registered = false;
         state = EntityState::ERROR;
         trace::setNodeState(trace_state, state);
         trace::incrementErrors();
@@ -62,9 +70,6 @@ rcl_ret_t Node::init(Client& node_client, const char* node_name, const char* nod
         return result;
     }
 
-    registered = true;
-    state = EntityState::INITIALIZED;
-    trace::setNodeState(trace_state, state);
     last_error = RCL_RET_OK;
     LogDebug("micro-ROS Node: Registered '%s'", name);
     return RCL_RET_OK;

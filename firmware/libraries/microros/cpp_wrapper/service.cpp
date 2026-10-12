@@ -54,17 +54,21 @@ rcl_ret_t BaseService::init(Node& parent_node,
     config = service_config;
     connection_state = ConnectionState::DISCONNECTED;
 
+    // The client may materialize this service in an already active session
+    // during registration, so the wrapper must be initialized first.
+    registered = true;
+    state = EntityState::INITIALIZED;
+
     Client* client = node->getClient();
     const rcl_ret_t result = client->registerService(this);
     if (result != RCL_RET_OK) {
+        registered = false;
         state = EntityState::ERROR;
         last_error = result;
         LogError("micro-ROS Service: Failed to register '%s': %d", service_name, (int)result);
         return result;
     }
 
-    registered = true;
-    state = EntityState::INITIALIZED;
     last_error = RCL_RET_OK;
     LogDebug("micro-ROS Service: Registered '%s'", service_name);
     return RCL_RET_OK;

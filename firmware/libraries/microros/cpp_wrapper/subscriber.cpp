@@ -50,16 +50,20 @@ rcl_ret_t BaseSubscriber::init(Node& parent_node,
     config = subscriber_config;
     connection_state = ConnectionState::DISCONNECTED;
 
+    // The client may materialize this subscriber in an already active
+    // session during registration, so the wrapper must be initialized first.
+    registered = true;
+    state = EntityState::INITIALIZED;
+
     Client* client = node->getClient();
     const rcl_ret_t result = client->registerSubscriber(this);
     if (result != RCL_RET_OK) {
+        registered = false;
         state = EntityState::ERROR;
         last_error = result;
         return result;
     }
 
-    registered = true;
-    state = EntityState::INITIALIZED;
     last_error = RCL_RET_OK;
     LogDebug("micro-ROS Subscriber: Registered '%s'", topic_name);
     return RCL_RET_OK;

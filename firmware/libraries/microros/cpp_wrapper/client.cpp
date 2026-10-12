@@ -392,7 +392,7 @@ void Client::thread() {
             LogInfo("micro-ROS Client: Waiting for agent");
             waiting_for_agent_logged = true;
         }
-        
+
         rcl_ret_t result = connectSession();
 
         if (result == RCL_RET_OK) {
@@ -686,10 +686,19 @@ void Client::publishConnectionState(ConnectionState new_state) {
     }
 }
 
+bool Client::canInitializeEntity() const {
+    // The executor reaches SPINNING only after support and all initial
+    // entities have been created. It returns to INITIALIZED before session
+    // teardown, preventing a registration racing with disconnect from using
+    // stale rcl handles.
+    return support_active && !stop_requested && executor.getState() == Executor::State::SPINNING;
+}
+
 rcl_ret_t Client::initEntities() {
     // Entity creation is ordered from parent to child: nodes first, then the
-    // entities that depend on them. Public init() only registers wrappers, so
-    // this function can safely recreate everything after every reconnect.
+    // entities that depend on them. The per-entity initialization is
+    // idempotent, so this also safely recreates registered wrappers after a
+    // reconnect when no live rcl handle remains.
     for (size_t i = 0; i < node_count; i++) {
         const rcl_ret_t result = nodes[i]->initRclcNode(&support);
         if (result != RCL_RET_OK) {
@@ -772,8 +781,13 @@ rcl_ret_t Client::registerNode(Node* node) {
                  (uint32_t)nodes.size());
         result = RCL_RET_ERROR;
     } else {
-        nodes[node_count++] = node;
-        trace::setRegisteredNodeCount(node_count);
+        if (canInitializeEntity()) {
+            result = node->initRclcNode(&support);
+        }
+        if (result == RCL_RET_OK) {
+            nodes[node_count++] = node;
+            trace::setRegisteredNodeCount(node_count);
+        }
     }
     unlockSession();
     return result;
@@ -822,7 +836,12 @@ rcl_ret_t Client::registerPublisher(BasePublisher* publisher) {
                  (uint32_t)publishers.size());
         result = RCL_RET_ERROR;
     } else {
-        publishers[publisher_count++] = publisher;
+        if (canInitializeEntity()) {
+            result = publisher->initRclcPublisher();
+        }
+        if (result == RCL_RET_OK) {
+            publishers[publisher_count++] = publisher;
+        }
     }
     unlockSession();
     return result;
@@ -870,7 +889,12 @@ rcl_ret_t Client::registerSubscriber(BaseSubscriber* subscriber) {
                  (uint32_t)subscriptions.size());
         result = RCL_RET_ERROR;
     } else {
-        subscriptions[subscription_count++] = subscriber;
+        if (canInitializeEntity()) {
+            result = subscriber->initRclcSubscriber();
+        }
+        if (result == RCL_RET_OK) {
+            subscriptions[subscription_count++] = subscriber;
+        }
     }
     unlockSession();
     return result;
@@ -918,7 +942,12 @@ rcl_ret_t Client::registerService(BaseService* service) {
                  (uint32_t)services.size());
         result = RCL_RET_ERROR;
     } else {
-        services[service_count++] = service;
+        if (canInitializeEntity()) {
+            result = service->initRclcService();
+        }
+        if (result == RCL_RET_OK) {
+            services[service_count++] = service;
+        }
     }
     unlockSession();
     return result;
