@@ -61,6 +61,10 @@ target_sources(${PROJECT_NAME} PRIVATE
     ${LIB_DIR}/drivers/servo.cpp
     ${LIB_DIR}/drivers/ws2812.cpp
     ${LIB_DIR}/drivers/bno055.cpp
+    ${LIB_DIR}/drivers/vl53l5cx.cpp
+    ${LIB_DIR}/drivers/vendor/vl53l5cx/platform.c
+    ${LIB_DIR}/drivers/vendor/vl53l5cx/vl53l5cx_api.c
+    ${LIB_DIR}/drivers/vendor/vl53l5cx/vl53l5cx_plugin_xtalk.c
 
     # Light implementations and helpers
     ${LIB_DIR}/lights/gpio_light.cpp
@@ -74,6 +78,7 @@ target_sources(${PROJECT_NAME} PRIVATE
     ${LIB_DIR}/nodes/motor_publisher.cpp
     ${LIB_DIR}/nodes/servo_publisher.cpp
     ${LIB_DIR}/nodes/system_node.cpp
+    ${LIB_DIR}/nodes/tof_publisher.cpp
 
     # micro-ROS wrapper
     ${LIB_DIR}/microros/cpp_wrapper/client.cpp
@@ -109,6 +114,7 @@ target_include_directories(${PROJECT_NAME} PRIVATE
     ${LIB_DIR}/common/include
     ${LIB_DIR}/drivers/include
     ${LIB_DIR}/drivers/interfaces
+    ${LIB_DIR}/drivers/vendor/vl53l5cx
     ${LIB_DIR}/lights/include
     ${LIB_DIR}/lights/animations/include
     ${LIB_DIR}/nodes/include

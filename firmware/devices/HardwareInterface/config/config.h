@@ -20,10 +20,12 @@
 #include "servo.hpp"
 #include "servo_publisher.hpp"
 #include "system_node.hpp"
+#include "tof_publisher.hpp"
 #include "system_monitor.hpp"
 #include "usb_cdc_transport.h"
 #include "usb_device.h"
 #include "vesc.hpp"
+#include "vl53l5cx.hpp"
 #include "ws2812.hpp"
 
 /*****************  RC Channel Mappings *******************/
@@ -55,6 +57,12 @@ ros::Client::Config microros_client_config{
 };
 
 /***************** ROS Node Configuration ****************/
+
+TofPublisher::Config tof_publisher_config{
+    .publish_period_ms = TOF_PUBLISHER_DEFAULT_PERIOD_MS,
+    .thread_priority = osPriorityNormal,
+    .publisher_config = {false, 0},
+};
 
 ImuPublisher::Config imu_publisher_config{
     .publish_period_ms = IMU_PUBLISHER_DEFAULT_PERIOD_MS,
@@ -113,6 +121,15 @@ DriveController::Config drive_controller_config{
 };
 
 /***************** Driver Configurations *******************/
+
+VL53L5CX::Config vl53l5cx_config{
+    .hi2c = &hi2c1,
+    .address = 0x10,
+    .lpn_port = I2C1_GPIO8_GPIO_Port,
+    .lpn_pin = I2C1_GPIO8_Pin,
+    .interrupt_port = I2C1_GPIO7_GPIO_Port,
+    .interrupt_pin = I2C1_GPIO7_Pin,
+};
 
 BNO055::Config bno055_config{
     .hi2c = &hi2c2,

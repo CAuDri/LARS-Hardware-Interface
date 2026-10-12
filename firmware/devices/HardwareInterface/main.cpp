@@ -21,6 +21,7 @@
 #include "pulse_animation.hpp"
 #include "servo_publisher.hpp"
 #include "system_node.hpp"
+#include "vl53l5cx.hpp"
 #include "ws2812_light.hpp"
 
 /**
@@ -38,6 +39,7 @@ RCReceiver rc_receiver;      // RC Receiver driver for handling remote control i
 VESC motor("VESC Driver");   // VESC driver for motor control
 Servo servo("Servo Front");  // Servo driver for steering control and feedback
 BNO055 imu("BNO055 IMU");  // BNO055 driver for inertial measurements
+VL53L5CX tof_front("VL53L5CX Front");  // VL53L5CX driver for multi-zone time-of-flight ranging
 
 DriveController drive_controller;  // Drive controller for managing vehicle drive modes and high-level control
 
@@ -62,6 +64,7 @@ LoggerNode logger_node;                   // ROS 2 node for publishing firmware 
 ServoPublisher servo_publisher;           // ROS 2 node for publishing servo feedback messages
 MotorPublisher motor_publisher;           // ROS 2 node for publishing motor feedback and telemetry messages
 ImuPublisher imu_publisher;  // ROS 2 node for publishing inertial measurements
+TofPublisher tof_publisher;  // ROS 2 node for publishing time-of-flight sensor measurements
 AutonomousControl autonomous_control;     // ROS 2 node for receiving autonomous drive commands
 SystemNode system_node;                   // ROS 2 node for heartbeat and hardware operation services
 
@@ -112,6 +115,9 @@ void mainTask() {
     imu.init(bno055_config);
     imu.start();
 
+    tof_front.init(vl53l5cx_config);
+    tof_front.start();
+
     drive_controller.init(drive_controller_config, rc_receiver, motor, servo, onboard_led_1);
 
     /**
@@ -133,6 +139,10 @@ void mainTask() {
     imu_publisher.registerImu(imu, "measure/imu", "imu");
     imu_publisher.start();
 
+    tof_publisher.init(microros_client, tof_publisher_config);
+    tof_publisher.registerTof(tof_front, "measure/tof_front", "tof_front");
+    tof_publisher.start();
+
     autonomous_control.init(microros_client, drive_controller, autonomous_control_config);
 
     system_node.init(microros_client, drive_controller, system_monitor, system_node_config);
@@ -145,6 +155,7 @@ void mainTask() {
     system_check.registerDriver(motor, true);
     system_check.registerDriver(servo, false);
     // system_check.registerDriver(imu, false);
+    // system_check.registerDriver(tof_front, false);
     system_check.registerDriver(ws2812_top, false);
     system_check.registerClient(microros_client);
     #if DEBUG_LOG_OUTPUT == LOG_OUTPUT_ROS
@@ -153,6 +164,7 @@ void mainTask() {
     system_check.registerNode(servo_publisher);
     system_check.registerNode(motor_publisher);
     // system_check.registerNode(imu_publisher);
+    // system_check.registerNode(tof_publisher);
     system_check.registerNode(autonomous_control);
     system_check.registerNode(system_node);
 
