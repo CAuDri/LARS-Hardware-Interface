@@ -8,6 +8,7 @@
 
 #include <stdint.h>
 
+#include "stm32f4xx_hal.h"
 #include "usbd_def.h"
 
 #ifdef __cplusplus
@@ -27,6 +28,14 @@ typedef struct {
 void usb_cdc_line_coding_init(usb_cdc_line_coding_t *line_coding, uint32_t bitrate);
 void usb_cdc_line_coding_store(usb_cdc_line_coding_t *line_coding, const uint8_t *buffer, uint16_t length);
 void usb_cdc_line_coding_load(uint8_t *buffer, const usb_cdc_line_coding_t *line_coding, uint16_t length);
+
+// GNU ld --wrap routes the generated CDC allocator calls to these functions.
+void *__wrap_USBD_static_malloc(uint32_t size);
+void __wrap_USBD_static_free(void *memory);
+
+// Called from CubeMX's preserved Suspend/Resume USER CODE blocks.
+void usb_device_suspend_complete(PCD_HandleTypeDef *pcd);
+void usb_device_resume_prepare(PCD_HandleTypeDef *pcd);
 
 #ifdef __cplusplus
 }

@@ -5,7 +5,8 @@
  *
  * STM32CubeMX occasionally generates Get_SerialNum() without initializing its
  * local UID words. This helper provides a stable serial-number descriptor for
- * both Full-Speed and High-Speed USB devices, plus CDC line-coding helpers.
+ * both Full-Speed and High-Speed USB devices, plus CDC line coding, independent
+ * class storage and PHY suspend/resume helpers.
  */
 
 #include "usb_device_helper.h"
@@ -15,6 +16,7 @@
 #include <string.h>
 
 #include "stm32f4xx_hal.h"
+#include "usbd_cdc.h"
 
 #define USB_SERIAL_DESCRIPTOR_SIZE 26U
 #define USB_SERIAL_FIRST_WORD_DIGITS 8U
@@ -99,4 +101,62 @@ static void write_unicode_hex(uint32_t value, uint8_t *destination, uint8_t digi
         destination[index * 2U + 1U] = 0U;
         value <<= 4U;
     }
+}
+
+#define USB_CDC_CLASS_SLOT_COUNT 2U
+static USBD_CDC_HandleTypeDef usb_cdc_class_memory[USB_CDC_CLASS_SLOT_COUNT];
+static uint8_t usb_cdc_class_used[USB_CDC_CLASS_SLOT_COUNT];
+
+void *__wrap_USBD_static_malloc(uint32_t size)
+{
+    if (size == 0U || size > sizeof(usb_cdc_class_memory[0]))
+    {
+        return NULL;
+    }
+
+    // Both controllers allocate in IRQ context, including before RTOS startup.
+    const uint32_t interrupt_mask = __get_PRIMASK();
+    __disable_irq();
+    void *memory = NULL;
+    for (uint32_t i = 0U; i < USB_CDC_CLASS_SLOT_COUNT; ++i)
+    {
+        if (usb_cdc_class_used[i] == 0U)
+        {
+            usb_cdc_class_used[i] = 1U;
+            memory = &usb_cdc_class_memory[i];
+            break;
+        }
+    }
+    __set_PRIMASK(interrupt_mask);
+    return memory;
+}
+
+void __wrap_USBD_static_free(void *memory)
+{
+    const uint32_t interrupt_mask = __get_PRIMASK();
+    __disable_irq();
+    for (uint32_t i = 0U; i < USB_CDC_CLASS_SLOT_COUNT; ++i)
+    {
+        if (memory == &usb_cdc_class_memory[i])
+        {
+            usb_cdc_class_used[i] = 0U;
+            break;
+        }
+    }
+    __set_PRIMASK(interrupt_mask);
+}
+
+void usb_device_suspend_complete(PCD_HandleTypeDef *pcd)
+{
+    // CubeMX gates the PHY before USER CODE 2, even without low-power wakeup.
+    if (!pcd->Init.low_power_enable)
+    {
+        __HAL_PCD_UNGATE_PHYCLOCK(pcd);
+    }
+}
+
+void usb_device_resume_prepare(PCD_HandleTypeDef *pcd)
+{
+    // Restore the clock before CubeMX reports resume to the USB device stack.
+    __HAL_PCD_UNGATE_PHYCLOCK(pcd);
 }
