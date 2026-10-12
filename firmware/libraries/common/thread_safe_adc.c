@@ -43,7 +43,6 @@ static ThreadSafeADC_t adc2 = {.hadc = &hadc2, .initialized = false, .dma_buffer
 static ThreadSafeADC_t adc3 = {.hadc = &hadc3, .initialized = false, .dma_buffer = {0}, .registered_channels = {0}};
 
 static HAL_StatusTypeDef ADC_InitInstance(ADC_HandleTypeDef* hadc);
-static bool ADC_IsValidChannel(uint32_t channel);
 
 /**
  * @brief Initializes the thread-safe ADC wrapper with the specified sample rate.
@@ -167,14 +166,29 @@ HAL_StatusTypeDef ADC_Init() {
 }
 
 HAL_StatusTypeDef ADC_RegisterChannel(ADC_HandleTypeDef* hadc, uint32_t adc_channel) {
+    return ADC_RegisterChannelWithSamplingTime(hadc, adc_channel, ADC_SAMPLING_TIME);
+}
+
+HAL_StatusTypeDef ADC_RegisterChannelWithSamplingTime(ADC_HandleTypeDef* hadc,
+                                                      uint32_t adc_channel,
+                                                      uint32_t sampling_time) {
     if (hadc == NULL) {
         LogError("ADC: Invalid ADC handle in ADC_RegisterChannel");
         return HAL_ERROR;
     }
-    if (!ADC_IsValidChannel(adc_channel)) {
+    if (!IS_ADC_CHANNEL(adc_channel)) {
         LogError("ADC: Invalid ADC channel %lu in ADC_RegisterChannel", adc_channel);
         return HAL_ERROR;
     }
+
+    if (!IS_ADC_SAMPLE_TIME(sampling_time)) {
+        LogError("ADC: Invalid sampling time %lu", sampling_time);
+        return HAL_ERROR;
+    }
+
+    // Keep the complete HAL selector for peripheral configuration. Only the
+    // hardware channel field belongs in the DMA rank lookup, without HAL flags.
+    const uint32_t channel_index = adc_channel & ADC_CR1_AWDCH;
 
     ThreadSafeADC_t* adc_instance = NULL;
     if (hadc->Instance == ADC1) {
@@ -194,7 +208,7 @@ HAL_StatusTypeDef ADC_RegisterChannel(ADC_HandleTypeDef* hadc, uint32_t adc_chan
     }
 
     // Check if the channel is already registered
-    if (adc_instance->registered_channels[adc_channel] != 0) {
+    if (adc_instance->registered_channels[channel_index] != 0) {
         LogDebug("ADC: Channel %lu already registered for this ADC instance", adc_channel);
         return HAL_OK;
     }
@@ -203,7 +217,7 @@ HAL_StatusTypeDef ADC_RegisterChannel(ADC_HandleTypeDef* hadc, uint32_t adc_chan
         LogError("ADC: Maximum number of registered channels reached for this ADC instance");
         return HAL_ERROR;
     }
-    if (adc_channel < ADC_CHANNEL_0 || adc_channel > ADC_CHANNEL_18) {
+    if (channel_index < ADC_CHANNEL_0 || channel_index > ADC_CHANNEL_18) {
         LogError("ADC: Invalid ADC channel %lu", adc_channel);
         return HAL_ERROR;
     }
@@ -215,7 +229,7 @@ HAL_StatusTypeDef ADC_RegisterChannel(ADC_HandleTypeDef* hadc, uint32_t adc_chan
     ADC_ChannelConfTypeDef sConfig = {0};
     sConfig.Channel = adc_channel;
     sConfig.Rank = adc_instance->channel_count + 1;  // Ranks start from 1
-    sConfig.SamplingTime = ADC_SAMPLING_TIME;
+    sConfig.SamplingTime = sampling_time;
     sConfig.Offset = 0;
     if (HAL_ADC_ConfigChannel(hadc, &sConfig) != HAL_OK) {
         LogError("ADC: Failed to configure ADC channel %lu", adc_channel);
@@ -234,9 +248,12 @@ HAL_StatusTypeDef ADC_RegisterChannel(ADC_HandleTypeDef* hadc, uint32_t adc_chan
         LogError("ADC: Failed to restart ADC DMA after channel registration");
         return HAL_ERROR;
     }
+    // Start_DMA enables these again; retain the polling-only DMA policy from
+    // ADC_InitInstance so registration does not introduce per-sample IRQ load.
+    __HAL_DMA_DISABLE_IT(hadc->DMA_Handle, DMA_IT_TC | DMA_IT_HT);
 
     // Store the rank (dma buffer index) for the registered channel
-    adc_instance->registered_channels[adc_channel] = adc_instance->channel_count + 1;  // 1-indexed
+    adc_instance->registered_channels[channel_index] = adc_instance->channel_count + 1;  // 1-indexed
     adc_instance->channel_count++;
 
     LogDebug("ADC: Registered channel %lu for ADC instance %s",
@@ -257,7 +274,7 @@ HAL_StatusTypeDef ADC_GetValue(ADC_HandleTypeDef* hadc, uint32_t adc_channel, ui
         LogError("ADC: Invalid parameters in ADC_GetValue");
         return HAL_ERROR;
     }
-    if (!ADC_IsValidChannel(adc_channel)) {
+    if (!IS_ADC_CHANNEL(adc_channel)) {
         LogError("ADC: Invalid ADC channel %lu in ADC_GetValue", adc_channel);
         return HAL_ERROR;
     }
@@ -279,7 +296,8 @@ HAL_StatusTypeDef ADC_GetValue(ADC_HandleTypeDef* hadc, uint32_t adc_channel, ui
         return HAL_ERROR;
     }
 
-    uint32_t rank = adc_instance->registered_channels[adc_channel];
+    const uint32_t channel_index = adc_channel & ADC_CR1_AWDCH;
+    uint32_t rank = adc_instance->registered_channels[channel_index];
     if (rank == 0) {
         LogError("ADC: Channel %lu not registered for this ADC instance", adc_channel);
         return HAL_ERROR;
@@ -287,7 +305,7 @@ HAL_StatusTypeDef ADC_GetValue(ADC_HandleTypeDef* hadc, uint32_t adc_channel, ui
 
     // Atomic read of the ADC value from the DMA buffer
     // Convert from 1-indexed rank to 0-indexed buffer
-    *value = adc_instance->dma_buffer[rank - 1];
+    *value = ((volatile uint16_t*)adc_instance->dma_buffer)[rank - 1];
     return HAL_OK;
 }
 
@@ -376,20 +394,6 @@ static HAL_StatusTypeDef ADC_InitInstance(ADC_HandleTypeDef* hadc) {
     }
 
     return HAL_OK;
-}
-
-/**
- * @brief Checks if the given ADC channel is valid.
- *
- * @param channel The ADC channel to check.
- * @return true if the channel is valid, false otherwise.
- */
-static bool ADC_IsValidChannel(uint32_t channel) {
-    return (channel == ADC_CHANNEL_0 || channel == ADC_CHANNEL_1 || channel == ADC_CHANNEL_2 || channel == ADC_CHANNEL_3 ||
-            channel == ADC_CHANNEL_4 || channel == ADC_CHANNEL_5 || channel == ADC_CHANNEL_6 || channel == ADC_CHANNEL_7 ||
-            channel == ADC_CHANNEL_8 || channel == ADC_CHANNEL_9 || channel == ADC_CHANNEL_10 || channel == ADC_CHANNEL_11 ||
-            channel == ADC_CHANNEL_12 || channel == ADC_CHANNEL_13 || channel == ADC_CHANNEL_14 || channel == ADC_CHANNEL_15 ||
-            channel == ADC_CHANNEL_16 || channel == ADC_CHANNEL_17 || channel == ADC_CHANNEL_18);
 }
 
 /**
