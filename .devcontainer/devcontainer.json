@@ -45,19 +45,25 @@
         "--privileged",
         "--hostname=hardware-interface-dev"
     ],
+    // Lichtblick publishes HTTP port 8080 directly on the host Docker daemon.
+    // Only the bridge runs inside the devcontainer and needs forwarding.
     "forwardPorts": [
-        8080,
         8765
     ],
     "portsAttributes": {
         "8080": {
-            "label": "LARS ROS Visualizer",
-            "onAutoForward": "notify"
+            "label": "LARS ROS Visualizer (host Docker)",
+            "onAutoForward": "ignore"
         },
         "8765": {
             "label": "LARS Foxglove WebSocket Bridge",
             "onAutoForward": "notify"
         }
+    },
+    // HTTP is published by host Docker, including custom Lichtblick ports.
+    // Do not let URL detection create a competing local forwarding listener.
+    "otherPortsAttributes": {
+        "onAutoForward": "ignore"
     },
     // When a volume mount is used, the repository will be cloned into the container
     // Local changes will not be reflected in the container repository!!

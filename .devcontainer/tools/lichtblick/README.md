@@ -44,6 +44,29 @@ Lichtblick runs as a sibling container on the host Docker daemon. The
 devcontainer reaches it through the mounted Docker socket at
 `/var/run/docker.sock`.
 
+Docker publishes Lichtblick's HTTP port 8080 directly on the host. VS Code
+only forwards port 8765 for the bridge running inside the devcontainer.
+`otherPortsAttributes.onAutoForward` is set to `ignore` so custom HTTP ports
+such as 8081 are also excluded from automatic forwarding. The launcher emits
+the browser URL only after Docker has bound the HTTP port: terminal URL
+detection must not reserve that port before Docker starts.
+
+After changing the devcontainer configuration, rebuild/recreate the
+devcontainer to apply it. In the VS Code Ports view, stop any existing HTTP
+forwardings for 8080 and 8081 (or your selected custom port). Existing or
+restored forwardings can survive configuration changes. A forwarding listener
+on `127.0.0.1:8080` prevents Docker from publishing `0.0.0.0:8080`.
+
+If the error persists, check the actual Docker host, not the devcontainer:
+
+```bash
+sudo ss -ltnp 'sport = :8080 or sport = :8081'
+docker ps --format 'table {{.Names}}\t{{.Ports}}'
+```
+
+Stop the conflicting forwarding or service, then rerun the launcher. Changing
+the HTTP port alone does not fix automatic URL forwarding.
+
 On first launch, the script asks before creating the host-side container
 `lars-lichtblick`. The acknowledgement is stored at:
 

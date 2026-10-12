@@ -32,7 +32,8 @@
         "name:Topics",
         "t:/tf",
         "t:/tf_static",
-        "t:/robot_description"
+        "t:/robot_description",
+        "t:/hardware/measure/tof_front"
       ],
       "customBackgroundColor": "#000000",
       "expandedKeys": [
@@ -51,6 +52,25 @@
           "visible": true,
           "displayMode": "visual",
           "fallbackColor": "#ffffff"
+        },
+        "/hardware/measure/tof_front": {
+          "visible": true,
+          "frameLocked": false,
+          "pointSize": 8,
+          "pointShape": "circle",
+          "decayTime": 0,
+          "colorMode": "colormap",
+          "flatColor": "#00d9ff",
+          "colorField": "z",
+          "gradient": [
+            "#3b4cc0",
+            "#f7f7f7",
+            "#b40426"
+          ],
+          "colorMap": "turbo",
+          "explicitAlpha": 1,
+          "minValue": 0,
+          "maxValue": 4
         }
       },
       "layers": {},

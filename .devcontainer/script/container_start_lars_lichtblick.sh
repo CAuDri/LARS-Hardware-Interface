@@ -523,6 +523,10 @@ start_lichtblick() {
     fi
 
     echo "Lichtblick container ${LARS_LICHTBLICK_CONTAINER} did not start."
+    echo "If Docker reports 'address already in use', check listeners on the Docker host."
+    echo "In VS Code's Ports view, stop forwarding the selected Lichtblick HTTP port."
+    echo "The HTTP server runs on host Docker; only the WebSocket bridge needs forwarding."
+    echo "A port check inside the devcontainer cannot detect host-side listeners."
     return 1
 }
 
@@ -626,9 +630,8 @@ echo "Starting LARS Lichtblick dashboard"
 echo "  workspace:       ${LARS_ROS_WS}"
 echo "  image:           ${LARS_LICHTBLICK_IMAGE}"
 echo "  layout:          ${LARS_LICHTBLICK_LAYOUT}"
-echo "  Lichtblick URL:  http://localhost:${LARS_LICHTBLICK_PORT}"
-echo "  startup URL:     $(lichtblick_startup_url)"
-echo "  bridge URL:      ws://${LARS_BRIDGE_BROWSER_HOST}:${LARS_BRIDGE_PORT}"
+echo "  HTTP host port:  ${LARS_LICHTBLICK_PORT}"
+echo "  bridge port:     ${LARS_BRIDGE_PORT}"
 echo "  publish topics:  ${LARS_BRIDGE_CLIENT_TOPIC_WHITELIST}"
 echo "  dummy model:     ${LARS_LICHTBLICK_DUMMY_MODEL}"
 echo ""
@@ -636,6 +639,7 @@ echo ""
 start_lichtblick
 start_dummy_description
 start_bridge
+# Emit browser URLs only after Docker has bound the host HTTP port.
 open_url_best_effort "$(lichtblick_startup_url)"
 
 if [ -n "${bridge_pid}" ]; then

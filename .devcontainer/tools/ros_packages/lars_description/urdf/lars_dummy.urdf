@@ -26,6 +26,29 @@
     </collision>
   </link>
 
+  <!-- Front ToF optical frame: x right, y down, z forward. -->
+  <link name="tof_front">
+    <visual>
+      <geometry>
+        <box size="0.07 0.04 0.018"/>
+      </geometry>
+      <material name="lars_dark"/>
+    </visual>
+    <visual>
+      <origin xyz="0 0 0.011" rpy="0 0 0"/>
+      <geometry>
+        <cylinder radius="0.009" length="0.004"/>
+      </geometry>
+      <material name="lars_body_blue"/>
+    </visual>
+  </link>
+
+  <joint name="tof_front_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="tof_front"/>
+    <origin xyz="0.285 0 0.12" rpy="-1.57079632679 0 -1.57079632679"/>
+  </joint>
+
   <link name="front_left_wheel_link">
     <visual>
       <origin xyz="0 0 0" rpy="1.57079632679 0 0"/>
