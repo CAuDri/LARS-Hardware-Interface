@@ -23,6 +23,8 @@ extern "C" {
  * Try that in case of build problems. Otherwise, remove the #error line below.
  *****************************************************************************/
 #include "stm32f429xx.h"
+#include "cmsis_os2.h"
+#include "debug_config.h"
 
 /**
  * @def TRC_CFG_HARDWARE_PORT
@@ -149,7 +151,7 @@ extern "C" {
  * trace display will be affected. In that case, there will be warnings
  * (as User Events) from TzCtrl task, which monitors this.
  */
-#define TRC_CFG_ENTRY_SLOTS 100
+#define TRC_CFG_ENTRY_SLOTS DEBUG_TRACE_ENTRY_SLOTS
 
 /**
  * @def TRC_CFG_ENTRY_SYMBOL_MAX_LENGTH
@@ -178,7 +180,7 @@ extern "C" {
  * @def TRC_CFG_TASK_MONITOR_MAX_TASKS
  * @brief The maximum number of tasks that can be monitored by the task monitor.
  */
-#define TRC_CFG_TASK_MONITOR_MAX_TASKS 10
+#define TRC_CFG_TASK_MONITOR_MAX_TASKS 15
 
 /**
  * @def TRC_CFG_ENABLE_STACK_MONITOR
@@ -237,7 +239,7 @@ extern "C" {
  * not created if stack monitoring is disabled. TRC_CFG_CTRL_TASK_PRIORITY should
  * be low, to avoid disturbing any time-sensitive tasks.
  */
-#define TRC_CFG_CTRL_TASK_PRIORITY 16
+#define TRC_CFG_CTRL_TASK_PRIORITY osPriorityLow
 
 /**
  * @def TRC_CFG_CTRL_TASK_DELAY
@@ -252,7 +254,7 @@ extern "C" {
  * The unit depends on the delay function used for the specific kernel port (trcKernelPort.c).
  * For example, FreeRTOS uses ticks while Zephyr uses ms.
  */
-#define TRC_CFG_CTRL_TASK_DELAY 5
+#define TRC_CFG_CTRL_TASK_DELAY 2
 
 /**
  * @def TRC_CFG_CTRL_TASK_STACK_SIZE
@@ -332,7 +334,7 @@ extern "C" {
  *
  * Default value is 1.
  */
-#define TRC_CFG_RECORDER_DATA_INIT 1
+#define TRC_CFG_RECORDER_DATA_INIT 0
 
 /**
  * @def TRC_CFG_RECORDER_DATA_ATTRIBUTE
