@@ -19,9 +19,9 @@
 #include "rc_receiver.hpp"
 #include "servo.hpp"
 #include "servo_publisher.hpp"
+#include "system_monitor.hpp"
 #include "system_node.hpp"
 #include "tof_publisher.hpp"
-#include "system_monitor.hpp"
 #include "usb_cdc_transport.h"
 #include "usb_device.h"
 #include "vesc.hpp"
@@ -33,6 +33,20 @@
 constexpr crsf::Channel RC_THROTTLE_CHANNEL = crsf::CHANNEL_3;
 constexpr crsf::Channel RC_STEERING_CHANNEL = crsf::CHANNEL_1;
 constexpr crsf::Channel RC_MODE_SWITCH_CHANNEL = crsf::CHANNEL_7;
+
+/***************** System Configuration ****************/
+
+SystemMonitor::Config system_monitor_config{
+    .reset_gpio_port = PWR_EXT_ENABLE_GPIO_Port,
+    .reset_gpio_pin = PWR_EXT_ENABLE_Pin,
+    .check_interval_ms = 500,
+};
+
+DriveController::Config drive_controller_config{
+    .throttle_channel = RC_THROTTLE_CHANNEL,
+    .steering_channel = RC_STEERING_CHANNEL,
+    .mode_switch_channel = RC_MODE_SWITCH_CHANNEL,
+};
 
 /***************** Micro-ROS Configuration ****************/
 
@@ -56,89 +70,7 @@ ros::Client::Config microros_client_config{
     .executor_thread_priority = osPriorityRealtime,
 };
 
-/***************** ROS Node Configuration ****************/
-
-TofPublisher::Config tof_publisher_config{
-    .publish_period_ms = TOF_PUBLISHER_DEFAULT_PERIOD_MS,
-    .thread_priority = osPriorityNormal,
-    .publisher_config = {false, 0},
-};
-
-ImuPublisher::Config imu_publisher_config{
-    .publish_period_ms = IMU_PUBLISHER_DEFAULT_PERIOD_MS,
-    .thread_priority = osPriorityNormal1,
-    .publisher_config = {true, 0},
-};
-
-ServoPublisher::Config servo_publisher_config{
-    .publish_period_ms = SERVO_PUBLISHER_DEFAULT_PERIOD_MS,
-    .read_failure_threshold = SERVO_PUBLISHER_DEFAULT_READ_FAILURE_THRESHOLD,
-    .recovery_probe_interval_ms = SERVO_PUBLISHER_DEFAULT_RECOVERY_PROBE_INTERVAL_MS,
-    .thread_priority = osPriorityAboveNormal,
-    .publisher_config = {true, 0},
-};
-
-MotorPublisher::Config motor_publisher_config{
-    .publish_period_ms = MOTOR_PUBLISHER_DEFAULT_PERIOD_MS,
-    .telemetry_period_ms = MOTOR_PUBLISHER_DEFAULT_TELEMETRY_PERIOD_MS,
-    .thread_priority = osPriorityAboveNormal1,
-};
-
-AutonomousControl::Config autonomous_control_config{
-    .motor_rpm_topic = AUTONOMOUS_CONTROL_DEFAULT_MOTOR_RPM_TOPIC,
-    .motor_current_topic = AUTONOMOUS_CONTROL_DEFAULT_MOTOR_CURRENT_TOPIC,
-    .steering_angle_topic = AUTONOMOUS_CONTROL_DEFAULT_STEERING_ANGLE_TOPIC,
-    .subscriber_config = {},
-};
-
-SystemNode::Config system_node_config{
-    .heartbeat_topic = SYSTEM_NODE_HEARTBEAT_TOPIC,
-    .diagnostics_topic = SYSTEM_NODE_DIAGNOSTICS_TOPIC,
-    .reset_service = SYSTEM_NODE_RESET_SERVICE,
-    .emergency_stop_service = SYSTEM_NODE_EMERGENCY_STOP_SERVICE,
-    .heartbeat_period_ms = SYSTEM_NODE_HEARTBEAT_PERIOD_MS,
-    .diagnostics_period_ms = SYSTEM_NODE_DIAGNOSTICS_PERIOD_MS,
-    .reset_delay_ms = SYSTEM_NODE_RESET_DELAY_MS,
-    .thread_priority = osPriorityLow,
-    .heartbeat_publisher_config = {true, 0},
-    .diagnostics_publisher_config = {false, 5},
-    .service_config = {},
-};
-
-/***************** System Configuration ****************/
-
-SystemMonitor::Config system_monitor_config{
-    .reset_gpio_port = PWR_EXT_ENABLE_GPIO_Port,
-    .reset_gpio_pin = PWR_EXT_ENABLE_Pin,
-    .check_interval_ms = 500,
-};
-
-DriveController::Config drive_controller_config{
-    .throttle_channel = RC_THROTTLE_CHANNEL,
-    .steering_channel = RC_STEERING_CHANNEL,
-    .mode_switch_channel = RC_MODE_SWITCH_CHANNEL,
-    .autonomous_command_timeout_ms = DRIVE_CONTROLLER_DEFAULT_AUTONOMOUS_COMMAND_TIMEOUT_MS,
-};
-
 /***************** Driver Configurations *******************/
-
-VL53L5CX::Config vl53l5cx_config{
-    .hi2c = &hi2c1,
-    .address = 0x10,
-    .lpn_port = I2C1_GPIO8_GPIO_Port,
-    .lpn_pin = I2C1_GPIO8_Pin,
-    .interrupt_port = I2C1_GPIO7_GPIO_Port,
-    .interrupt_pin = I2C1_GPIO7_Pin,
-};
-
-BNO055::Config bno055_config{
-    .hi2c = &hi2c2,
-    .address = BNO055_I2C_ADDR_LO,
-    .reset_port = I2C2_GPIO4_GPIO_Port,
-    .reset_pin = I2C2_GPIO4_Pin,
-    .interrupt_port = I2C2_GPIO3_GPIO_Port,
-    .interrupt_pin = I2C2_GPIO3_Pin,
-};
 
 RCReceiver::Config rc_config{
     .huart = &huart2,
@@ -168,8 +100,66 @@ Servo::Calibration servo_calibration{
     .max_pulse_us = 1900,
 };
 
+BNO055::Config bno055_config{
+    .hi2c = &hi2c2,
+    .address = BNO055_I2C_ADDR_LO,
+    .reset_port = I2C2_GPIO4_GPIO_Port,
+    .reset_pin = I2C2_GPIO4_Pin,
+    .interrupt_port = I2C2_GPIO3_GPIO_Port,
+    .interrupt_pin = I2C2_GPIO3_Pin,
+};
+
+VL53L5CX::Config vl53l5cx_config{
+    .hi2c = &hi2c1,
+    .address = 0x10,
+    .lpn_port = I2C1_GPIO8_GPIO_Port,
+    .lpn_pin = I2C1_GPIO8_Pin,
+    .interrupt_port = I2C1_GPIO7_GPIO_Port,
+    .interrupt_pin = I2C1_GPIO7_Pin,
+};
+
 WS2812Driver::Config ws2812_config{
     .htim = &htim4,
     .tim_channel = TIM_CHANNEL_3,
     .hdma = &hdma_tim4_ch3,
+};
+
+/***************** ROS Node Configuration ****************/
+
+ServoPublisher::Config servo_publisher_config{
+    .publish_period_ms = SERVO_PUBLISHER_DEFAULT_PERIOD_MS,
+    .thread_priority = osPriorityAboveNormal,
+    .publisher_config = {true, 0},
+};
+
+ImuPublisher::Config imu_publisher_config{
+    .publish_period_ms = IMU_PUBLISHER_DEFAULT_PERIOD_MS,
+    .thread_priority = osPriorityNormal1,
+    .publisher_config = {true, 0},
+};
+
+TofPublisher::Config tof_publisher_config{
+    .publish_period_ms = TOF_PUBLISHER_DEFAULT_PERIOD_MS,
+    .thread_priority = osPriorityNormal,
+    .publisher_config = {false, 0},
+};
+
+MotorPublisher::Config motor_publisher_config{
+    .publish_period_ms = MOTOR_PUBLISHER_DEFAULT_PERIOD_MS,
+    .telemetry_period_ms = MOTOR_PUBLISHER_DEFAULT_TELEMETRY_PERIOD_MS,
+    .thread_priority = osPriorityAboveNormal1,
+};
+
+AutonomousControl::Config autonomous_control_config{
+    .motor_rpm_topic = AUTONOMOUS_CONTROL_DEFAULT_MOTOR_RPM_TOPIC,
+    .motor_current_topic = AUTONOMOUS_CONTROL_DEFAULT_MOTOR_CURRENT_TOPIC,
+    .steering_angle_topic = AUTONOMOUS_CONTROL_DEFAULT_STEERING_ANGLE_TOPIC,
+    .subscriber_config = {},
+};
+
+SystemNode::Config system_node_config{
+    .thread_priority = osPriorityLow,
+    .heartbeat_publisher_config = {true, 0},
+    .diagnostics_publisher_config = {false, 5},
+    .service_config = {},
 };
