@@ -300,8 +300,9 @@ flash() {
     # Flash the device
     echo "Flashing device: ${DEVICE_NAME}"
 
-    # Check if a device is connected in DFU mode (/dev/bootloader symlink) and flash via USB
-    if [ -e /dev/bootloader ]; then
+
+    # Check if a device is connected in DFU mode (/dev/stm_bootloader symlink) and flash via USB
+    if [ -e /dev/stm_bootloader ]; then
         echo -e "Device detected in DFU mode, flashing via USB...\n"
         sudo dfu-util -d ${STM32_BOOTLOADER_VID_PID} -a 0 -s ${FIRMWARE_START_ADDR}:leave -D ${BUILD_DIR}/${DEVICE_NAME}.bin
         if [ $? -eq 0 ]; then
