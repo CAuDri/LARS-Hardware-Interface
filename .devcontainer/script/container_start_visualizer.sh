@@ -7,6 +7,10 @@
 set -e
 set -o pipefail
 
+readonly SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+readonly REPO_ROOT="$(cd -- "${SCRIPT_DIR}/../.." && pwd)"
+readonly ROS_PACKAGE_DIR="${REPO_ROOT}/.devcontainer/tools/ros_packages"
+
 VISUALIZER_ROS_WS="${VISUALIZER_ROS_WS:-${HOME}/ros_visualizer_ws}"
 VISUALIZER_IMAGE="${VISUALIZER_IMAGE:-ghcr.io/lichtblick-suite/lichtblick:latest}"
 VISUALIZER_CONTAINER="${VISUALIZER_CONTAINER:-ros-visualizer}"
@@ -30,7 +34,7 @@ VISUALIZER_ASSUME_YES="${VISUALIZER_ASSUME_YES:-false}"
 
 lichtblick_pid=""
 bridge_pid=""
-description_pid=""
+visualizer_pid=""
 DOCKER_CMD=()
 
 show_help() {
@@ -54,7 +58,7 @@ show_help() {
     echo "  VISUALIZER_ASSUME_YES          Set to true to skip the first-run host container prompt."
     echo "  VISUALIZER_BRIDGE_BROWSER_HOST            Hostname the browser should use for the bridge."
     echo "  VISUALIZER_BRIDGE_CLIENT_TOPIC_WHITELIST  Topics the web UI may publish to."
-    echo "  VISUALIZER_MODEL         Set to false to skip the temporary URDF model."
+    echo "  VISUALIZER_MODEL         Set to false to skip the robot model and visualization bridges."
 }
 
 source_base_ros_environment() {
@@ -71,45 +75,53 @@ source_base_ros_environment() {
 ensure_ros_workspace_layout() {
     mkdir -p "${VISUALIZER_ROS_WS}/src"
 
-    local lars_msgs_source="/hardware_interface/firmware/libraries/lars_ros_interfaces/lars_msgs"
-    local lars_description_source="/hardware_interface/.devcontainer/tools/ros_packages/lars_description"
-
-    if [ ! -d "${lars_msgs_source}" ]; then
-        echo "Required ROS package not found: ${lars_msgs_source}"
-        return 1
-    fi
-    if [ ! -d "${lars_description_source}" ]; then
-        echo "Required ROS package not found: ${lars_description_source}"
-        return 1
-    fi
-
-    if [ -e "${VISUALIZER_ROS_WS}/src/lars_msgs" ] && [ ! -L "${VISUALIZER_ROS_WS}/src/lars_msgs" ]; then
-        echo "Cannot link ${lars_msgs_source} into ${VISUALIZER_ROS_WS}/src/lars_msgs; the path already exists and is not a symlink."
-        return 1
-    fi
-    if [ -e "${VISUALIZER_ROS_WS}/src/lars_description" ] && [ ! -L "${VISUALIZER_ROS_WS}/src/lars_description" ]; then
-        echo "Cannot link ${lars_description_source} into ${VISUALIZER_ROS_WS}/src/lars_description; the path already exists and is not a symlink."
-        return 1
-    fi
-
-    ln -sfn "${lars_msgs_source}" "${VISUALIZER_ROS_WS}/src/lars_msgs"
-    ln -sfn "${lars_description_source}" "${VISUALIZER_ROS_WS}/src/lars_description"
+    local package source
+    for package in lars_msgs lars_description lars_visualizer; do
+        if [ "${package}" = lars_msgs ]; then
+            source="${REPO_ROOT}/firmware/libraries/lars_ros_interfaces/lars_msgs"
+        else
+            source="${ROS_PACKAGE_DIR}/${package}"
+        fi
+        if [ ! -d "${source}" ]; then
+            echo "Required ROS package not found: ${source}"
+            return 1
+        fi
+        if [ -e "${VISUALIZER_ROS_WS}/src/${package}" ] && [ ! -L "${VISUALIZER_ROS_WS}/src/${package}" ]; then
+            echo "Cannot link ${source}; ${VISUALIZER_ROS_WS}/src/${package} already exists and is not a symlink."
+            return 1
+        fi
+        ln -sfn "${source}" "${VISUALIZER_ROS_WS}/src/${package}"
+    done
 }
 
 ensure_ros_overlay() {
     source_base_ros_environment
     ensure_ros_workspace_layout
 
-    if [ -f "${VISUALIZER_ROS_WS}/install/lars_msgs/share/lars_msgs/package.bash" ] \
-        && [ -f "${VISUALIZER_ROS_WS}/install/lars_description/share/lars_description/package.bash" ] \
-        && [ -x "${VISUALIZER_ROS_WS}/install/lars_description/lib/lars_description/imu_orientation_tf_bridge.py" ]; then
-        return 0
+    local packages=(lars_msgs)
+    local required=("${VISUALIZER_ROS_WS}/install/lars_msgs/share/lars_msgs/package.bash")
+    if [ "${VISUALIZER_MODEL}" = true ]; then
+        packages+=(lars_description lars_visualizer)
+        required+=(
+            "${VISUALIZER_ROS_WS}/install/lars_description/share/lars_description/package.bash"
+            "${VISUALIZER_ROS_WS}/install/lars_description/share/lars_description/launch/robot_state_publisher.launch.py"
+            "${VISUALIZER_ROS_WS}/install/lars_description/share/lars_description/urdf/lars.urdf"
+            "${VISUALIZER_ROS_WS}/install/lars_description/share/lars_description/meshes/base_link.dae"
+            "${VISUALIZER_ROS_WS}/install/lars_visualizer/share/lars_visualizer/package.bash"
+            "${VISUALIZER_ROS_WS}/install/lars_visualizer/share/lars_visualizer/launch/visualizer.launch.py"
+            "${VISUALIZER_ROS_WS}/install/lars_visualizer/lib/lars_visualizer/imu_orientation_tf_bridge.py"
+            "${VISUALIZER_ROS_WS}/install/lars_visualizer/lib/lars_visualizer/steering_joint_state_bridge.py"
+        )
     fi
 
-    echo "Building visualizer ROS overlay in ${VISUALIZER_ROS_WS}"
-    pushd "${VISUALIZER_ROS_WS}" >/dev/null
-    colcon build --symlink-install --packages-select lars_msgs lars_description
-    popd >/dev/null
+    local artifact
+    for artifact in "${required[@]}"; do
+        if [ ! -f "${artifact}" ]; then
+            echo "Building visualizer ROS overlay in ${VISUALIZER_ROS_WS}"
+            (cd "${VISUALIZER_ROS_WS}" && colcon build --symlink-install --packages-select "${packages[@]}")
+            return
+        fi
+    done
 }
 
 source_ros_environment() {
@@ -574,30 +586,22 @@ start_bridge() {
     bridge_pid=$!
 }
 
-cleanup_stale_description_processes() {
-    pkill -f "${VISUALIZER_ROS_WS}/install/lars_description/lib/lars_description/mock_joint_states.py" 2>/dev/null || true
-    pkill -f "${VISUALIZER_ROS_WS}/install/lars_description/lib/lars_description/mock_scene_markers.py" 2>/dev/null || true
-    pkill -f "${VISUALIZER_ROS_WS}/install/lars_description/lib/lars_description/imu_orientation_tf_bridge.py" 2>/dev/null || true
-    pkill -f "${VISUALIZER_ROS_WS}/install/lars_description/lib/lars_description/steering_joint_state_bridge.py" 2>/dev/null || true
-}
-
-start_dummy_description() {
+start_visualizer() {
     if [ "${VISUALIZER_MODEL}" != "true" ]; then
         return 0
     fi
 
     ensure_robot_state_publisher_available || return 1
     source_ros_environment
-    cleanup_stale_description_processes
 
-    ros2 launch lars_description dummy_visualization.launch.py &
-    description_pid=$!
+    env --default-signal=INT ros2 launch --noninteractive lars_visualizer visualizer.launch.py &
+    visualizer_pid=$!
 }
 
 cleanup() {
-    if [ -n "${description_pid}" ]; then
-        kill "${description_pid}" 2>/dev/null || true
-        wait "${description_pid}" 2>/dev/null || true
+    if [ -n "${visualizer_pid}" ]; then
+        kill -INT "${visualizer_pid}" 2>/dev/null || true
+        wait "${visualizer_pid}" 2>/dev/null || true
     fi
 
     if [ -n "${bridge_pid}" ]; then
@@ -653,11 +657,11 @@ echo "  layout:          ${VISUALIZER_LAYOUT}"
 echo "  HTTP host port:  ${VISUALIZER_PORT}"
 echo "  bridge port:     ${VISUALIZER_BRIDGE_PORT}"
 echo "  publish topics:  ${VISUALIZER_BRIDGE_CLIENT_TOPIC_WHITELIST}"
-echo "  dummy model:     ${VISUALIZER_MODEL}"
+echo "  robot model:     ${VISUALIZER_MODEL}"
 echo ""
 
 start_lichtblick
-start_dummy_description
+start_visualizer
 start_bridge
 # Emit browser URLs only after Docker has bound the host HTTP port.
 open_url_best_effort "$(lichtblick_startup_url)"

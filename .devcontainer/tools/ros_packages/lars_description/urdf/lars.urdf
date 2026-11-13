@@ -1,0 +1,136 @@
+<?xml version='1.0' encoding='utf-8'?>
+<robot name="LARS">
+  <link name="base_link">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://lars_description/meshes/base_link.dae" scale="0.001 0.001 0.001" />
+      </geometry>
+    </visual>
+  </link>
+  <link name="vehicle_mount">
+    <visual>
+      <origin xyz="-6.4130719224e-09 -7.53046674324e-05 1.61893073189e-06" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://lars_description/meshes/vehicle_mount_1.dae" scale="0.001 0.001 0.001" />
+      </geometry>
+    </visual>
+  </link>
+  <joint name="vehicle_mount_joint" type="fixed">
+    <parent link="base_link" />
+    <child link="vehicle_mount" />
+    <origin xyz="6.4130719224e-09 7.53046674324e-05 -1.61893073189e-06" rpy="0 0 0" />
+  </joint>
+  <link name="front_left_wheel">
+    <visual>
+      <origin xyz="-0.129234763114 -0.0848229582284 -0.0246441309083" rpy="0.0414881168949 0.00311672893032 -0.0413579889549" />
+      <geometry>
+        <mesh filename="package://lars_description/meshes/front_left_wheel_1.dae" scale="0.001 0.001 0.001" />
+      </geometry>
+    </visual>
+  </link>
+  <joint name="front_left_wheel_joint" type="continuous">
+    <parent link="base_link" />
+    <child link="front_left_wheel" />
+    <origin xyz="0.125539725883 0.0910546431317 0.0212772323677" rpy="-0.0415815246569 -0.00139649558994 0.0414516902864" />
+    <axis xyz="0.00139649513603 -0.0415695025883 0.999134638703" />
+  </joint>
+  <link name="front_right_wheel">
+    <visual>
+      <origin xyz="0.129483816151 -0.085999653149 -0.0177602194901" rpy="0.0316954397839 0.00343185654422 -3.09692985889" />
+      <geometry>
+        <mesh filename="package://lars_description/meshes/front_right_wheel_1.dae" scale="0.001 0.001 0.001" />
+      </geometry>
+    </visual>
+  </link>
+  <joint name="front_right_wheel_joint" type="continuous">
+    <parent link="base_link" />
+    <child link="front_right_wheel" />
+    <origin xyz="0.125453295168 -0.0910725539685 0.0210875562456" rpy="0.0315109669108 0.00484162387201 3.09706053919" />
+    <axis xyz="-0.00484160495635 0.0315053831468 0.999491855742" />
+  </joint>
+  <link name="rear_left_wheel">
+    <visual>
+      <origin xyz="0.133248360592 -0.0913771555355 -0.0209129357284" rpy="-0.00119555805923 0 0" />
+      <geometry>
+        <mesh filename="package://lars_description/meshes/rear_left_wheel_1.dae" scale="0.001 0.001 0.001" />
+      </geometry>
+    </visual>
+  </link>
+  <joint name="rear_left_wheel_joint" type="fixed">
+    <parent link="base_link" />
+    <child link="rear_left_wheel" />
+    <origin xyz="-0.133248360592 0.0913520876072 0.021022167451" rpy="0.00119555805923 0 0" />
+  </joint>
+  <link name="rear_right_wheel">
+    <visual>
+      <origin xyz="-0.13324835698 -0.0915116052789 -0.0194456147844" rpy="0.0213242652836 0 -3.14159265359" />
+      <geometry>
+        <mesh filename="package://lars_description/meshes/rear_right_wheel_4.dae" scale="0.001 0.001 0.001" />
+      </geometry>
+    </visual>
+  </link>
+  <joint name="rear_right_wheel_joint" type="fixed">
+    <parent link="base_link" />
+    <child link="rear_right_wheel" />
+    <origin xyz="-0.13324835698 -0.0910761677697 0.0213924636133" rpy="0.0213242652836 0 3.14159265359" />
+  </joint>
+  <link name="tof_front">
+    <visual>
+      <origin xyz="0 0.0389538681731 -0.1876" rpy="1.57079632679 -1.57079632679 0" />
+      <geometry>
+        <mesh filename="package://lars_description/meshes/tof_front_1.dae" scale="0.001 0.001 0.001" />
+      </geometry>
+    </visual>
+  </link>
+  <joint name="tof_front_joint" type="fixed">
+    <parent link="base_link" />
+    <child link="tof_front" />
+    <origin xyz="0.1876 0 0.0389538681731" rpy="-1.57079632679 0 -1.57079632679" />
+  </joint>
+  <link name="tof_left">
+    <visual>
+      <origin xyz="-0.0862143145128 0.0389077363463 -0.161618427622" rpy="1.57079632679 -0.959931088597 -1.13412077332e-12" />
+      <geometry>
+        <mesh filename="package://lars_description/meshes/tof_left_1.dae" scale="0.001 0.001 0.001" />
+      </geometry>
+    </visual>
+  </link>
+  <joint name="tof_left_joint" type="fixed">
+    <parent link="base_link" />
+    <child link="tof_left" />
+    <origin xyz="0.181840564662 0.022077889784 0.0389077363462" rpy="-1.57079632679 1.1250457902e-12 -0.959931088597" />
+  </joint>
+  <link name="tof_right">
+    <visual>
+      <origin xyz="0.0862143145128 0.0389077363462 -0.161618427622" rpy="-1.57079632679 -0.959931088597 -3.14159265359" />
+      <geometry>
+        <mesh filename="package://lars_description/meshes/tof_right_1.dae" scale="0.001 0.001 0.001" />
+      </geometry>
+    </visual>
+  </link>
+  <joint name="tof_right_joint" type="fixed">
+    <parent link="base_link" />
+    <child link="tof_right" />
+    <origin xyz="0.181840564662 -0.022077889784 0.0389077363462" rpy="-1.57079632679 0 -2.18166156499" />
+  </joint>
+  <link name="imu">
+    <visual>
+      <origin xyz="-0.163452231521 0 -0.03465" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://lars_description/meshes/imu_front_1.dae" scale="0.001 0.001 0.001" />
+      </geometry>
+    </visual>
+  </link>
+  <joint name="imu_joint" type="fixed">
+    <parent link="base_link" />
+    <child link="imu" />
+    <origin xyz="0.163452231521 0 0.03465" rpy="0 0 0" />
+  </joint>
+  <link name="servo" />
+  <joint name="servo_frame_joint" type="fixed">
+    <parent link="base_link" />
+    <child link="servo" />
+    <origin xyz="0 0 0" rpy="0 0 0" />
+  </joint>
+</robot>

@@ -112,14 +112,16 @@ light command payloads in the Lichtblick panel settings. The current defaults
 match the development namespace `/hardware`, publish teleop commands at 20 Hz,
 and use the firmware-side safety checks as the final authority.
 
-The 3D panel loads the temporary `lars_description` URDF from the ROS 2
+The default 3D model is LARS, provided by the `lars_description` URDF from the ROS 2
 `/robot_description` topic. In the layout this topic is enabled under the 3D
 panel's `topics` config so Lichtblick treats it as a URDF renderable, not just
-as a raw `std_msgs/String` topic. A host-side bridge publishes the orientation
+as a raw `std_msgs/String` topic. The `lars_visualizer` bridge publishes the orientation
 from `/hardware/measure/imu` as the visualization-only transform
-`imu_visualization_world -> vehicle_visualization_frame`; the model and its
+`imu_visualization_world -> base_link`; the model and its
 steering joints remain below that frame. A semi-transparent 10 cm grid stays
 fixed in `imu_visualization_world` as a level reference.
+Before the first valid IMU message, the bridge publishes a neutral orientation
+at 20 Hz so the model and reference grid also work without connected hardware.
 
 ## Files
 
@@ -128,3 +130,15 @@ fixed in `imu_visualization_world` as a level reference.
   extension before opening Lichtblick.
 - `extensions/hardware-interface-panels`: custom Lichtblick panels used by the
   layout.
+
+The `lars_description` package contains the URDF, its colored Collada meshes
+and the robot state publisher launch file. The separate `lars_visualizer`
+package provides the steering and IMU bridges and launches the complete model.
+The launcher builds these packages together with `lars_msgs` in an external ROS
+overlay when needed. `VISUALIZER_MODEL=false` skips the LARS model and its bridges
+while keeping telemetry and control panels available. The overlay defaults to
+`$HOME/ros_visualizer_ws`; set `VISUALIZER_ROS_WS` to use another workspace.
+Launcher configuration uses the `VISUALIZER_*` environment variables listed by
+`container_start_visualizer.sh --help`.
+See the [ROS package overview](../ros_packages/README.md) for launch commands,
+sensor frames and the visualization-only steering assumptions.

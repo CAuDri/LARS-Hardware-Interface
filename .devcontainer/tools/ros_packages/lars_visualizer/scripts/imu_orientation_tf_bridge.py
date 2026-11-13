@@ -15,7 +15,7 @@ class ImuOrientationTfBridge(Node):
         super().__init__("lars_imu_orientation_tf_bridge")
         self.declare_parameter("imu_topic", "/hardware/measure/imu")
         self.declare_parameter("world_frame", "imu_visualization_world")
-        self.declare_parameter("vehicle_frame", "vehicle_visualization_frame")
+        self.declare_parameter("vehicle_frame", "base_link")
 
         self.world_frame = self.get_parameter("world_frame").value
         self.vehicle_frame = self.get_parameter("vehicle_frame").value
@@ -27,6 +27,18 @@ class ImuOrientationTfBridge(Node):
             self.on_imu,
             qos_profile_sensor_data,
         )
+        # Repeat the neutral pose until valid IMU data arrives so clients that
+        # connect after startup also receive this dynamic transform.
+        self.start_orientation_timer = self.create_timer(0.05, self.publish_start_orientation)
+        self.publish_start_orientation()
+
+    def publish_start_orientation(self):
+        transform = TransformStamped()
+        transform.header.stamp = self.get_clock().now().to_msg()
+        transform.header.frame_id = self.world_frame
+        transform.child_frame_id = self.vehicle_frame
+        transform.transform.rotation.w = 1.0
+        self.broadcaster.sendTransform(transform)
 
     def on_imu(self, message):
         quaternion = message.orientation
@@ -39,6 +51,7 @@ class ImuOrientationTfBridge(Node):
             return
 
         self.invalid_orientation_reported = False
+        self.start_orientation_timer.cancel()
         inverse_norm = 1.0 / math.sqrt(norm_squared)
 
         transform = TransformStamped()

@@ -5,13 +5,13 @@
       "autoTextBackgroundColor": true,
       "cameraState": {
         "perspective": true,
-        "distance": 1.7966972914782513,
-        "phi": 0.950000000000249,
-        "thetaOffset": 0.7500000000000848,
+        "distance": 24.505,
+        "phi": 61.043935379599326,
+        "thetaOffset": -14.221282374930201,
         "targetOffset": [
-          -0.0017957319845583561,
-          -0.00015149246741307334,
-          6.699452270667077e-23
+          0.045,
+          -0.076,
+          0.041
         ],
         "target": [
           0,
@@ -24,7 +24,7 @@
           0,
           1
         ],
-        "fovy": 0.7853981633974483,
+        "fovy": 0.8,
         "near": 0.01,
         "far": 5000
       },
@@ -45,7 +45,15 @@
       "pinTopics": false,
       "settingsByKey": {},
       "useThemeBackgroundColor": true,
-      "scene": {},
+      "scene": {
+        "meshUpAxis": "z_up",
+        "ignoreColladaUpAxis": false,
+        "transforms": {
+          "axisScale": 0.2,
+          "showLabel": false,
+          "lineWidth": 0.0
+        }
+      },
       "transforms": {},
       "topics": {
         "/robot_description": {

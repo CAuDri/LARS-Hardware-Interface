@@ -4,15 +4,8 @@ project(lars_description)
 find_package(ament_cmake REQUIRED)
 
 install(
-    DIRECTORY launch urdf
+    DIRECTORY launch urdf meshes
     DESTINATION share/${PROJECT_NAME}
-)
-
-install(
-    PROGRAMS
-        scripts/imu_orientation_tf_bridge.py
-        scripts/steering_joint_state_bridge.py
-    DESTINATION lib/${PROJECT_NAME}
 )
 
 ament_package()
