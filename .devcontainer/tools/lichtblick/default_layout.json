@@ -213,6 +213,16 @@
     "TopicGraph!graph": {
       "lichtblickPanelTitle": "ROS Topic Graph"
     },
+    "Hardware Interface Panels.Topic Monitor!source_info": {
+      "lichtblickPanelTitle": "Topic Monitor",
+      "hardware": false,
+      "all": false,
+      "selected": "",
+      "windowSec": 30,
+      "staleSec": 2,
+      "basis": "receive",
+      "expectedMs": 0
+    },
     "DiagnosticSummary!diagnostic_summary_graph": {
       "minLevel": 0,
       "pinnedIds": [],
@@ -396,7 +406,7 @@
             "first": {
               "direction": "column",
               "first": "TopicGraph!graph",
-              "second": "SourceInfo!source_info",
+              "second": "Hardware Interface Panels.Topic Monitor!source_info",
               "splitPercentage": 68
             },
             "second": {
@@ -778,9 +788,6 @@
         "warning": 22.5,
         "critical": 27.0
       }
-    },
-    "SourceInfo!source_info": {
-      "lichtblickPanelTitle": "Data Source"
     }
   },
   "globalVariables": {

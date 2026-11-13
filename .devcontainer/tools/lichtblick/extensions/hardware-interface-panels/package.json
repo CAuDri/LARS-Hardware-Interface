@@ -9,7 +9,8 @@
   "scripts": {
     "build": "lichtblick-extension build",
     "lichtblick:prepublish": "lichtblick-extension build --mode production",
-    "package": "lichtblick-extension package"
+    "package": "lichtblick-extension package",
+    "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
     "@lichtblick/suite": "1.26.0",

@@ -138,3 +138,9 @@ Launcher configuration uses the `VISUALIZER_*` environment variables listed by
 `container_start_visualizer.sh --help`.
 See the [ROS package overview](../ros_packages/README.md) for launch commands,
 sensor frames and the visualization-only steering assumptions.
+
+The ROS Graph tab includes the custom **Topic Monitor** for live frequency and
+jitter debugging. Click a topic to see its message-period graph; enable the
+`/hardware/` or all-topic subscription option in the panel settings temporarily to compare streams.
+See the [extension README](extensions/hardware-interface-panels/README.md#topic-timing-monitor)
+for timestamp semantics, stale detection and history limits.
