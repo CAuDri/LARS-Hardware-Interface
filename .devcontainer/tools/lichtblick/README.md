@@ -1,8 +1,8 @@
-# LARS ROS Visualizer
+# ROS Visualizer
 
-This folder contains the Lichtblick dashboard used for debugging the LARS
+This folder contains the Lichtblick dashboard used for debugging the
 hardware interface from the devcontainer. It starts a browser-based ROS
-visualizer, connects it to the local ROS graph, and loads the LARS dashboard
+visualizer, connects it to the local ROS graph, and loads the visualizer dashboard
 layout with the custom control panels.
 
 Use this when you want the full ROS debug view: robot model, telemetry, plots,
@@ -19,23 +19,23 @@ ROS Visualizer
 or run the launcher manually:
 
 ```bash
-.devcontainer/script/container_start_lars_lichtblick.sh
+.devcontainer/script/container_start_visualizer.sh
 ```
 
 The launcher starts:
 
 - Lichtblick on `http://localhost:8080`
 - `foxglove_bridge` on `ws://localhost:8765`
-- the `LARS Visualizer` layout from `lars_default_layout.json`
-- the custom `LARS Lichtblick Panels` extension
+- the `ROS Visualizer` layout from `default_layout.json`
+- the custom `Hardware Interface Panels` extension
 
 The browser opens at:
 
 ```text
-http://localhost:8080/lars_visualizer.html?ds=foxglove-websocket&ds.url=ws://localhost:8765
+http://localhost:8080/visualizer.html?ds=foxglove-websocket&ds.url=ws://localhost:8765
 ```
 
-That page selects the LARS layout and connects it to the local ROS bridge. The
+That page selects the visualizer layout and connects it to the local ROS bridge. The
 vendor default layout is left alone.
 
 ## First Launch
@@ -68,16 +68,16 @@ Stop the conflicting forwarding or service, then rerun the launcher. Changing
 the HTTP port alone does not fix automatic URL forwarding.
 
 On first launch, the script asks before creating the host-side container
-`lars-lichtblick`. The acknowledgement is stored at:
+`ros-visualizer`. The acknowledgement is stored at:
 
 ```text
-~/.cache/lars-lichtblick-host-container-notice
+~/.cache/ros-visualizer-host-container-notice
 ```
 
 For non-interactive use, set:
 
 ```bash
-LARS_LICHTBLICK_ASSUME_YES=true
+VISUALIZER_ASSUME_YES=true
 ```
 
 If the Docker socket is missing or unreachable, rebuild or recreate the
@@ -93,7 +93,7 @@ These are intentionally not baked into the devcontainer image.
 
 ## Dashboard
 
-The default `LARS Visualizer` workspace has four tabs:
+The default `ROS Visualizer` workspace has four tabs:
 
 - `Visualization`: 3D robot view, battery and temperature gauges, diagnostics,
   and ROS logs.
@@ -123,8 +123,8 @@ fixed in `imu_visualization_world` as a level reference.
 
 ## Files
 
-- `lars_default_layout.json`: the LARS dashboard layout.
-- `lars_visualizer.html`: small startup page that selects the LARS layout and
+- `default_layout.json`: the visualizer dashboard layout.
+- `visualizer.html`: small startup page that selects the visualizer layout and
   extension before opening Lichtblick.
-- `extensions/lars-lichtblick-panels`: custom Lichtblick panels used by the
+- `extensions/hardware-interface-panels`: custom Lichtblick panels used by the
   layout.

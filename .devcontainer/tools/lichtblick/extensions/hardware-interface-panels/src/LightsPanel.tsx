@@ -73,7 +73,7 @@ function initialState(context: PanelExtensionContext): LightsState {
   };
 }
 
-function LarsLightsPanel({ context }: { context: PanelExtensionContext }): ReactElement {
+function LightsPanel({ context }: { context: PanelExtensionContext }): ReactElement {
   const [state, setState] = useState<LightsState>(() => initialState(context));
   const [lastCommand, setLastCommand] = useState("Waiting");
   const topic = useMemo(
@@ -90,7 +90,7 @@ function LarsLightsPanel({ context }: { context: PanelExtensionContext }): React
 
   useEffect(() => {
     context.saveState(state);
-    context.setDefaultPanelTitle("LARS Lights");
+    context.setDefaultPanelTitle("Lights");
     updateSettingsEditor(context, actionHandler, {
       topic: {
         label: "Topic",
@@ -188,8 +188,8 @@ function LarsLightsPanel({ context }: { context: PanelExtensionContext }): React
   );
 }
 
-export function initLarsLightsPanel(context: PanelExtensionContext): () => void {
+export function initLightsPanel(context: PanelExtensionContext): () => void {
   const root = createRoot(context.panelElement);
-  root.render(<LarsLightsPanel context={context} />);
+  root.render(<LightsPanel context={context} />);
   return () => root.unmount();
 }

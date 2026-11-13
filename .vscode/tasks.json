@@ -59,7 +59,7 @@
         {
             "label": "Launch ROS Visualizer",
             "type": "shell",
-            "command": "${workspaceFolder}/.devcontainer/script/container_start_lars_lichtblick.sh",
+            "command": "${workspaceFolder}/.devcontainer/script/container_start_visualizer.sh",
             "presentation": {
                 "echo": true,
                 "reveal": "always",

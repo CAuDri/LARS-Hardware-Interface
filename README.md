@@ -1,6 +1,6 @@
-# LARS Hardware Interface
+# Hardware Interface
 
-This repository contains the schematic, PCB design files and a basic firmware stack for the Hardware Interface of the [Lightweight Autonomous Racing System (LARS)](https://github.com/CAuDri/LARS). 
+This repository contains the schematic, PCB design files and firmware for the Hardware Interface. It is primarily developed for the [Lightweight Autonomous Racing System (LARS)](https://github.com/CAuDri/LARS) and is also used with other vehicles. The optional ROS Visualizer provides telemetry and controls across vehicles; LARS is one of its vehicle models.
 
 <p align="center">
   <img width="600" src="https://github.com/CAuDri/LARS-Hardware-Interface/blob/main/PCB/export/hardware_interface_3D_render.png?raw=true">

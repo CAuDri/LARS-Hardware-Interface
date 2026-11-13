@@ -4,7 +4,7 @@
 // On a Linux host machine, you can use a "bind" mount to share the local repository with the container.
 // On Windows systems, a Docker volume will be used insted (see below).
 {
-    "name": "LARS Hardware Interface",
+    "name": "Hardware Interface",
     "build": {
         "dockerfile": "Dockerfile",
         "args": {
@@ -52,11 +52,11 @@
     ],
     "portsAttributes": {
         "8080": {
-            "label": "LARS ROS Visualizer (host Docker)",
+            "label": "ROS Visualizer (host Docker)",
             "onAutoForward": "ignore"
         },
         "8765": {
-            "label": "LARS Foxglove WebSocket Bridge",
+            "label": "ROS WebSocket Bridge",
             "onAutoForward": "notify"
         }
     },

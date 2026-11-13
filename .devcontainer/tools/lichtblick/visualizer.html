@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-    <title>LARS Visualizer</title>
+    <title>ROS Visualizer</title>
     <style>
       html,
       body {
@@ -21,12 +21,12 @@
     </style>
   </head>
   <body>
-    <main id="status">Opening LARS visualizer...</main>
+    <main id="status">Opening ROS visualizer...</main>
     <script>
-      const layoutUrl = "/lars_visualizer_layout.json";
-      const extensionPackageUrl = "/lars_lichtblick_panels.foxe";
-      const extensionManifestUrl = "/lars_lichtblick_panels_extension.json";
-      const layoutId = "lars_visualizer";
+      const layoutUrl = "/visualizer_layout.json";
+      const extensionPackageUrl = "/hardware_interface_panels.foxe";
+      const extensionManifestUrl = "/hardware_interface_panels_extension.json";
+      const layoutId = "ros_visualizer";
       const namespace = "local";
       const databaseName = "lichtblick-layouts";
       const storeName = "layouts";
@@ -87,6 +87,9 @@
             [extensionMetadataStoreName, extensionStoreName],
             "readwrite",
           );
+          // Replace the former extension identity when upgrading this dashboard.
+          transaction.objectStore(extensionMetadataStoreName).delete("lars.lars-lichtblick-panels");
+          transaction.objectStore(extensionStoreName).delete("lars.lars-lichtblick-panels");
           transaction.objectStore(extensionMetadataStoreName).put(extension.info);
           transaction.objectStore(extensionStoreName).put(extension);
           transaction.oncomplete = resolve;
@@ -102,7 +105,7 @@
         ]);
 
         if (!manifestResponse.ok || !packageResponse.ok) {
-          throw new Error("Could not load the LARS Lichtblick extension package.");
+          throw new Error("Could not load the ROS Visualizer extension package.");
         }
 
         const manifest = await manifestResponse.json();
@@ -157,7 +160,7 @@
 
       main().catch((error) => {
         console.error(error);
-        document.getElementById("status").textContent = `Could not open LARS visualizer: ${error.message}`;
+        document.getElementById("status").textContent = `Could not open ROS visualizer: ${error.message}`;
       });
     </script>
   </body>

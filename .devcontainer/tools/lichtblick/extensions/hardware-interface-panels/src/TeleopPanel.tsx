@@ -224,7 +224,7 @@ function ControlRow({
   );
 }
 
-function LarsTeleopPanel({ context }: { context: PanelExtensionContext }): ReactElement {
+function TeleopPanel({ context }: { context: PanelExtensionContext }): ReactElement {
   const [state, setState] = useState<TeleopState>(() => initialState(context));
   const [lastPublish, setLastPublish] = useState("Waiting");
 
@@ -293,7 +293,7 @@ function LarsTeleopPanel({ context }: { context: PanelExtensionContext }): React
 
   useEffect(() => {
     context.saveState(state);
-    context.setDefaultPanelTitle("LARS Teleop");
+    context.setDefaultPanelTitle("Teleop");
     updateSettingsEditor(context, actionHandler, {
       general: {
         label: "General",
@@ -556,8 +556,8 @@ function LarsTeleopPanel({ context }: { context: PanelExtensionContext }): React
   );
 }
 
-export function initLarsTeleopPanel(context: PanelExtensionContext): () => void {
+export function initTeleopPanel(context: PanelExtensionContext): () => void {
   const root = createRoot(context.panelElement);
-  root.render(<LarsTeleopPanel context={context} />);
+  root.render(<TeleopPanel context={context} />);
   return () => root.unmount();
 }

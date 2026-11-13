@@ -1,8 +1,8 @@
 {
-  "name": "lars-lichtblick-panels",
-  "displayName": "LARS Lichtblick Panels",
-  "description": "Custom Lichtblick panels for LARS teleop and debug controls.",
-  "publisher": "lars",
+  "name": "hardware-interface-panels",
+  "displayName": "Hardware Interface Panels",
+  "description": "Configurable telemetry, teleop and debug panels for the Hardware Interface ROS Visualizer.",
+  "publisher": "caudri",
   "version": "0.1.0",
   "license": "UNLICENSED",
   "main": "./dist/extension.js",

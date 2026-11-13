@@ -1,4 +1,4 @@
-# LARS Lichtblick Panels
+# Hardware Interface Panels
 
 ## 0.1.0
 

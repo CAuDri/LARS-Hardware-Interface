@@ -74,11 +74,11 @@
         }
       },
       "layers": {
-        "lars-imu-reference-grid": {
+        "imu-reference-grid": {
           "visible": true,
           "frameLocked": true,
           "label": "IMU reference grid",
-          "instanceId": "lars-imu-reference-grid",
+          "instanceId": "imu-reference-grid",
           "layerId": "foxglove.Grid",
           "frameId": "imu_visualization_world",
           "divisions": 20,
@@ -453,7 +453,7 @@
       "topicPath": "/hardware/telemetry/motor",
       "lichtblickPanelTitle": "Motor Telemetry"
     },
-    "Tab!lars_root": {
+    "Tab!visualizer_root": {
       "activeTabIdx": 0,
       "tabs": [
         {
@@ -496,8 +496,8 @@
             "direction": "row",
             "first": {
               "direction": "column",
-              "first": "LARS Lichtblick Panels.LARS Teleop!teleop",
-              "second": "LARS Lichtblick Panels.LARS Lights!lights_teleop",
+              "first": "Hardware Interface Panels.Teleop!teleop",
+              "second": "Hardware Interface Panels.Lights!lights_teleop",
               "splitPercentage": 78
             },
             "second": {
@@ -599,7 +599,7 @@
         }
       ]
     },
-    "LARS Lichtblick Panels.LARS Teleop!teleop": {
+    "Hardware Interface Panels.Teleop!teleop": {
       "namespace": "/hardware",
       "publishRateHz": 20,
       "steering": {
@@ -628,9 +628,9 @@
         "currentEnabled": false,
         "mode": "rpm"
       },
-      "lichtblickPanelTitle": "LARS Teleop"
+      "lichtblickPanelTitle": "Teleop"
     },
-    "LARS Lichtblick Panels.LARS Lights!lights_teleop": {
+    "Hardware Interface Panels.Lights!lights_teleop": {
       "namespace": "/hardware",
       "topicSuffix": "command/lights",
       "schemaName": "std_msgs/msg/String",
@@ -652,9 +652,9 @@
           "payload": "off"
         }
       },
-      "lichtblickPanelTitle": "LARS Lights"
+      "lichtblickPanelTitle": "Lights"
     },
-    "LARS Lichtblick Panels.LARS Header!header": {
+    "Hardware Interface Panels.Header!header": {
       "namespace": "/hardware",
       "heartbeatTopicSuffix": "heartbeat",
       "heartbeatTimeoutMs": 4000,
@@ -662,7 +662,7 @@
       "emergencyStopServiceSuffix": "emergency_stop",
       "serviceRequest": {},
       "showHeartbeat": true,
-      "lichtblickPanelTitle": "LARS Header"
+      "lichtblickPanelTitle": "Header"
     }
   },
   "globalVariables": {
@@ -676,8 +676,8 @@
   },
   "layout": {
     "direction": "column",
-    "first": "LARS Lichtblick Panels.LARS Header!header",
-    "second": "Tab!lars_root",
+    "first": "Hardware Interface Panels.Header!header",
+    "second": "Tab!visualizer_root",
     "splitPercentage": 9
   }
 }

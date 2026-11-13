@@ -1,7 +1,7 @@
 {
     "configurations": [
         {
-            "name": "LARS Hardware Interface",
+            "name": "Hardware Interface",
             "includePath": [
                 "${workspaceFolder}/**"
             ],

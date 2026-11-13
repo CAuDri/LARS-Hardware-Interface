@@ -93,7 +93,7 @@ function messageIsOnTopic(messageEvent: MessageEvent, topic: string): boolean {
   return messageEvent.topic === topic;
 }
 
-function LarsHeaderPanel({ context }: { context: PanelExtensionContext }): ReactElement {
+function HeaderPanel({ context }: { context: PanelExtensionContext }): ReactElement {
   const [state, setState] = useState<HeaderState>(() => initialState(context));
   const [response, setResponse] = useState<ResponseState>({
     kind: "idle",
@@ -124,7 +124,7 @@ function LarsHeaderPanel({ context }: { context: PanelExtensionContext }): React
 
   useEffect(() => {
     context.saveState(state);
-    context.setDefaultPanelTitle("LARS Header");
+    context.setDefaultPanelTitle("Header");
     updateSettingsEditor(context, actionHandler, {
       general: {
         label: "General",
@@ -298,8 +298,8 @@ function LarsHeaderPanel({ context }: { context: PanelExtensionContext }): React
   );
 }
 
-export function initLarsHeaderPanel(context: PanelExtensionContext): () => void {
+export function initHeaderPanel(context: PanelExtensionContext): () => void {
   const root = createRoot(context.panelElement);
-  root.render(<LarsHeaderPanel context={context} />);
+  root.render(<HeaderPanel context={context} />);
   return () => root.unmount();
 }
