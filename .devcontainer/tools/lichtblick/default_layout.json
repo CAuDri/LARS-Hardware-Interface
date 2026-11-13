@@ -117,58 +117,6 @@
       },
       "imageMode": {}
     },
-    "Gauge!battery_voltage": {
-      "path": "/hardware/telemetry/motor.input_voltage",
-      "minValue": 11.1,
-      "maxValue": 12.6,
-      "colorMap": "red-yellow-green",
-      "colorMode": "colormap",
-      "gradient": [
-        "#0000ff",
-        "#ff00ff"
-      ],
-      "reverse": false,
-      "lichtblickPanelTitle": "Battery Voltage"
-    },
-    "Gauge!input_current": {
-      "path": "/hardware/telemetry/motor.input_current",
-      "minValue": 0,
-      "maxValue": 80,
-      "colorMap": "red-yellow-green",
-      "colorMode": "colormap",
-      "gradient": [
-        "#0000ff",
-        "#ff00ff"
-      ],
-      "reverse": true,
-      "lichtblickPanelTitle": "Motor Current"
-    },
-    "Gauge!fet_temperature": {
-      "path": "/hardware/telemetry/motor.fet_temperature",
-      "minValue": 0,
-      "maxValue": 120,
-      "colorMap": "red-yellow-green",
-      "colorMode": "gradient",
-      "gradient": [
-        "#ff0000ff",
-        "#0021ffff"
-      ],
-      "reverse": true,
-      "lichtblickPanelTitle": "VESC Temp"
-    },
-    "Gauge!motor_temperature": {
-      "path": "/hardware/telemetry/motor.motor_temperature",
-      "minValue": 0,
-      "maxValue": 120,
-      "colorMap": "red-yellow-green",
-      "colorMode": "gradient",
-      "gradient": [
-        "#ff0000ff",
-        "#2800ffff"
-      ],
-      "reverse": true,
-      "lichtblickPanelTitle": "Motor Temp"
-    },
     "DiagnosticSummary!diagnostic_summary": {
       "minLevel": 0,
       "pinnedIds": [],
@@ -228,7 +176,8 @@
       "isSynced": true,
       "xAxisVal": "timestamp",
       "sidebarDimension": 240,
-      "lichtblickPanelTitle": "Motor RPM"
+      "lichtblickPanelTitle": "Motor RPM",
+      "followingViewWidth": 30
     },
     "Plot!current": {
       "paths": [
@@ -258,13 +207,11 @@
       "isSynced": true,
       "xAxisVal": "timestamp",
       "sidebarDimension": 240,
-      "lichtblickPanelTitle": "Motor Current"
+      "lichtblickPanelTitle": "Motor Current",
+      "followingViewWidth": 30
     },
     "TopicGraph!graph": {
       "lichtblickPanelTitle": "ROS Topic Graph"
-    },
-    "SourceInfo!source_info": {
-      "lichtblickPanelTitle": "Data Source"
     },
     "DiagnosticSummary!diagnostic_summary_graph": {
       "minLevel": 0,
@@ -290,84 +237,6 @@
       "minLogLevel": 4,
       "lichtblickPanelTitle": "ROS Warnings"
     },
-    "Gauge!feedback_rpm": {
-      "path": "/hardware/measure/motor_feedback.rpm",
-      "minValue": -12000,
-      "maxValue": 12000,
-      "colorMap": "red-yellow-green",
-      "colorMode": "colormap",
-      "gradient": [
-        "#0000ff",
-        "#ff00ff"
-      ],
-      "reverse": false,
-      "lichtblickPanelTitle": "Feedback RPM"
-    },
-    "Gauge!feedback_current": {
-      "path": "/hardware/measure/motor_feedback.motor_current",
-      "minValue": -80,
-      "maxValue": 80,
-      "colorMap": "red-yellow-green",
-      "colorMode": "colormap",
-      "gradient": [
-        "#0000ff",
-        "#ff00ff"
-      ],
-      "reverse": false,
-      "lichtblickPanelTitle": "Feedback Current"
-    },
-    "Gauge!motor_battery_voltage": {
-      "path": "/hardware/telemetry/motor.input_voltage",
-      "minValue": 0,
-      "maxValue": 30,
-      "colorMap": "red-yellow-green",
-      "colorMode": "colormap",
-      "gradient": [
-        "#0000ff",
-        "#ff00ff"
-      ],
-      "reverse": false,
-      "lichtblickPanelTitle": "Motor Voltage"
-    },
-    "Gauge!motor_input_current": {
-      "path": "/hardware/telemetry/motor.input_current",
-      "minValue": 0,
-      "maxValue": 80,
-      "colorMap": "red-yellow-green",
-      "colorMode": "colormap",
-      "gradient": [
-        "#0000ff",
-        "#ff00ff"
-      ],
-      "reverse": false,
-      "lichtblickPanelTitle": "Input Current"
-    },
-    "Gauge!motor_fet_temperature": {
-      "path": "/hardware/telemetry/motor.fet_temperature",
-      "minValue": 0,
-      "maxValue": 120,
-      "colorMap": "red-yellow-green",
-      "colorMode": "colormap",
-      "gradient": [
-        "#0000ff",
-        "#ff00ff"
-      ],
-      "reverse": true,
-      "lichtblickPanelTitle": "FET Temperature"
-    },
-    "Gauge!motor_motor_temperature": {
-      "path": "/hardware/telemetry/motor.motor_temperature",
-      "minValue": 0,
-      "maxValue": 120,
-      "colorMap": "red-yellow-green",
-      "colorMode": "colormap",
-      "gradient": [
-        "#0000ff",
-        "#ff00ff"
-      ],
-      "reverse": true,
-      "lichtblickPanelTitle": "Motor Temperature"
-    },
     "Plot!rpm_motor": {
       "paths": [
         {
@@ -391,7 +260,8 @@
       "isSynced": true,
       "xAxisVal": "timestamp",
       "sidebarDimension": 240,
-      "lichtblickPanelTitle": "Motor RPM"
+      "lichtblickPanelTitle": "Motor RPM",
+      "followingViewWidth": 30
     },
     "Plot!current_motor": {
       "paths": [
@@ -421,7 +291,8 @@
       "isSynced": true,
       "xAxisVal": "timestamp",
       "sidebarDimension": 240,
-      "lichtblickPanelTitle": "Motor Current"
+      "lichtblickPanelTitle": "Motor Current",
+      "followingViewWidth": 30
     },
     "Plot!voltage_temperature": {
       "paths": [
@@ -451,7 +322,8 @@
       "isSynced": true,
       "xAxisVal": "timestamp",
       "sidebarDimension": 240,
-      "lichtblickPanelTitle": "Voltage and Temperature"
+      "lichtblickPanelTitle": "Voltage and Temperature",
+      "followingViewWidth": 30
     },
     "Table!motor_feedback": {
       "topicPath": "/hardware/measure/motor_feedback",
@@ -473,16 +345,11 @@
               "first": "3D!visualization",
               "second": {
                 "direction": "row",
-                "first": {
-                  "direction": "row",
-                  "first": "Gauge!battery_voltage",
-                  "second": "Gauge!input_current",
-                  "splitPercentage": 50
-                },
+                "first": "Hardware Interface Panels.Current & Voltage!power",
                 "second": {
                   "direction": "row",
-                  "first": "Gauge!fet_temperature",
-                  "second": "Gauge!motor_temperature",
+                  "first": "Hardware Interface Panels.Thermometer!fet_temperature",
+                  "second": "Hardware Interface Panels.Thermometer!motor_temperature",
                   "splitPercentage": 50
                 },
                 "splitPercentage": 50
@@ -510,7 +377,7 @@
             },
             "second": {
               "direction": "column",
-              "first": "Plot!steering",
+              "first": "Hardware Interface Panels.Steering!steering",
               "second": {
                 "direction": "column",
                 "first": "Plot!rpm",
@@ -559,22 +426,17 @@
               "direction": "column",
               "first": {
                 "direction": "row",
-                "first": "Gauge!feedback_rpm",
-                "second": "Gauge!feedback_current",
+                "first": "Hardware Interface Panels.RPM!feedback_rpm",
+                "second": "Hardware Interface Panels.Current & Voltage!feedback_current",
                 "splitPercentage": 50
               },
               "second": {
                 "direction": "column",
-                "first": {
-                  "direction": "row",
-                  "first": "Gauge!motor_battery_voltage",
-                  "second": "Gauge!motor_input_current",
-                  "splitPercentage": 50
-                },
+                "first": "Hardware Interface Panels.Current & Voltage!motor_power",
                 "second": {
                   "direction": "row",
-                  "first": "Gauge!motor_fet_temperature",
-                  "second": "Gauge!motor_motor_temperature",
+                  "first": "Hardware Interface Panels.Thermometer!motor_fet_temperature",
+                  "second": "Hardware Interface Panels.Temperature!motor_motor_temperature",
                   "splitPercentage": 50
                 },
                 "splitPercentage": 50
@@ -671,6 +533,254 @@
       "serviceRequest": {},
       "showHeartbeat": true,
       "lichtblickPanelTitle": "Header"
+    },
+    "Hardware Interface Panels.Thermometer!fet_temperature": {
+      "primary": {
+        "label": "VESC Temp",
+        "topic": "/hardware/telemetry/motor",
+        "field": "fet_temperature",
+        "unit": "\u00b0C",
+        "min": 0,
+        "max": 120,
+        "decimals": 1,
+        "scale": 1,
+        "color": "#36c7e7",
+        "thresholds": false,
+        "warning": 90.0,
+        "critical": 108.0
+      },
+      "timeoutMs": 10000,
+      "vertical": false,
+      "rotationScale": 1,
+      "invertRotation": false,
+      "lichtblickPanelTitle": "Thermometer"
+    },
+    "Hardware Interface Panels.Thermometer!motor_temperature": {
+      "primary": {
+        "label": "Motor Temp",
+        "topic": "/hardware/telemetry/motor",
+        "field": "motor_temperature",
+        "unit": "\u00b0C",
+        "min": 0,
+        "max": 120,
+        "decimals": 1,
+        "scale": 1,
+        "color": "#36c7e7",
+        "thresholds": false,
+        "warning": 90.0,
+        "critical": 108.0
+      },
+      "timeoutMs": 10000,
+      "vertical": false,
+      "rotationScale": 1,
+      "invertRotation": false,
+      "lichtblickPanelTitle": "Thermometer"
+    },
+    "Hardware Interface Panels.RPM!feedback_rpm": {
+      "primary": {
+        "label": "Feedback RPM",
+        "topic": "/hardware/measure/motor_feedback",
+        "field": "rpm",
+        "unit": "RPM",
+        "min": -12000,
+        "max": 12000,
+        "decimals": 0,
+        "scale": 1,
+        "color": "#36c7e7",
+        "thresholds": false,
+        "warning": 9000.0,
+        "critical": 10800.0
+      },
+      "timeoutMs": 4000,
+      "vertical": false,
+      "rotationScale": 1,
+      "invertRotation": false,
+      "lichtblickPanelTitle": "RPM"
+    },
+    "Hardware Interface Panels.Current & Voltage!feedback_current": {
+      "primary": {
+        "label": "Feedback Current",
+        "topic": "/hardware/measure/motor_feedback",
+        "field": "motor_current",
+        "unit": "A",
+        "min": -80,
+        "max": 80,
+        "decimals": 1,
+        "scale": 1,
+        "color": "#36c7e7",
+        "thresholds": false,
+        "warning": 60.0,
+        "critical": 72.0
+      },
+      "timeoutMs": 4000,
+      "vertical": false,
+      "rotationScale": 1,
+      "invertRotation": false,
+      "lichtblickPanelTitle": "Current & Voltage",
+      "secondary": {
+        "label": "Voltage",
+        "topic": "/hardware/telemetry/motor",
+        "field": "input_voltage",
+        "unit": "V",
+        "min": 9,
+        "max": 15,
+        "decimals": 1,
+        "scale": 1,
+        "color": "#36c7e7",
+        "thresholds": false,
+        "warning": 11.25,
+        "critical": 13.5
+      }
+    },
+    "Hardware Interface Panels.Thermometer!motor_fet_temperature": {
+      "primary": {
+        "label": "FET Temperature",
+        "topic": "/hardware/telemetry/motor",
+        "field": "fet_temperature",
+        "unit": "\u00b0C",
+        "min": 0,
+        "max": 120,
+        "decimals": 1,
+        "scale": 1,
+        "color": "#36c7e7",
+        "thresholds": false,
+        "warning": 90.0,
+        "critical": 108.0
+      },
+      "timeoutMs": 10000,
+      "vertical": false,
+      "rotationScale": 1,
+      "invertRotation": false,
+      "lichtblickPanelTitle": "Thermometer"
+    },
+    "Hardware Interface Panels.Temperature!motor_motor_temperature": {
+      "primary": {
+        "label": "Motor Temperature",
+        "topic": "/hardware/telemetry/motor",
+        "field": "motor_temperature",
+        "unit": "\u00b0C",
+        "min": 0,
+        "max": 120,
+        "decimals": 1,
+        "scale": 1,
+        "color": "#36c7e7",
+        "thresholds": false,
+        "warning": 90.0,
+        "critical": 108.0
+      },
+      "timeoutMs": 10000,
+      "vertical": false,
+      "rotationScale": 1,
+      "invertRotation": false,
+      "lichtblickPanelTitle": "Temperature"
+    },
+    "Hardware Interface Panels.Current & Voltage!power": {
+      "primary": {
+        "label": "Input current",
+        "topic": "/hardware/telemetry/motor",
+        "field": "input_current",
+        "unit": "A",
+        "min": -20,
+        "max": 80,
+        "decimals": 1,
+        "scale": 1,
+        "color": "#36c7e7",
+        "thresholds": false,
+        "warning": 60.0,
+        "critical": 72.0
+      },
+      "timeoutMs": 4000,
+      "vertical": false,
+      "rotationScale": 1,
+      "invertRotation": false,
+      "lichtblickPanelTitle": "Current & Voltage",
+      "secondary": {
+        "label": "Voltage",
+        "topic": "/hardware/telemetry/motor",
+        "field": "input_voltage",
+        "unit": "V",
+        "min": 11.1,
+        "max": 12.6,
+        "decimals": 1,
+        "scale": 1,
+        "color": "#36c7e7",
+        "thresholds": false,
+        "warning": 9.45,
+        "critical": 11.34
+      }
+    },
+    "Hardware Interface Panels.Current & Voltage!motor_power": {
+      "primary": {
+        "label": "Input current",
+        "topic": "/hardware/telemetry/motor",
+        "field": "input_current",
+        "unit": "A",
+        "min": -20,
+        "max": 80,
+        "decimals": 1,
+        "scale": 1,
+        "color": "#36c7e7",
+        "thresholds": false,
+        "warning": 60.0,
+        "critical": 72.0
+      },
+      "timeoutMs": 4000,
+      "vertical": false,
+      "rotationScale": 1,
+      "invertRotation": false,
+      "lichtblickPanelTitle": "Current & Voltage",
+      "secondary": {
+        "label": "Voltage",
+        "topic": "/hardware/telemetry/motor",
+        "field": "input_voltage",
+        "unit": "V",
+        "min": 0,
+        "max": 30,
+        "decimals": 1,
+        "scale": 1,
+        "color": "#36c7e7",
+        "thresholds": false,
+        "warning": 22.5,
+        "critical": 27.0
+      }
+    },
+    "Hardware Interface Panels.Steering!steering": {
+      "primary": {
+        "label": "Actual",
+        "topic": "/hardware/measure/steering_angle",
+        "field": "data",
+        "unit": "\u00b0",
+        "min": -30,
+        "max": 30,
+        "decimals": 1,
+        "scale": 1,
+        "color": "#36c7e7",
+        "thresholds": false,
+        "warning": 22.5,
+        "critical": 27.0
+      },
+      "timeoutMs": 4000,
+      "vertical": false,
+      "rotationScale": 1,
+      "invertRotation": false,
+      "lichtblickPanelTitle": "Steering",
+      "secondary": {
+        "label": "Target",
+        "topic": "/hardware/command/steering_angle",
+        "field": "angle",
+        "unit": "\u00b0",
+        "min": -30,
+        "max": 30,
+        "decimals": 1,
+        "scale": 1,
+        "color": "#36c7e7",
+        "thresholds": false,
+        "warning": 22.5,
+        "critical": 27.0
+      }
+    },
+    "SourceInfo!source_info": {
+      "lichtblickPanelTitle": "Data Source"
     }
   },
   "globalVariables": {

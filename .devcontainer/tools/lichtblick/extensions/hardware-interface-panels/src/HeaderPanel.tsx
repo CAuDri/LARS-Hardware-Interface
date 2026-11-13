@@ -225,14 +225,14 @@ function HeaderPanel({ context }: { context: PanelExtensionContext }): ReactElem
     <div
       style={{
         alignItems: "center",
-        background: "#11151c",
+        background: "transparent",
         borderBottom: "1px solid #313846",
         boxSizing: "border-box",
         color: "#ececf0",
         display: "grid",
         font: "13px system-ui, sans-serif",
         gap: 12,
-        gridTemplateColumns: "minmax(170px, 1fr) auto auto auto",
+        gridTemplateColumns: "minmax(170px, 1fr) auto auto auto auto",
         height: "100%",
         minHeight: 0,
         overflow: "hidden",
