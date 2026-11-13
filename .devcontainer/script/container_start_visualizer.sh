@@ -9,36 +9,33 @@ set -o pipefail
 
 readonly SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 readonly REPO_ROOT="$(cd -- "${SCRIPT_DIR}/../.." && pwd)"
+readonly LICHTBLICK_DIR="${REPO_ROOT}/.devcontainer/tools/lichtblick"
 readonly ROS_PACKAGE_DIR="${REPO_ROOT}/.devcontainer/tools/ros_packages"
-
+readonly LICHTBLICK_WEB_HELPER="${LICHTBLICK_DIR}/lichtblick_web.py"
 VISUALIZER_ROS_WS="${VISUALIZER_ROS_WS:-${HOME}/ros_visualizer_ws}"
-VISUALIZER_IMAGE="${VISUALIZER_IMAGE:-ghcr.io/lichtblick-suite/lichtblick:latest}"
-VISUALIZER_CONTAINER="${VISUALIZER_CONTAINER:-ros-visualizer}"
+VISUALIZER_VERSION="${VISUALIZER_VERSION:-1.29.1}"
+VISUALIZER_WEB_ROOT="${VISUALIZER_WEB_ROOT:-${XDG_CACHE_HOME:-${HOME}/.cache}/ros-visualizer/${VISUALIZER_VERSION}}"
 VISUALIZER_PORT="${VISUALIZER_PORT:-8080}"
 VISUALIZER_OPEN="${VISUALIZER_OPEN:-true}"
 VISUALIZER_AUTO_CONNECT="${VISUALIZER_AUTO_CONNECT:-true}"
-VISUALIZER_LAYOUT="${VISUALIZER_LAYOUT:-/hardware_interface/.devcontainer/tools/lichtblick/default_layout.json}"
+VISUALIZER_LAYOUT="${VISUALIZER_LAYOUT:-${LICHTBLICK_DIR}/default_layout.json}"
 VISUALIZER_LAYOUT_NAME="${VISUALIZER_LAYOUT_NAME:-ROS Visualizer}"
 VISUALIZER_LAYOUT_ID="${VISUALIZER_LAYOUT_ID:-ros_visualizer}"
-VISUALIZER_BOOTSTRAP="${VISUALIZER_BOOTSTRAP:-/hardware_interface/.devcontainer/tools/lichtblick/visualizer.html}"
-VISUALIZER_EXTENSION_DIR="${VISUALIZER_EXTENSION_DIR:-/hardware_interface/.devcontainer/tools/lichtblick/extensions/hardware-interface-panels}"
+VISUALIZER_BOOTSTRAP="${VISUALIZER_BOOTSTRAP:-${LICHTBLICK_DIR}/visualizer.html}"
+VISUALIZER_EXTENSION_DIR="${VISUALIZER_EXTENSION_DIR:-${LICHTBLICK_DIR}/extensions/hardware-interface-panels}"
 VISUALIZER_EXTENSION_PACKAGE="${VISUALIZER_EXTENSION_PACKAGE:-${VISUALIZER_EXTENSION_DIR}/caudri.hardware-interface-panels-0.1.0.foxe}"
 VISUALIZER_BRIDGE_ADDRESS="${VISUALIZER_BRIDGE_ADDRESS:-0.0.0.0}"
 VISUALIZER_BRIDGE_PORT="${VISUALIZER_BRIDGE_PORT:-8765}"
 VISUALIZER_BRIDGE_BROWSER_HOST="${VISUALIZER_BRIDGE_BROWSER_HOST:-localhost}"
 VISUALIZER_BRIDGE_CLIENT_TOPIC_WHITELIST="${VISUALIZER_BRIDGE_CLIENT_TOPIC_WHITELIST:-['^/hardware/command/.*$']}"
 VISUALIZER_MODEL="${VISUALIZER_MODEL:-true}"
-VISUALIZER_DOCKER_ROOT="${VISUALIZER_DOCKER_ROOT:-/tmp/ros-visualizer-docker}"
-VISUALIZER_NOTICE_FILE="${VISUALIZER_NOTICE_FILE:-${HOME}/.cache/ros-visualizer-host-container-notice}"
-VISUALIZER_ASSUME_YES="${VISUALIZER_ASSUME_YES:-false}"
+VISUALIZER_RUN_ROOT=""
 
 lichtblick_pid=""
-bridge_pid=""
-visualizer_pid=""
-DOCKER_CMD=()
+ros_pids=()
 
 show_help() {
-    echo "Usage: container_start_visualizer.sh [--no-open] [--lichtblick-port PORT] [--bridge-port PORT]"
+    echo "Usage: ${0##*/} [--no-open] [--lichtblick-port PORT] [--bridge-port PORT]"
     echo ""
     echo "Options:"
     echo "  --no-open              Start servers and do not open the browser."
@@ -47,18 +44,18 @@ show_help() {
     echo "  -h, --help             Show this help text."
     echo ""
     echo "Environment:"
-    echo "  VISUALIZER_ROS_WS                         Host-side ROS workspace with LARS messages."
-    echo "  VISUALIZER_IMAGE               Lichtblick container image."
-    echo "  VISUALIZER_LAYOUT              Layout data used for the ROS visualizer."
-    echo "  VISUALIZER_LAYOUT_NAME         Display name for the visualizer layout."
-    echo "  VISUALIZER_LAYOUT_ID           Stable local ID for the visualizer layout."
-    echo "  VISUALIZER_EXTENSION_DIR       Local custom Lichtblick extension source."
-    echo "  VISUALIZER_OPEN                Set to false to skip opening the browser."
-    echo "  VISUALIZER_AUTO_CONNECT        Set to false to skip the startup bridge URL."
-    echo "  VISUALIZER_ASSUME_YES          Set to true to skip the first-run host container prompt."
-    echo "  VISUALIZER_BRIDGE_BROWSER_HOST            Hostname the browser should use for the bridge."
-    echo "  VISUALIZER_BRIDGE_CLIENT_TOPIC_WHITELIST  Topics the web UI may publish to."
-    echo "  VISUALIZER_MODEL         Set to false to skip the robot model and visualization bridges."
+    echo "  VISUALIZER_ROS_WS                                  ROS workspace for the visualizer and hardware messages."
+    echo "  VISUALIZER_VERSION                                 Web release to download on first use (default: 1.29.1)."
+    echo "  VISUALIZER_WEB_ROOT                                Directory for cached or preinstalled Lichtblick web assets."
+    echo "  VISUALIZER_LAYOUT                                  Layout data used for the ROS visualizer."
+    echo "  VISUALIZER_LAYOUT_NAME                             Display name for the visualizer layout."
+    echo "  VISUALIZER_LAYOUT_ID                               Stable local ID for the visualizer layout."
+    echo "  VISUALIZER_EXTENSION_DIR                           Local custom Lichtblick extension source."
+    echo "  VISUALIZER_OPEN                                    Set to false to skip opening the browser."
+    echo "  VISUALIZER_AUTO_CONNECT                            Set to false to skip the startup bridge URL."
+    echo "  VISUALIZER_BRIDGE_BROWSER_HOST                     Hostname the browser should use for the bridge."
+    echo "  VISUALIZER_BRIDGE_CLIENT_TOPIC_WHITELIST           Topics the web UI may publish to."
+    echo "  VISUALIZER_MODEL                                   Set to false to skip the robot model and visualization bridges."
 }
 
 source_base_ros_environment() {
@@ -95,7 +92,6 @@ ensure_ros_workspace_layout() {
 }
 
 ensure_ros_overlay() {
-    source_base_ros_environment
     ensure_ros_workspace_layout
 
     local packages=(lars_msgs)
@@ -124,75 +120,30 @@ ensure_ros_overlay() {
     done
 }
 
-source_ros_environment() {
-    source_base_ros_environment
-
-    # The bridge needs the workspace overlay to resolve custom lars_msgs schemas.
-    if [ -f "${VISUALIZER_ROS_WS}/install/setup.bash" ]; then
-        source "${VISUALIZER_ROS_WS}/install/setup.bash"
-    fi
+install_packages() {
+    echo "Installing optional visualizer dependencies: $*"
+    sudo apt-get update && sudo apt-get install -y "$@"
 }
 
-ensure_foxglove_bridge_available() {
-    if ros2 pkg prefix foxglove_bridge >/dev/null 2>&1; then
-        return 0
+ensure_ros_packages() {
+    local packages=(foxglove_bridge)
+    if [ "${VISUALIZER_MODEL}" = true ]; then
+        packages+=(robot_state_publisher)
     fi
 
-    local distro="${ROS_DISTRO:-jazzy}"
-    local package_name="ros-${distro}-foxglove-bridge"
-
-    echo "foxglove_bridge is not installed in this container; installing ${package_name}."
-
-    if ! sudo apt-get update; then
-        echo "Could not update apt package lists."
-        return 1
+    local package
+    local missing=()
+    for package in "${packages[@]}"; do
+        if ! ros2 pkg prefix "${package}" >/dev/null 2>&1; then
+            missing+=("ros-${ROS_DISTRO}-${package//_/-}")
+        fi
+    done
+    if [ "${#missing[@]}" -gt 0 ]; then
+        install_packages "${missing[@]}" || return 1
+        for package in "${packages[@]}"; do
+            ros2 pkg prefix "${package}" >/dev/null || return 1
+        done
     fi
-
-    if ! sudo apt-get install -y "${package_name}"; then
-        echo "Could not install ${package_name}."
-        echo "Rebuild the devcontainer or install it manually with:"
-        echo "  sudo apt-get update && sudo apt-get install -y ${package_name}"
-        return 1
-    fi
-
-    source_base_ros_environment
-
-    if ros2 pkg prefix foxglove_bridge >/dev/null 2>&1; then
-        return 0
-    fi
-
-    echo "${package_name} installed, but ros2 still cannot find foxglove_bridge."
-    return 1
-}
-
-ensure_robot_state_publisher_available() {
-    if ros2 pkg prefix robot_state_publisher >/dev/null 2>&1; then
-        return 0
-    fi
-
-    local distro="${ROS_DISTRO:-jazzy}"
-    local package_name="ros-${distro}-robot-state-publisher"
-
-    echo "robot_state_publisher is not installed in this container; installing ${package_name}."
-
-    if ! sudo apt-get update; then
-        echo "Could not update apt package lists."
-        return 1
-    fi
-
-    if ! sudo apt-get install -y "${package_name}"; then
-        echo "Could not install ${package_name}."
-        return 1
-    fi
-
-    source_base_ros_environment
-
-    if ros2 pkg prefix robot_state_publisher >/dev/null 2>&1; then
-        return 0
-    fi
-
-    echo "${package_name} installed, but ros2 still cannot find robot_state_publisher."
-    return 1
 }
 
 open_url_best_effort() {
@@ -239,70 +190,6 @@ lichtblick_startup_url() {
     echo "${base_url}${path}?ds=foxglove-websocket&ds.url=${bridge_url}"
 }
 
-set_docker_command() {
-    if ! command -v docker >/dev/null 2>&1; then
-        return 1
-    fi
-
-    if docker info >/dev/null 2>&1; then
-        DOCKER_CMD=(docker)
-        return 0
-    fi
-
-    if sudo docker info >/dev/null 2>&1; then
-        DOCKER_CMD=(sudo docker)
-        return 0
-    fi
-
-    return 1
-}
-
-docker_available() {
-    set_docker_command
-}
-
-ensure_docker_cli_available() {
-    if command -v docker >/dev/null 2>&1; then
-        return 0
-    fi
-
-    echo "Docker CLI is not installed in this container; installing docker.io on demand."
-    echo "The devcontainer image stays small, and Lichtblick will use the mounted host Docker socket when available."
-
-    if ! sudo apt-get update; then
-        echo "Could not update apt package lists."
-        return 1
-    fi
-
-    if ! sudo apt-get install -y docker.io; then
-        echo "Could not install docker.io."
-        return 1
-    fi
-}
-
-ensure_docker_available() {
-    if [ ! -S /var/run/docker.sock ]; then
-        echo "The host Docker socket is not mounted at /var/run/docker.sock."
-        echo "Rebuild or recreate the devcontainer so VS Code applies this mount from .devcontainer/devcontainer.json:"
-        echo "  source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind"
-        echo ""
-        echo "If you need a temporary workaround, run Lichtblick on the host and import:"
-        echo "  ${VISUALIZER_LAYOUT}"
-        echo ""
-        return 1
-    fi
-
-    ensure_docker_cli_available || return 1
-
-    if docker_available; then
-        return 0
-    fi
-
-    echo "A Docker socket is mounted at /var/run/docker.sock, but the Docker CLI cannot access it."
-    echo "Check host socket permissions, or use sudo inside the devcontainer."
-    return 1
-}
-
 node_version_available() {
     command -v node >/dev/null 2>&1 || return 1
     node -e 'const [major, minor] = process.versions.node.split(".").map(Number); process.exit(major > 18 || (major === 18 && minor >= 18) ? 0 : 1)' >/dev/null 2>&1
@@ -313,26 +200,11 @@ ensure_node_available() {
         return 0
     fi
 
-    echo "Node.js >= 18.18 and npm are required to package the ROS Visualizer extension."
-    echo "Installing nodejs and npm on demand."
-
-    if ! sudo apt-get update; then
-        echo "Could not update apt package lists."
+    install_packages nodejs npm || return 1
+    if ! node_version_available || ! command -v npm >/dev/null 2>&1; then
+        echo "Node.js >= 18.18 and npm are required to package the ROS Visualizer extension."
         return 1
     fi
-
-    if ! sudo apt-get install -y nodejs npm; then
-        echo "Could not install nodejs and npm."
-        return 1
-    fi
-
-    if node_version_available && command -v npm >/dev/null 2>&1; then
-        return 0
-    fi
-
-    echo "Installed Node.js is too old for create-lichtblick-extension."
-    echo "Install Node.js >= 18.18, then rerun this launcher."
-    return 1
 }
 
 lichtblick_extension_package_stale() {
@@ -361,89 +233,24 @@ ensure_lichtblick_extension_package() {
         echo "ROS Visualizer extension source not found: ${VISUALIZER_EXTENSION_DIR}"
         return 1
     fi
-
     if ! lichtblick_extension_package_stale; then
         return 0
     fi
 
     ensure_node_available || return 1
-
     echo "Packaging ROS Visualizer extension in ${VISUALIZER_EXTENSION_DIR}"
-    pushd "${VISUALIZER_EXTENSION_DIR}" >/dev/null || return 1
-
-    if [ ! -d node_modules ]; then
-        if ! npm install; then
-            popd >/dev/null
-            echo "Could not install ROS Visualizer extension dependencies."
-            return 1
+    (
+        cd "${VISUALIZER_EXTENSION_DIR}" || exit 1
+        if [ ! -d node_modules ]; then
+            npm ci || exit 1
         fi
-    fi
+        npm run package
+    ) || return 1
 
-    if ! npm run package; then
-        popd >/dev/null
-        echo "Could not package the ROS Visualizer extension."
+    if [ ! -f "${VISUALIZER_EXTENSION_PACKAGE}" ]; then
+        echo "Expected extension package was not created: ${VISUALIZER_EXTENSION_PACKAGE}"
         return 1
     fi
-    popd >/dev/null
-
-    if [ -f "${VISUALIZER_EXTENSION_PACKAGE}" ]; then
-        return 0
-    fi
-
-    echo "Expected extension package was not created: ${VISUALIZER_EXTENSION_PACKAGE}"
-    return 1
-}
-
-confirm_host_container_once() {
-    if [ "${VISUALIZER_ASSUME_YES}" = "true" ] || [ -f "${VISUALIZER_NOTICE_FILE}" ]; then
-        return 0
-    fi
-
-    echo "Starting the ROS Visualizer dashboard will create an additional container on the host Docker daemon:"
-    echo "  container: ${VISUALIZER_CONTAINER}"
-    echo "  image:     ${VISUALIZER_IMAGE}"
-    echo "  port:      ${VISUALIZER_PORT}:8080"
-    echo ""
-
-    if [ ! -t 0 ]; then
-        echo "No interactive terminal is available for confirmation."
-        echo "Set VISUALIZER_ASSUME_YES=true to acknowledge this notice non-interactively."
-        return 1
-    fi
-
-    read -r -p "Continue? [y/N] " answer
-    case "${answer}" in
-        y|Y|yes|YES)
-            mkdir -p "$(dirname "${VISUALIZER_NOTICE_FILE}")"
-            touch "${VISUALIZER_NOTICE_FILE}"
-            ;;
-        *)
-            echo "Cancelled."
-            return 1
-            ;;
-    esac
-}
-
-lichtblick_container_running() {
-    "${DOCKER_CMD[@]}" ps --format '{{.Names}}' | grep -qx "${VISUALIZER_CONTAINER}"
-}
-
-wait_for_lichtblick_container() {
-    for _ in {1..60}; do
-        if lichtblick_container_running \
-            && "${DOCKER_CMD[@]}" exec "${VISUALIZER_CONTAINER}" sh -lc 'test -f /src/index.html' >/dev/null 2>&1; then
-            return 0
-        fi
-
-        if [ -n "${lichtblick_pid}" ] && ! kill -0 "${lichtblick_pid}" 2>/dev/null; then
-            wait "${lichtblick_pid}" 2>/dev/null || true
-            return 1
-        fi
-
-        sleep 0.5
-    done
-
-    return 1
 }
 
 port_in_use() {
@@ -453,10 +260,10 @@ port_in_use() {
 }
 
 stage_lichtblick_layout() {
-    mkdir -p "${VISUALIZER_DOCKER_ROOT}"
+    mkdir -p "${VISUALIZER_RUN_ROOT}"
 
     if [ -f "${VISUALIZER_LAYOUT}" ]; then
-        python3 - "${VISUALIZER_LAYOUT}" "${VISUALIZER_DOCKER_ROOT}/visualizer_layout.json" "${VISUALIZER_LAYOUT_ID}" "${VISUALIZER_LAYOUT_NAME}" <<'PY'
+        python3 - "${VISUALIZER_LAYOUT}" "${VISUALIZER_RUN_ROOT}/visualizer_layout.json" "${VISUALIZER_LAYOUT_ID}" "${VISUALIZER_LAYOUT_NAME}" <<'PY'
 import json
 import sys
 from datetime import datetime, timezone
@@ -486,7 +293,7 @@ PY
     fi
 
     if [ -f "${VISUALIZER_BOOTSTRAP}" ]; then
-        cp "${VISUALIZER_BOOTSTRAP}" "${VISUALIZER_DOCKER_ROOT}/visualizer.html"
+        cp "${VISUALIZER_BOOTSTRAP}" "${VISUALIZER_RUN_ROOT}/visualizer.html"
     else
         echo "ROS visualizer bootstrap page not found: ${VISUALIZER_BOOTSTRAP}"
         return 1
@@ -494,9 +301,9 @@ PY
 
     ensure_lichtblick_extension_package || return 1
 
-    cp "${VISUALIZER_EXTENSION_PACKAGE}" "${VISUALIZER_DOCKER_ROOT}/hardware_interface_panels.foxe"
+    cp "${VISUALIZER_EXTENSION_PACKAGE}" "${VISUALIZER_RUN_ROOT}/hardware_interface_panels.foxe"
 
-    python3 - "${VISUALIZER_EXTENSION_DIR}" "${VISUALIZER_EXTENSION_PACKAGE}" "${VISUALIZER_DOCKER_ROOT}/hardware_interface_panels_extension.json" <<'PY'
+    python3 - "${VISUALIZER_EXTENSION_DIR}" "${VISUALIZER_EXTENSION_PACKAGE}" "${VISUALIZER_RUN_ROOT}/hardware_interface_panels_extension.json" <<'PY'
 import json
 import os
 import re
@@ -534,42 +341,61 @@ with open(output_path, "w", encoding="utf-8") as output_file:
 PY
 }
 
-start_lichtblick() {
-    stage_lichtblick_layout
+ensure_lichtblick_web_assets() {
+    python3 "${LICHTBLICK_WEB_HELPER}" install \
+        --version "${VISUALIZER_VERSION}" \
+        --directory "${VISUALIZER_WEB_ROOT}"
+}
 
-    "${DOCKER_CMD[@]}" rm -f "${VISUALIZER_CONTAINER}" >/dev/null 2>&1 || true
+wait_for_lichtblick_http() {
+    local attempt
+    for attempt in {1..40}; do
+        if ! kill -0 "${lichtblick_pid}" 2>/dev/null; then
+            wait "${lichtblick_pid}" 2>/dev/null || true
+            return 1
+        fi
+        if python3 - "${VISUALIZER_PORT}" <<'HTTP_CHECK'
+import sys
+from urllib.request import ProxyHandler, build_opener
 
-    "${DOCKER_CMD[@]}" create \
-        --name "${VISUALIZER_CONTAINER}" \
-        -p "${VISUALIZER_PORT}:8080" \
-        "${VISUALIZER_IMAGE}" >/dev/null
-
-    copy_lichtblick_visualizer_files
-
-    "${DOCKER_CMD[@]}" start -a "${VISUALIZER_CONTAINER}" &
-    lichtblick_pid=$!
-
-    if wait_for_lichtblick_container; then
-        return 0
-    fi
-
-    echo "Lichtblick container ${VISUALIZER_CONTAINER} did not start."
-    echo "If Docker reports 'address already in use', check listeners on the Docker host."
-    echo "In VS Code's Ports view, stop forwarding the selected Lichtblick HTTP port."
-    echo "The HTTP server runs on host Docker; only the WebSocket bridge needs forwarding."
-    echo "A port check inside the devcontainer cannot detect host-side listeners."
+try:
+    opener = build_opener(ProxyHandler({}))
+    with opener.open(f"http://127.0.0.1:{sys.argv[1]}/visualizer.html", timeout=0.5) as response:
+        sys.exit(0 if response.status == 200 else 1)
+except OSError:
+    sys.exit(1)
+HTTP_CHECK
+        then
+            return 0
+        fi
+        sleep 0.25
+    done
     return 1
 }
 
-copy_lichtblick_visualizer_files() {
-    "${DOCKER_CMD[@]}" cp "${VISUALIZER_DOCKER_ROOT}/visualizer.html" "${VISUALIZER_CONTAINER}:/src/visualizer.html"
-
-    if [ -f "${VISUALIZER_DOCKER_ROOT}/visualizer_layout.json" ]; then
-        "${DOCKER_CMD[@]}" cp "${VISUALIZER_DOCKER_ROOT}/visualizer_layout.json" "${VISUALIZER_CONTAINER}:/src/visualizer_layout.json"
+start_lichtblick() {
+    if port_in_use "${VISUALIZER_PORT}"; then
+        echo "HTTP port ${VISUALIZER_PORT} is already in use inside the devcontainer."
+        echo "Stop that server or choose another port with --lichtblick-port."
+        return 1
     fi
 
-    "${DOCKER_CMD[@]}" cp "${VISUALIZER_DOCKER_ROOT}/hardware_interface_panels.foxe" "${VISUALIZER_CONTAINER}:/src/hardware_interface_panels.foxe"
-    "${DOCKER_CMD[@]}" cp "${VISUALIZER_DOCKER_ROOT}/hardware_interface_panels_extension.json" "${VISUALIZER_CONTAINER}:/src/hardware_interface_panels_extension.json"
+    ensure_lichtblick_web_assets
+    VISUALIZER_RUN_ROOT=$(mktemp -d "${TMPDIR:-/tmp}/ros-visualizer.XXXXXX")
+    stage_lichtblick_layout
+
+    python3 "${LICHTBLICK_WEB_HELPER}" serve \
+        --directory "${VISUALIZER_WEB_ROOT}" \
+        --overlay "${VISUALIZER_RUN_ROOT}" \
+        --bind 0.0.0.0 \
+        --port "${VISUALIZER_PORT}" &
+    lichtblick_pid=$!
+
+    if wait_for_lichtblick_http; then
+        return 0
+    fi
+    echo "Lichtblick HTTP server did not start on port ${VISUALIZER_PORT}."
+    return 1
 }
 
 start_bridge() {
@@ -578,12 +404,13 @@ start_bridge() {
         return 0
     fi
 
-    ros2 launch foxglove_bridge foxglove_bridge_launch.xml \
+    # Background shell jobs inherit ignored SIGINT; restore it for ROS shutdown.
+    env --default-signal=INT ros2 launch --noninteractive foxglove_bridge foxglove_bridge_launch.xml \
         address:="${VISUALIZER_BRIDGE_ADDRESS}" \
         port:="${VISUALIZER_BRIDGE_PORT}" \
         client_topic_whitelist:="${VISUALIZER_BRIDGE_CLIENT_TOPIC_WHITELIST}" \
         remote_access:=false &
-    bridge_pid=$!
+    ros_pids+=("$!")
 }
 
 start_visualizer() {
@@ -591,29 +418,26 @@ start_visualizer() {
         return 0
     fi
 
-    ensure_robot_state_publisher_available || return 1
-    source_ros_environment
-
     env --default-signal=INT ros2 launch --noninteractive lars_visualizer visualizer.launch.py &
-    visualizer_pid=$!
+    ros_pids+=("$!")
 }
 
 cleanup() {
-    if [ -n "${visualizer_pid}" ]; then
-        kill -INT "${visualizer_pid}" 2>/dev/null || true
-        wait "${visualizer_pid}" 2>/dev/null || true
-    fi
-
-    if [ -n "${bridge_pid}" ]; then
-        kill "${bridge_pid}" 2>/dev/null || true
-        wait "${bridge_pid}" 2>/dev/null || true
-    fi
+    # SIGINT lets ros2 launch stop its nodes; SIGTERM can leave them orphaned.
+    local pid
+    for pid in "${ros_pids[@]}"; do
+        kill -INT "${pid}" 2>/dev/null || true
+        wait "${pid}" 2>/dev/null || true
+    done
 
     if [ -n "${lichtblick_pid}" ]; then
-        "${DOCKER_CMD[@]}" rm -f "${VISUALIZER_CONTAINER}" >/dev/null 2>&1 || true
+        kill "${lichtblick_pid}" 2>/dev/null || true
         wait "${lichtblick_pid}" 2>/dev/null || true
     fi
 
+    if [ -n "${VISUALIZER_RUN_ROOT}" ]; then
+        rm -rf -- "${VISUALIZER_RUN_ROOT}"
+    fi
 }
 
 while [ $# -gt 0 ]; do
@@ -642,19 +466,21 @@ while [ $# -gt 0 ]; do
     shift
 done
 
-trap cleanup EXIT INT TERM
+trap cleanup EXIT
+trap 'exit 130' INT
+trap 'exit 143' TERM
 
+source_base_ros_environment
+ensure_ros_packages
 ensure_ros_overlay
-source_ros_environment
-ensure_foxglove_bridge_available
-ensure_docker_available
-confirm_host_container_once
+# The WebSocket bridge needs the overlay to resolve custom lars_msgs schemas.
+source "${VISUALIZER_ROS_WS}/install/setup.bash"
 
-echo "Starting ROS Visualizer dashboard"
+echo "Starting ROS Visualizer"
 echo "  workspace:       ${VISUALIZER_ROS_WS}"
-echo "  image:           ${VISUALIZER_IMAGE}"
+echo "  web version:     ${VISUALIZER_VERSION}"
 echo "  layout:          ${VISUALIZER_LAYOUT}"
-echo "  HTTP host port:  ${VISUALIZER_PORT}"
+echo "  HTTP port:       ${VISUALIZER_PORT}"
 echo "  bridge port:     ${VISUALIZER_BRIDGE_PORT}"
 echo "  publish topics:  ${VISUALIZER_BRIDGE_CLIENT_TOPIC_WHITELIST}"
 echo "  robot model:     ${VISUALIZER_MODEL}"
@@ -663,11 +489,7 @@ echo ""
 start_lichtblick
 start_visualizer
 start_bridge
-# Emit browser URLs only after Docker has bound the host HTTP port.
+# Both servers run in this devcontainer and are forwarded by VS Code.
 open_url_best_effort "$(lichtblick_startup_url)"
 
-if [ -n "${bridge_pid}" ]; then
-    wait "${bridge_pid}"
-elif [ -n "${lichtblick_pid}" ]; then
-    wait "${lichtblick_pid}"
-fi
+wait -n "${lichtblick_pid}" "${ros_pids[@]}"

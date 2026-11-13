@@ -38,32 +38,33 @@
     // Mounting the /dev directory will allow the devcontainer to access all host devices (e.g. serial ports)
     // Comment out the following line if you encounter issues with other devices on your host system
     "mounts": [
-        "source=/dev,target=/dev,type=bind",
-        "source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind"
+        "source=/dev,target=/dev,type=bind"
     ],
     "runArgs": [
         "--privileged",
         "--hostname=hardware-interface-dev"
     ],
-    // Lichtblick publishes HTTP port 8080 directly on the host Docker daemon.
-    // Only the bridge runs inside the devcontainer and needs forwarding.
+    // Optional Lichtblick HTTP server and ROS WebSocket bridge run in this container.
     "forwardPorts": [
+        8080,
         8765
     ],
     "portsAttributes": {
         "8080": {
-            "label": "ROS Visualizer (host Docker)",
-            "onAutoForward": "ignore"
+            "label": "ROS Visualizer",
+            "onAutoForward": "notify",
+            "requireLocalPort": true
+        },
+        "8081": {
+            "label": "ROS Visualizer (alternate port)",
+            "onAutoForward": "notify",
+            "requireLocalPort": true
         },
         "8765": {
             "label": "ROS WebSocket Bridge",
-            "onAutoForward": "notify"
+            "onAutoForward": "notify",
+            "requireLocalPort": true
         }
-    },
-    // HTTP is published by host Docker, including custom Lichtblick ports.
-    // Do not let URL detection create a competing local forwarding listener.
-    "otherPortsAttributes": {
-        "onAutoForward": "ignore"
     },
     // When a volume mount is used, the repository will be cloned into the container
     // Local changes will not be reflected in the container repository!!

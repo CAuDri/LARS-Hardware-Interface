@@ -3,7 +3,8 @@
 This folder contains the Lichtblick dashboard used for debugging the
 hardware interface from the devcontainer. It starts a browser-based ROS
 visualizer, connects it to the local ROS graph, and loads the visualizer dashboard
-layout with the custom control panels.
+layout with the custom control panels. The dashboard is shared across vehicles; LARS is
+the currently bundled model, not a requirement for telemetry or controls.
 
 Use this when you want the full ROS debug view: robot model, telemetry, plots,
 logs, teleop controls, lights, and hardware operation buttons.
@@ -40,56 +41,49 @@ vendor default layout is left alone.
 
 ## First Launch
 
-Lichtblick runs as a sibling container on the host Docker daemon. The
-devcontainer reaches it through the mounted Docker socket at
-`/var/run/docker.sock`.
+Lichtblick and the ROS WebSocket bridge run inside the devcontainer. The
+visualizer is optional: building or opening the devcontainer does not download
+or start it. No additional container or Docker socket is needed.
 
-Docker publishes Lichtblick's HTTP port 8080 directly on the host. VS Code
-only forwards port 8765 for the bridge running inside the devcontainer.
-`otherPortsAttributes.onAutoForward` is set to `ignore` so custom HTTP ports
-such as 8081 are also excluded from automatic forwarding. The launcher emits
-the browser URL only after Docker has bound the HTTP port: terminal URL
-detection must not reserve that port before Docker starts.
+On first launch, the script downloads the official Lichtblick **1.29.1** web
+bundle (about 38 MiB) and caches it under
+`~/.cache/ros-visualizer/1.29.1`. Later launches reuse the cached files. The
+cache respects `XDG_CACHE_HOME`; set `VISUALIZER_VERSION` to select another
+release, or `VISUALIZER_WEB_ROOT` to use a preinstalled web bundle containing
+`index.html`.
 
-After changing the devcontainer configuration, rebuild/recreate the
-devcontainer to apply it. In the VS Code Ports view, stop any existing HTTP
-forwardings for 8080 and 8081 (or your selected custom port). Existing or
-restored forwardings can survive configuration changes. A forwarding listener
-on `127.0.0.1:8080` prevents Docker from publishing `0.0.0.0:8080`.
+A small Python HTTP server serves the bundle together with the visualizer startup
+page, layout and extension. The launcher installs ROS packages
+(`ros-${ROS_DISTRO}-foxglove-bridge` and, when the model is enabled,
+`ros-${ROS_DISTRO}-robot-state-publisher`) and Node.js/npm for extension
+packaging only when needed. These tools are not baked into the devcontainer
+image.
 
-If the error persists, check the actual Docker host, not the devcontainer:
+VS Code forwards HTTP port **8080** and WebSocket port **8765** to the host.
+This uses the same devcontainer forwarding on Windows and Linux; the browser
+connects to `localhost` on the host. No Docker port publishing is required.
+After changing `devcontainer.json`, use **Dev Containers: Rebuild Container**
+to apply the updated configuration.
 
-```bash
-sudo ss -ltnp 'sport = :8080 or sport = :8081'
-docker ps --format 'table {{.Names}}\t{{.Ports}}'
-```
+The forwarding requires the same local port as the container port so the
+startup URL stays valid. If a host port is occupied, VS Code reports the
+conflict instead of silently picking a different number. Check the **Ports**
+view for the actual local addresses and remove any stale forwards from the
+previous setup.
 
-Stop the conflicting forwarding or service, then rerun the launcher. Changing
-the HTTP port alone does not fix automatic URL forwarding.
-
-On first launch, the script asks before creating the host-side container
-`ros-visualizer`. The acknowledgement is stored at:
-
-```text
-~/.cache/ros-visualizer-host-container-notice
-```
-
-For non-interactive use, set:
+To use HTTP port 8081 instead, run:
 
 ```bash
-VISUALIZER_ASSUME_YES=true
+.devcontainer/script/container_start_visualizer.sh --lichtblick-port 8081
 ```
 
-If the Docker socket is missing or unreachable, rebuild or recreate the
-devcontainer so VS Code applies the socket mount.
+Port 8081 has forwarding attributes configured as well. For other custom
+ports, add them in the VS Code Ports view if automatic detection does not
+forward them.
 
-The launcher installs a few tools only when needed:
-
-- `ros-${ROS_DISTRO}-foxglove-bridge`
-- the Docker CLI
-- Node.js/npm for packaging the custom Lichtblick extension
-
-These are intentionally not baked into the devcontainer image.
+Keep the launcher running while using the dashboard. **Ctrl+C** stops the HTTP
+server and ROS processes started by that launch and removes its temporary
+layout/extension directory. The downloaded web bundle remains cached.
 
 ## Dashboard
 
@@ -128,6 +122,8 @@ at 20 Hz so the model and reference grid also work without connected hardware.
 - `default_layout.json`: the visualizer dashboard layout.
 - `visualizer.html`: small startup page that selects the visualizer layout and
   extension before opening Lichtblick.
+- `lichtblick_web.py`: downloads the optional web bundle and serves it with the
+  visualizer startup files.
 - `extensions/hardware-interface-panels`: custom Lichtblick panels used by the
   layout.
 
