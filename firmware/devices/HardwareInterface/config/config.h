@@ -107,15 +107,17 @@ BNO055::Config bno055_config{
     .reset_pin = I2C2_GPIO4_Pin,
     .interrupt_port = I2C2_GPIO3_GPIO_Port,
     .interrupt_pin = I2C2_GPIO3_Pin,
+    // Swap X/Y (0x21) and invert the remapped X axis (sign bit 2).
+    .axis_map = {.config = 0x21, .sign = 0x04, .configured = true},
 };
 
 VL53L5CX::Config vl53l5cx_config{
     .hi2c = &hi2c1,
     .address = 0x10,
-    .lpn_port = I2C1_GPIO8_GPIO_Port,
-    .lpn_pin = I2C1_GPIO8_Pin,
-    .interrupt_port = I2C1_GPIO7_GPIO_Port,
-    .interrupt_pin = I2C1_GPIO7_Pin,
+    .lpn_port = I2C1_GPIO2_GPIO_Port,
+    .lpn_pin = I2C1_GPIO2_Pin,
+    // .interrupt_port = I2C1_GPIO1_GPIO_Port,
+    // .interrupt_pin = I2C1_GPIO1_Pin,
 };
 
 WS2812Driver::Config ws2812_config{
@@ -141,6 +143,7 @@ ImuPublisher::Config imu_publisher_config{
 TofPublisher::Config tof_publisher_config{
     .publish_period_ms = TOF_PUBLISHER_DEFAULT_PERIOD_MS,
     .thread_priority = osPriorityNormal,
+    // .swap_xy = true,
     .publisher_config = {false, 0},
 };
 

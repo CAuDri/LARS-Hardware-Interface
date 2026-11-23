@@ -6,38 +6,35 @@
 
 #include "main.h"
 
-// #include "blink_animation.hpp"
+#include "config/config.h"
+
 #include "autonomous_control.hpp"
 #include "bno055.hpp"
-#include "config/config.h"
 #include "gpio_light.hpp"
 #include "imu_publisher.hpp"
 #include "light_dispatcher.hpp"
 #include "logger.h"
 #include "logger_node.hpp"
 #include "motor_publisher.hpp"
-#include "pulse_animation.hpp"
 #include "servo_publisher.hpp"
 #include "system_node.hpp"
 #include "vl53l5cx.hpp"
 #include "ws2812_light.hpp"
 
-/**
- * Forward function declarations
- */
+
 extern "C" void mainTask();
 void onSystemStateChange(SystemCheck::SystemState state);
+
 
 /**
  * All global objects that can be statically initialized
  */
-WS2812<13> ws2812_top("WS2812 Top");  // WS2812 driver for the top LED string
-
-RCReceiver rc_receiver;      // RC Receiver driver for handling remote control input
-VESC motor("VESC Driver");   // VESC driver for motor control
-Servo servo("Servo Front");  // Servo driver for steering control and feedback
-BNO055 imu("BNO055 IMU");  // BNO055 driver for inertial measurements
-VL53L5CX tof_front("VL53L5CX Front");  // VL53L5CX driver for multi-zone time-of-flight ranging
+WS2812<13> ws2812_top("WS2812 Top");   // WS2812 driver for the top LED string
+RCReceiver rc_receiver;                // RC Receiver driver for handling remote control input
+VESC motor("VESC Driver");             // VESC driver for motor control
+Servo servo("Servo Front");            // Servo driver for steering control and feedback
+BNO055 imu("BNO055 IMU");              // BNO055 driver for inertial measurements
+VL53L5CX tof_front("VL53L5CX Front");  // VL53L5CX driver for time-of-flight ranging
 
 DriveController drive_controller;  // Drive controller for managing vehicle drive modes and high-level control
 
@@ -45,24 +42,22 @@ SystemCheck system_check;      // System check utility for monitoring states of 
 SystemMonitor system_monitor;  // System monitor for periodic system checks and handling system state changes
 
 WS2812Light<1> onboard_led_1(ws2812_top, 0);  // Onboard RGB LED 1
-WS2812Light<6> left_test_lights(ws2812_top, 1);
-WS2812Light<6> right_test_lights(ws2812_top, 7);
-
-GPIOLight debug_led_red(DEBUG_LED_RED_GPIO_Port, DEBUG_LED_RED_Pin, COLOR_RED);          // Onboard debug LED (red)
-GPIOLight debug_led_green(DEBUG_LED_GREEN_GPIO_Port, DEBUG_LED_GREEN_Pin, COLOR_GREEN);  // Onboard debug LED (green)
-GPIOLight debug_led_blue(DEBUG_LED_BLUE_GPIO_Port, DEBUG_LED_BLUE_Pin, COLOR_BLUE);      // Onboard debug LED (blue)
+GPIOLight debug_led_red(DEBUG_LED_RED_GPIO_Port, DEBUG_LED_RED_Pin, COLOR_RED);
+GPIOLight debug_led_green(DEBUG_LED_GREEN_GPIO_Port, DEBUG_LED_GREEN_Pin, COLOR_GREEN);
+GPIOLight debug_led_blue(DEBUG_LED_BLUE_GPIO_Port, DEBUG_LED_BLUE_Pin, COLOR_BLUE);
 
 LightDispatcher light_dispatcher("Light Dispatcher");
+LightDispatcher test_dispatcher("Test Dispatcher");
 
-ros::Client microros_client;              // micro-ROS client for communication with the ROS 2 agent
+ros::Client microros_client;  // micro-ROS client for communication with the ROS 2 agent
 
-LoggerNode logger_node;                   // ROS 2 node for publishing firmware log messages to /rosout
-ServoPublisher servo_publisher;           // ROS 2 node for publishing servo feedback messages
-MotorPublisher motor_publisher;           // ROS 2 node for publishing motor feedback and telemetry messages
-ImuPublisher imu_publisher;  // ROS 2 node for publishing inertial measurements
-TofPublisher tof_publisher;  // ROS 2 node for publishing time-of-flight sensor measurements
-AutonomousControl autonomous_control;     // ROS 2 node for receiving autonomous drive commands
-SystemNode system_node;                   // ROS 2 node for heartbeat and hardware operation services
+LoggerNode logger_node;                // ROS 2 node for publishing firmware log messages to /rosout
+ServoPublisher servo_publisher;        // ROS 2 node for publishing servo feedback messages
+MotorPublisher motor_publisher;        // ROS 2 node for publishing motor feedback and telemetry messages
+ImuPublisher imu_publisher;            // ROS 2 node for publishing inertial measurements
+TofPublisher tof_publisher;            // ROS 2 node for publishing time-of-flight sensor measurements
+AutonomousControl autonomous_control;  // ROS 2 node for receiving autonomous drive commands
+SystemNode system_node;                // ROS 2 node for heartbeat and hardware operation services
 
 /**
  * @brief Main entry point called from the RTOS task in the auto-generated main.c
@@ -97,7 +92,7 @@ void mainTask() {
      * Initialize all peripheral drivers
      */
     ws2812_top.init(ws2812_config);
-    ws2812_top.setColor(COLOR_ORANGE);
+    // ws2812_top.setColor(COLOR_ORANGE);
 
     rc_receiver.init(rc_config);
     rc_receiver.start();
@@ -113,7 +108,6 @@ void mainTask() {
 
     tof_front.init(vl53l5cx_config);
     tof_front.start();
-
 
     /**
      * Initialize all micro-ROS nodes
