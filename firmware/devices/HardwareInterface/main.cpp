@@ -144,20 +144,19 @@ void mainTask() {
     /**
      * Register components with the system check for monitoring
      */
+    system_check.registerClient(microros_client);
+
     system_check.registerDriver(rc_receiver, true);
     system_check.registerDriver(motor, true);
     system_check.registerDriver(servo, false);
-    // system_check.registerDriver(imu, false);
-    // system_check.registerDriver(tof_front, false);
+    system_check.registerDriver(imu, false);
+    system_check.registerDriver(tof_front, false);
     system_check.registerDriver(ws2812_top, false);
-    system_check.registerClient(microros_client);
-    #if DEBUG_LOG_OUTPUT == LOG_OUTPUT_ROS
-    system_check.registerNode(logger_node);
-    #endif
+
     system_check.registerNode(servo_publisher);
     system_check.registerNode(motor_publisher);
-    // system_check.registerNode(imu_publisher);
-    // system_check.registerNode(tof_publisher);
+    system_check.registerNode(imu_publisher);
+    system_check.registerNode(tof_publisher);
     system_check.registerNode(autonomous_control);
     system_check.registerNode(system_node);
 
