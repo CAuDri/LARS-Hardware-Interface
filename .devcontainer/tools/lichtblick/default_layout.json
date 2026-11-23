@@ -121,7 +121,7 @@
       "minLevel": 0,
       "pinnedIds": [],
       "hardwareIdFilter": "",
-      "topicToRender": "/diagnostics",
+      "topicToRender": "/hardware/diagnostics",
       "sortByLevel": true
     },
     "RosOut!logs": {
@@ -227,12 +227,12 @@
       "minLevel": 0,
       "pinnedIds": [],
       "hardwareIdFilter": "",
-      "topicToRender": "/diagnostics",
+      "topicToRender": "/hardware/diagnostics",
       "sortByLevel": true,
       "lichtblickPanelTitle": "Diagnostics Summary"
     },
     "DiagnosticStatusPanel!diagnostic_status": {
-      "topicToRender": "/diagnostics",
+      "topicToRender": "/hardware/diagnostics",
       "collapsedSections": [],
       "selectedHardwareId": "",
       "splitFraction": 0.5,

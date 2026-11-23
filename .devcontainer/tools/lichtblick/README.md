@@ -9,7 +9,7 @@ the currently bundled model, not a requirement for telemetry or controls.
 Use this when you want the full ROS debug view: robot model, telemetry, plots,
 logs, teleop controls, lights, and hardware operation buttons.
 
-## Start It
+## Run
 
 Use the VS Code action button:
 
