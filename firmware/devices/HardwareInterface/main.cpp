@@ -200,11 +200,13 @@ void onSystemStateChange(SystemCheck::SystemState state) {
     switch (state) {
         case SystemCheck::SystemState::OK:
             LogInfo("Main: System state OK, starting drive controller");
+            drive_controller.enableAutonomousControl(true);
             drive_controller.start();
             break;
         case SystemCheck::SystemState::WARNING:
             LogWarning("Main: System state WARNING, disabling autonomous control");
-            // TODO: Implement behavior for WARNING state
+            drive_controller.enableAutonomousControl(false);
+            drive_controller.start();
             break;
         case SystemCheck::SystemState::ERROR:
             LogError("Main: System state ERROR, stopping drive controller");

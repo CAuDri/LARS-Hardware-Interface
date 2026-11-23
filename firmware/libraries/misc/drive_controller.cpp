@@ -1,7 +1,7 @@
 /**
  * @file drive_controller.cpp
  *
- * @brief CAuDri - Drive controller node for handling drive commands and drive modes.
+ * @brief CAuDri - Drive controller for handling drive commands and drive modes.
  *
  * This class manages the drive modes of the vehicle (i.e. idle, manual, autonomous) and adds a bit of safety
  * around the control commands received from the RC receiver and autonomous driving stack.
@@ -11,9 +11,17 @@
  *
  * This implementation is tightly coupled to the RCReceiver, VESC, and Servo drivers.
  * Driver interfaces could be used, if you want to make it more generic and reusable for other driver implementations.
+ *
+ *
+ * TODO: Split up manual and autonomous control and move out of this class?
+ * TODO: Add configurable hard limits for manual/autonomous control
+ * TODO: Command timeout check is intervall based and can effectively double the allowed timeout duration, I dont care.
  */
 #include "drive_controller.hpp"
 
+#include <cmath>
+
+#include "FreeRTOS.h"
 #include "blink_animation.hpp"
 #include "logger.h"
 
@@ -24,14 +32,11 @@ static constexpr uint32_t EMERGENCY_MAX_TIMEOUT_MS = 60000;  // Maximum time to 
 
 static constexpr uint32_t MAX_INIT_WAIT_TIME_MS = 60000;  // Maximum time to wait for initialization (e.g. RC connection)
 
-static constexpr uint32_t RC_SWITCH_STATE_0_THRESHOLD = 0;     // Threshold for RC switch state 0
 static constexpr uint32_t RC_SWITCH_STATE_1_THRESHOLD = 900;   // Threshold for RC switch state 1
 static constexpr uint32_t RC_SWITCH_STATE_2_THRESHOLD = 1500;  // Threshold for RC switch state 2
 
-static constexpr uint32_t RC_CHANNEL_MIN_VALUE = 200;      // Minimum value for RC channel (joystick low)
 static constexpr uint32_t RC_CHANNEL_CENTER_VALUE = 1000;  // Center value for RC channel (joystick center)
 static constexpr uint32_t RC_CHANNEL_MAX_VALUE = 1800;     // Maximum value for RC channel (joystick high)
-
 static constexpr uint32_t THROTTLE_DEADZONE = 50;  // Deadzone around center for throttle channel
 
 static constexpr uint32_t CONTROLLER_THREAD_UPDATE_TIME_MS = 100;  // Timeout for the controller thread update loop
@@ -39,18 +44,18 @@ static constexpr uint32_t CONTROLLER_THREAD_UPDATE_TIME_MS = 100;  // Timeout fo
 // Thread flags for the controller thread
 static constexpr uint32_t START_THREAD_FLAG = 0x01;
 static constexpr uint32_t MODE_SWITCH_FLAG = 0x02;
-static constexpr uint32_t AUTONOMOUS_COMMAND_FLAG = 0x04;
 
-static constexpr const char* DRIVE_MODE_TRACE_STATES[] = {"IDLE", "MANUAL", "AUTONOMOUS", "MANDATORY_STOP", "EMERGENCY_STOP"};
+static constexpr const char* DRIVE_MODE_TRACE_STATES[] = {
+    "IDLE", "MANUAL", "AUTONOMOUS", "MANDATORY_STOP", "EMERGENCY_STOP"};
 
 /**
- * @brief Construct a new drive controller object for later initialization
+ * @brief Construct a new drive controller instance for later initialization
  */
 DriveController::DriveController() {}
 
 
 /**
- * @brief Construct a new drive controller object with configuration and driver references
+ * @brief Construct a new drive controller instance with configuration and driver references
  *
  * @param config Configuration for the drive controller
  * @param rc_receiver Reference to the RC receiver driver
@@ -63,11 +68,14 @@ DriveController::DriveController(const Config& config, RCReceiver& rc_receiver, 
 }
 
 /**
- * @brief Destroy the drive controller object and terminate the controller thread
+ * @brief Destroy the drive controller instance and terminate the controller thread
  */
 DriveController::~DriveController() {
     osThreadTerminate(controller_thread);
-    setState(NodeState::UNINITIALIZED);
+    setState(State::UNINITIALIZED);
+    if (control_mutex != nullptr) {
+        (void)osMutexDelete(control_mutex);
+    }
 }
 
 /**
@@ -82,16 +90,27 @@ DriveController::~DriveController() {
  * @param status_light Reference to the status light
  */
 bool DriveController::init(const Config& config, RCReceiver& rc_receiver, VESC& vesc, Servo& servo, Light& status_light) {
-    if (state != NodeState::UNINITIALIZED) {
+    if (state != State::UNINITIALIZED) {
         return false;
     }
-    setState(NodeState::INITIALIZING);
+    setState(State::INITIALIZING);
 
     this->config = &config;
     if (config.throttle_channel == crsf::INVALID_CHANNEL || config.steering_channel == crsf::INVALID_CHANNEL ||
         config.mode_switch_channel == crsf::INVALID_CHANNEL || config.autonomous_command_timeout_ms == 0U) {
         LogError("Drive Controller: Invalid channel configuration");
-        setState(NodeState::ERROR);
+        setState(State::ERROR);
+        return false;
+    }
+
+    mutex_attributes.name = "Drive Control";
+    mutex_attributes.attr_bits = osMutexRecursive | osMutexPrioInherit;
+    mutex_attributes.cb_mem = &mutex_control_block;
+    mutex_attributes.cb_size = sizeof(mutex_control_block);
+    control_mutex = osMutexNew(&mutex_attributes);
+    if (control_mutex == nullptr) {
+        LogError("Drive Controller: Failed to create control mutex");
+        setState(State::ERROR);
         return false;
     }
 
@@ -103,11 +122,11 @@ bool DriveController::init(const Config& config, RCReceiver& rc_receiver, VESC& 
     rc_callback = RCReceiver::ChannelCallback::from<DriveController, &DriveController::remoteControlCallback>(this);
     if (!this->rc_receiver->registerChannelCallback(rc_callback)) {
         LogError("Drive Controller: Failed to register RC receiver channel callback");
-        setState(NodeState::ERROR);
+        setState(State::ERROR);
         return false;
     }
 
-    (void)initDriveModeTrace();
+    (void)initDriveModeTracing();
 
     // Initialize the light dispatcher with the status light
     if (!light_dispatcher.registerLight(status_light)) {
@@ -115,7 +134,7 @@ bool DriveController::init(const Config& config, RCReceiver& rc_receiver, VESC& 
     }
     if (!light_dispatcher.start()) {
         LogError("Drive Controller: Failed to start status light dispatcher");
-        setState(NodeState::ERROR);
+        setState(State::ERROR);
         return false;
     }
 
@@ -135,7 +154,7 @@ bool DriveController::init(const Config& config, RCReceiver& rc_receiver, VESC& 
         &thread_attributes);
     if (controller_thread == nullptr) {
         LogError("Drive Controller: Failed to create controller thread");
-        setState(NodeState::ERROR);
+        setState(State::ERROR);
         return false;
     }
     return true;
@@ -144,10 +163,13 @@ bool DriveController::init(const Config& config, RCReceiver& rc_receiver, VESC& 
 /**
  * @brief Start the drive controller thread
  *
- * This will set the controller state to RUNNING and signal the controller thread to begin operation.
+ * The controller enters RUNNING after the thread has started and the RC receiver is connected.
  */
 bool DriveController::start() {
-    if (state != NodeState::INITIALIZING) {
+    if (state == State::RUNNING) {
+        return true;
+    }
+    if (state != State::INITIALIZING) {
         LogError("Drive Controller: Cannot start, driver not initialized");
         return false;
     }
@@ -156,7 +178,7 @@ bool DriveController::start() {
     if (rc_receiver->getState() == Driver::State::ERROR || vesc->getState() == Driver::State::ERROR ||
         servo->getState() == Driver::State::ERROR) {
         LogError("Drive Controller: Cannot start, one or more drivers in ERROR state");
-        setState(NodeState::ERROR);
+        setState(State::ERROR);
         return false;
     }
 
@@ -171,7 +193,7 @@ bool DriveController::start() {
  * This can only be done while the controller is still in the RUNNING state.
  */
 bool DriveController::restart() {
-    if (state != NodeState::RUNNING) {
+    if (state != State::RUNNING) {
         LogWarning("Drive Controller: Cannot restart, controller not running");
         return false;
     }
@@ -180,17 +202,15 @@ bool DriveController::restart() {
 }
 
 /**
- * @brief Temporary helper until the micro-ROS nodes are implemented
- *
- * TODO: Remove this function and use proper micro-ROS node state management
+ * @brief Update the controller lifecycle state. ERROR is final.
  *
  * @param new_state The new state to set
  */
-bool DriveController::setState(NodeState new_state) {
+bool DriveController::setState(State new_state) {
     if (state == new_state) {
         return true;
     }
-    if (state == NodeState::ERROR) {
+    if (state == State::ERROR) {
         LogError("Drive Controller: Cannot change state from ERROR");
         return false;
     }
@@ -205,24 +225,29 @@ bool DriveController::setState(NodeState new_state) {
  * @param mode The new drive mode to set
  */
 bool DriveController::changeDriveMode(DriveMode mode) {
-    if (state != NodeState::RUNNING) {
+    if (control_mutex == nullptr || osMutexAcquire(control_mutex, osWaitForever) != osOK) {
+        return false;
+    }
+    if (state != State::RUNNING) {
         LogWarning("Drive Controller: Cannot set drive mode, controller not running");
+        (void)osMutexRelease(control_mutex);
         return false;
     }
     if (mode == current_drive_mode) {
+        (void)osMutexRelease(control_mutex);
         return true;
     }
 
     if (mode == DriveMode::EMERGENCY_STOP) {
         emergencyStop();
+        (void)osMutexRelease(control_mutex);
         return true;
-    } else if (mode == DriveMode::IDLE) {
-        stopVehicle();
     }
 
     // Emergency stop must be cleared by the controller thread itself
     if (current_drive_mode == DriveMode::EMERGENCY_STOP) {
         LogWarning("Drive Controller: Cannot manually change drive mode from EMERGENCY_STOP");
+        (void)osMutexRelease(control_mutex);
         return false;
     }
 
@@ -230,77 +255,115 @@ bool DriveController::changeDriveMode(DriveMode mode) {
     // We ensure this by adding an intermediate MANDATORY_STOP state
     if (current_drive_mode == DriveMode::AUTONOMOUS && (mode == DriveMode::MANUAL || mode == DriveMode::IDLE)) {
         setDriveMode(DriveMode::MANDATORY_STOP);
-        stopVehicle();
+        (void)osMutexRelease(control_mutex);
         return true;
     };
     // The controller thread will do the actual mode switch later
     if (current_drive_mode == DriveMode::MANDATORY_STOP) {
+        (void)osMutexRelease(control_mutex);
         return false;
     }
 
     setDriveMode(mode);
+    (void)osMutexRelease(control_mutex);
     return true;
 }
 
 /**
- * @brief Trigger an emergency stop procedure
+ * @brief Set autonomous control readiness without changing the selected drive mode.
  *
- * This will immediately stop the vehicle and start a recovery procedure.
- * In case of non-recoverable errors, the controller will enter the ERROR state.
+ * Disabling readiness immediately stops autonomous actuation. Re-enabling does
+ * not replay commands.
+ */
+void DriveController::enableAutonomousControl(bool enabled) {
+    if (control_mutex == nullptr || osMutexAcquire(control_mutex, osWaitForever) != osOK) {
+        return;
+    }
+    if (autonomous_control_enabled == enabled) {
+        (void)osMutexRelease(control_mutex);
+        return;
+    }
+    autonomous_control_enabled = enabled;
+    if (!enabled && current_drive_mode == DriveMode::AUTONOMOUS) {
+        stopVehicle();
+    }
+    (void)osMutexRelease(control_mutex);
+}
+
+/**
+ * @brief Immediately stop the vehicle and start the emergency recovery procedure.
  */
 void DriveController::emergencyStop() {
     LogDebug("Drive Controller: Emergency stop triggered");
     setDriveMode(DriveMode::EMERGENCY_STOP);
-
-    vesc->setRPM(0);
-    servo->setAngle(0.0f);
 }
 
 /**
- * @brief Store the newest autonomous motor command and wake the controller thread.
+ * @brief Validate and forward a motor command in autonomous mode.
  *
- * The command is only applied while the drive mode is AUTONOMOUS. RPM and motor
- * current commands intentionally share one storage slot, so the most recently
- * received command selects the active VESC control mode.
- *
- * @param command Motor command received from the ROS command node.
- * @return true when the command was accepted.
+ * RPM and current commands share one timestamp for the command watchdog.
+ * @return true when the command was accepted by the motor driver.
  */
-bool DriveController::updateAutonomousCommand(const AutonomousMotorCommand& command) {
-    if (state == NodeState::UNINITIALIZED || state == NodeState::ERROR || controller_thread == nullptr) {
+bool DriveController::updateMotorCommand(const MotorCommand& command) {
+    if (control_mutex == nullptr || osMutexAcquire(control_mutex, osWaitForever) != osOK) {
         return false;
     }
-    if (command.mode == AutonomousMotorMode::NONE) {
+    if (state != State::RUNNING || current_drive_mode != DriveMode::AUTONOMOUS ||
+        !autonomous_control_enabled || isCommandStale(command.timestamp_ticks)) {
+        (void)osMutexRelease(control_mutex);
         return false;
     }
 
-    const int32_t lock_state = osKernelLock();
-    autonomous_motor_command = {command, osKernelGetTickCount(), true};
-    (void)osKernelRestoreLock(lock_state);
+    bool success = false;
+    switch (command.mode) {
+        case MotorCommand::Mode::RPM:
+            success = vesc->setRPM(command.rpm);
+            break;
+        case MotorCommand::Mode::CURRENT:
+            if (!std::isfinite(command.current)) {
+                (void)osMutexRelease(control_mutex);
+                return false;
+            }
+            success = vesc->setCurrent(command.current);
+            break;
+        case MotorCommand::Mode::NONE:
+        default:
+            (void)osMutexRelease(control_mutex);
+            return false;
+    }
 
-    (void)osThreadFlagsSet(controller_thread, AUTONOMOUS_COMMAND_FLAG);
+    if (!success) {
+        stopVehicle();
+        (void)osMutexRelease(control_mutex);
+        return false;
+    }
+    motor_command = command;
+    (void)osMutexRelease(control_mutex);
     return true;
 }
 
 /**
- * @brief Store the latest autonomous steering command and wake the controller thread.
- *
- * The servo command is kept separate from the motor command because steering
- * and motor control may be published by different ROS nodes at different rates.
- *
- * @param command Steering command received from the ROS command node.
- * @return true when the command was accepted.
+ * @brief Validate and forward a steering command in autonomous mode.
+ * @return true when the command was accepted by the servo driver.
  */
-bool DriveController::updateAutonomousCommand(const AutonomousSteeringCommand& command) {
-    if (state == NodeState::UNINITIALIZED || state == NodeState::ERROR || controller_thread == nullptr) {
+bool DriveController::updateSteeringCommand(const SteeringCommand& command) {
+    if (control_mutex == nullptr || osMutexAcquire(control_mutex, osWaitForever) != osOK) {
+        return false;
+    }
+    if (state != State::RUNNING || current_drive_mode != DriveMode::AUTONOMOUS ||
+        !autonomous_control_enabled || isCommandStale(command.timestamp_ticks) ||
+        !std::isfinite(command.angle_deg)) {
+        (void)osMutexRelease(control_mutex);
         return false;
     }
 
-    const int32_t lock_state = osKernelLock();
-    autonomous_steering_command = {command, osKernelGetTickCount(), true};
-    (void)osKernelRestoreLock(lock_state);
-
-    (void)osThreadFlagsSet(controller_thread, AUTONOMOUS_COMMAND_FLAG);
+    if (!servo->setAngle(command.angle_deg)) {
+        stopVehicle();
+        (void)osMutexRelease(control_mutex);
+        return false;
+    }
+    steering_command = command;
+    (void)osMutexRelease(control_mutex);
     return true;
 }
 
@@ -310,21 +373,26 @@ bool DriveController::updateAutonomousCommand(const AutonomousSteeringCommand& c
  * This is used internally during emergency stop procedures.
  */
 void DriveController::stopVehicle() {
+    if (control_mutex == nullptr || osMutexAcquire(control_mutex, osWaitForever) != osOK) {
+        return;
+    }
     vesc->setRPM(0);
     servo->setAngle(0.0f);
+    (void)osMutexRelease(control_mutex);
 }
 
 /**
  * @brief Handle the emergency stop procedure
  *
  * This will stop the vehicle, wait for recovery conditions, and handle any errors.
+ *
+ * @return true if the emergency stop was cleared successfully, false if an error occurred or the timeout expired
  */
 bool DriveController::handleEmergencyStop() {
     stopVehicle();
 
     // Clear all currently pending thread flags
-    osThreadFlagsClear(0xFFFFFFFF);
-
+    osThreadFlagsClear(START_THREAD_FLAG | MODE_SWITCH_FLAG);
     osDelay(EMERGENCY_STOP_TIME_MS);
 
     // Shutdown if any of the drivers are in ERROR state
@@ -346,6 +414,7 @@ bool DriveController::handleEmergencyStop() {
             servo->getState() != Driver::State::RUNNING) {
             continue;
         }
+        break;
     }
     if (osKernelGetTickCount() >= emergency_max_timeout_stamp) {
         LogError("Drive Controller: Emergency stop timeout expired, unable to recover");
@@ -398,7 +467,7 @@ bool DriveController::handleModeSwitch(uint16_t channel_value) {
  * @param channel_value The value of the throttle channel
  * @return true if the throttle command was sent successfully, false otherwise
  */
-bool DriveController::handleThrottle(uint16_t channel_value) {
+bool DriveController::handleManualThrottle(uint16_t channel_value) {
     int32_t centered_input = static_cast<int32_t>(channel_value) - RC_CHANNEL_CENTER_VALUE;
 
     if (std::abs(centered_input) < static_cast<int32_t>(THROTTLE_DEADZONE)) {
@@ -422,7 +491,7 @@ bool DriveController::handleThrottle(uint16_t channel_value) {
  * @param channel_value The value of the steering channel
  * @return true if the steering command was sent successfully, false otherwise
  */
-bool DriveController::handleSteering(uint16_t channel_value) {
+bool DriveController::handleManualSteering(uint16_t channel_value) {
     // Map RC channel value (200-1800) to servo angle (-30 to 30 degrees)
     float angle = ((static_cast<float>(channel_value) - RC_CHANNEL_CENTER_VALUE) * 30.0f) /
                   (RC_CHANNEL_MAX_VALUE - RC_CHANNEL_CENTER_VALUE);
@@ -430,44 +499,47 @@ bool DriveController::handleSteering(uint16_t channel_value) {
 }
 
 /**
- * @brief Apply the latest autonomous motor and steering commands.
- *
- * Stale motor commands stop the motor. Stale steering commands release the
- * servo so manual force is not held by an outdated ROS command.
- *
- * @param now_ms Current RTOS tick count in milliseconds.
- * @return true when all required actuator commands succeeded.
+ * @brief Check command age on the local RTOS tick clock.
  */
-bool DriveController::handleAutonomousControl(uint32_t now_ms) {
-    const int32_t lock_state = osKernelLock();
-    const TimedCommand<AutonomousMotorCommand> motor_command = autonomous_motor_command;
-    const TimedCommand<AutonomousSteeringCommand> steering_command = autonomous_steering_command;
-    (void)osKernelRestoreLock(lock_state);
+bool DriveController::isCommandStale(uint32_t timestamp_ticks) const {
+    return osKernelGetTickCount() - timestamp_ticks > pdMS_TO_TICKS(config->autonomous_command_timeout_ms);
+}
 
+/**
+ * @brief Monitor autonomous command age
+ *
+ * Stale motor commands stop the motor. Stale steering commands release the servo.
+ * @return true when all required stop commands succeeded.
+ */
+bool DriveController::checkAutonomousCommandTimeouts() {
+    if (control_mutex == nullptr || osMutexAcquire(control_mutex, osWaitForever) != osOK) {
+        return false;
+    }
+    if (current_drive_mode != DriveMode::AUTONOMOUS) {
+        (void)osMutexRelease(control_mutex);
+        return true;
+    }
+    if (!autonomous_control_enabled) {
+        stopVehicle();
+        (void)osMutexRelease(control_mutex);
+        return true;
+    }
+
+    // If the motor command is stale, we stop the motor
     bool motor_ok = true;
-    if (motor_command.isStale(now_ms, config->autonomous_command_timeout_ms)) {
-        (void)vesc->setRPM(0);
-    } else {
-        switch (motor_command.command.mode) {
-            case AutonomousMotorMode::RPM:
-                motor_ok = vesc->setRPM(motor_command.command.rpm);
-                break;
-            case AutonomousMotorMode::CURRENT:
-                motor_ok = vesc->setCurrent(motor_command.command.current);
-                break;
-            case AutonomousMotorMode::NONE:
-                (void)vesc->setRPM(0);
-                break;
-        }
+    if (motor_command.mode == MotorCommand::Mode::NONE || isCommandStale(motor_command.timestamp_ticks)) {
+        motor_ok = vesc->setRPM(0);
     }
 
+    // If the steering command is stale, we release the servo but won't center it
     bool steering_ok = true;
-    if (steering_command.isStale(now_ms, config->autonomous_command_timeout_ms)) {
-        (void)servo->release();
-    } else {
-        steering_ok = servo->setAngle(steering_command.command.angle_deg);
+    if (isCommandStale(steering_command.timestamp_ticks)) {
+        steering_ok = servo->release();
     }
-
+    if (!motor_ok || !steering_ok) {
+        stopVehicle();
+    }
+    (void)osMutexRelease(control_mutex);
     return motor_ok && steering_ok;
 }
 
@@ -475,16 +547,17 @@ bool DriveController::handleAutonomousControl(uint32_t now_ms) {
  * @brief Callback for RC receiver channel updates
  *
  * This function is called whenever new channel data is received from the RC receiver.
- * It processes the relevant channels for drive control and updates the vehicle state accordingly.
  *
  * @param channels The current channel data from the RC receiver
  */
 void DriveController::remoteControlCallback(const crsf::ChannelData& channels) {
-    if (state != NodeState::RUNNING) {
+    if (control_mutex == nullptr || osMutexAcquire(control_mutex, osWaitForever) != osOK) {
         return;
     }
-
-    last_rc_update_timestamp = osKernelGetTickCount();
+    if (state != State::RUNNING) {
+        (void)osMutexRelease(control_mutex);
+        return;
+    }
 
     // Handle mode switch
     uint16_t mode_switch_value = channels[config->mode_switch_channel - 1];
@@ -492,15 +565,17 @@ void DriveController::remoteControlCallback(const crsf::ChannelData& channels) {
 
     // Only process throttle and steering in MANUAL mode
     if (current_drive_mode != DriveMode::MANUAL) {
+        (void)osMutexRelease(control_mutex);
         return;
     }
 
     // Send motor and servo commands based on RC input
     uint16_t throttle_value = channels[config->throttle_channel - 1];
-    handleThrottle(throttle_value);
+    handleManualThrottle(throttle_value);
 
     uint16_t steering_value = channels[config->steering_channel - 1];
-    handleSteering(steering_value);
+    handleManualSteering(steering_value);
+    (void)osMutexRelease(control_mutex);
 }
 
 /**
@@ -511,15 +586,22 @@ void DriveController::remoteControlCallback(const crsf::ChannelData& channels) {
  * @param mode The new drive mode to set
  */
 void DriveController::setDriveMode(DriveMode mode) {
+    if (control_mutex == nullptr || osMutexAcquire(control_mutex, osWaitForever) != osOK) {
+        return;
+    }
     current_drive_mode = mode;
+    if (mode != DriveMode::MANUAL) {
+        stopVehicle();
+    }
     traceDriveMode(mode);
     osThreadFlagsSet(controller_thread, MODE_SWITCH_FLAG);
+    (void)osMutexRelease(control_mutex);
 }
 
 /**
- * @brief Initialize the native TraceRecorder drive mode state machine
+ * @brief Initialize a native TraceRecorder drive mode state machine
  */
-bool DriveController::initDriveModeTrace() {
+bool DriveController::initDriveModeTracing() {
     if (drive_mode_trace_initialized) {
         return true;
     }
@@ -534,8 +616,7 @@ bool DriveController::initDriveModeTrace() {
     }
 
     for (size_t i = 0; i < DRIVE_MODE_TRACE_STATE_COUNT; i++) {
-        if (xTraceStateMachineStateCreate(drive_mode_machine, DRIVE_MODE_TRACE_STATES[i], &drive_mode_trace_states[i]) !=
-                TRC_SUCCESS ||
+        if (xTraceStateMachineStateCreate(drive_mode_machine, DRIVE_MODE_TRACE_STATES[i], &drive_mode_trace_states[i]) != TRC_SUCCESS ||
             drive_mode_trace_states[i] == nullptr) {
             (void)xTracePrintCompactF1("Drive Controller Trace", "Registration failed: %u", 2U);
             drive_mode_trace_failed = true;
@@ -552,7 +633,7 @@ bool DriveController::initDriveModeTrace() {
  * @brief Update the native TraceRecorder drive mode state machine
  */
 void DriveController::traceDriveMode(DriveMode mode) {
-    if (!drive_mode_trace_initialized && !initDriveModeTrace()) {
+    if (!drive_mode_trace_initialized && !initDriveModeTracing()) {
         return;
     }
 
@@ -592,34 +673,38 @@ void DriveController::controllerThread(void* arg) {
     osThreadFlagsWait(START_THREAD_FLAG, osFlagsWaitAny, osWaitForever);
 
     BlinkAnimation manual_mode_animation(osWaitForever, 1000, 0.5f, config->manual_mode_color);
+    BlinkAnimation warning_animation(osWaitForever, 500, 0.5f, COLOR_RED);
 
     // Wait for the RC receiver to be connected, since this usually takes a bit longer
     if (!rc_receiver->isConnected()) {
         LogInfo("Drive Controller: Waiting for RC receiver to connect...");
         if (!rc_receiver->waitForConnect(MAX_INIT_WAIT_TIME_MS)) {
             LogError("Drive Controller: Timeout waiting for RC receiver to connect, shutting down");
-            setState(NodeState::ERROR);
+            setState(State::ERROR);
             osDelay(osWaitForever);
         }
     }
-    setState(NodeState::RUNNING);
+    setState(State::RUNNING);
     LogInfo("Drive Controller: Started controller thread, awaiting commands");
 
-    while (state == NodeState::RUNNING) {
-        // The thread will be notified of mode switches to speed up the response time
-        const uint32_t wait_timeout_ms = current_drive_mode == DriveMode::AUTONOMOUS
-                                             ? config->autonomous_command_timeout_ms
-                                             : CONTROLLER_THREAD_UPDATE_TIME_MS;
-        uint32_t flags =
-            osThreadFlagsWait(MODE_SWITCH_FLAG | AUTONOMOUS_COMMAND_FLAG, osFlagsWaitAny, wait_timeout_ms);
+    while (state == State::RUNNING) {
+        uint32_t wait_timeout_ticks;
+        if (current_drive_mode == DriveMode::AUTONOMOUS) {
+            wait_timeout_ticks = pdMS_TO_TICKS(config->autonomous_command_timeout_ms);
+        } else {
+            wait_timeout_ticks = pdMS_TO_TICKS(CONTROLLER_THREAD_UPDATE_TIME_MS);
+        }
+
+        uint32_t flags = osThreadFlagsWait(MODE_SWITCH_FLAG, osFlagsWaitAny, wait_timeout_ticks);
+
         if ((flags & osFlagsError) != 0U && flags != osFlagsErrorTimeout) {
             LogError("Drive Controller: Unexpected error waiting for thread flags, flags: 0x%08lX", flags);
             emergencyStop();
-            setState(NodeState::ERROR);
-        } else if ((flags & osFlagsError) == 0U && (flags & (MODE_SWITCH_FLAG | AUTONOMOUS_COMMAND_FLAG)) == 0U) {
+            setState(State::ERROR);
+        } else if ((flags & osFlagsError) == 0U && (flags & MODE_SWITCH_FLAG) == 0U) {
             LogError("Drive Controller: Unexpected thread flags received: 0x%08lX", flags);
             emergencyStop();
-            setState(NodeState::ERROR);
+            setState(State::ERROR);
         }
 
         // Check if all drivers are currently still running
@@ -637,14 +722,8 @@ void DriveController::controllerThread(void* arg) {
             continue;
         }
 
+        // Check if a mode switch was received
         const bool mode_switch_received = (flags & osFlagsError) == 0U && (flags & MODE_SWITCH_FLAG) != 0U;
-        const bool autonomous_command_received =
-            (flags & osFlagsError) == 0U && (flags & AUTONOMOUS_COMMAND_FLAG) != 0U;
-
-        if (autonomous_command_received && !mode_switch_received && current_drive_mode != DriveMode::AUTONOMOUS) {
-            continue;
-        }
-
         if (mode_switch_received) {
             LogDebug("Drive Controller: Drive mode changed to %s",
                      (current_drive_mode == DriveMode::IDLE)             ? "IDLE"
@@ -661,17 +740,20 @@ void DriveController::controllerThread(void* arg) {
                 break;
 
             case DriveMode::MANUAL:
-                light_dispatcher.runAnimation(&manual_mode_animation);
                 // Blink the debug light every second to indicate manual mode
                 // This is mandatory for the CAuDri-Challenge
-                // TODO: Add light
+                light_dispatcher.runAnimation(&manual_mode_animation);
                 break;
 
             case DriveMode::AUTONOMOUS:
-                light_dispatcher.turnOn(config->autonomous_mode_color);
-                if (!handleAutonomousControl(osKernelGetTickCount())) {
-                    LogWarning("Drive Controller: Failed to apply autonomous command");
-                    stopVehicle();
+                // Command handling is done in updateMotorCommand/updateSteeringCommand
+                if (autonomous_control_enabled) {
+                    light_dispatcher.turnOn(config->autonomous_mode_color);
+                } else if (light_dispatcher.getCurrentAnimation() != &warning_animation) {
+                    light_dispatcher.runAnimation(&warning_animation);
+                }
+                if (!checkAutonomousCommandTimeouts()) {
+                    LogWarning("Drive Controller: Failed to stop outdated autonomous commands");
                 }
                 break;
 
@@ -680,13 +762,21 @@ void DriveController::controllerThread(void* arg) {
 
                 // The breaking command has already been sent, we just wait for the timeout to expire
                 osDelay(MANDATORY_STOP_TIME_MS);
-                setDriveMode(DriveMode::MANUAL);
+                if (osMutexAcquire(control_mutex, osWaitForever) != osOK) {
+                    LogError("Drive Controller: Failed to lock control mutex after mandatory stop");
+                    setState(State::ERROR);
+                    break;
+                }
+                if (current_drive_mode == DriveMode::MANDATORY_STOP) {
+                    setDriveMode(DriveMode::MANUAL);
+                }
+                (void)osMutexRelease(control_mutex);
                 break;
 
             case DriveMode::EMERGENCY_STOP:
                 light_dispatcher.turnOn(config->emergency_stop_color);
                 if (!handleEmergencyStop()) {
-                    setState(NodeState::ERROR);
+                    setState(State::ERROR);
                 } else {
                     // Emergency stop cleared, switch to IDLE mode
                     setDriveMode(DriveMode::IDLE);
@@ -696,11 +786,11 @@ void DriveController::controllerThread(void* arg) {
             default:
                 LogError("Drive Controller: Unknown drive mode");
                 emergencyStop();
-                setState(NodeState::ERROR);
+                setState(State::ERROR);
                 break;
         }
     }
     LogError("Drive Controller: Exiting controller thread");
-    setState(NodeState::ERROR);
+    setState(State::ERROR);
     osDelay(osWaitForever);
 }

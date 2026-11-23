@@ -1,7 +1,8 @@
 /**
  * @file drive_controller.hpp
  *
- * @brief Drive controller node for handling drive commands and modes.
+ * @brief Drive controller for handling drive commands and modes.
+ *
  */
 #pragma once
 
@@ -15,11 +16,10 @@
 #include "light.hpp"
 #include "light_dispatcher.hpp"
 
-constexpr size_t DRIVE_CONTROLLER_THREAD_STACK_SIZE = 1024;
+// Stack size in bytes.
+constexpr size_t DRIVE_CONTROLLER_THREAD_STACK_SIZE = 4096;
 constexpr size_t DRIVE_MODE_TRACE_STATE_COUNT = 5;
 constexpr uint32_t DRIVE_CONTROLLER_DEFAULT_AUTONOMOUS_COMMAND_TIMEOUT_MS = 50;
-
-enum class NodeState { UNINITIALIZED, INITIALIZING, RUNNING, ERROR };
 
 class DriveController {
    public:
@@ -35,30 +35,28 @@ class DriveController {
     enum class DriveMode { IDLE, MANUAL, AUTONOMOUS, MANDATORY_STOP, EMERGENCY_STOP };
 
     /**
-     * @brief Motor command mode selected by the newest autonomous motor command.
-     */
-    enum class AutonomousMotorMode { NONE, RPM, CURRENT };
-
-    /**
      * @brief Autonomous motor command forwarded by ROS command nodes.
      */
-    struct AutonomousMotorCommand {
-        AutonomousMotorMode mode = AutonomousMotorMode::NONE;
+    struct MotorCommand {
+        enum class Mode { NONE, RPM, CURRENT };
+
+        Mode mode = Mode::NONE;
         int32_t rpm = 0;
         float current = 0.0f;
+        uint32_t timestamp_ticks = 0;
     };
 
     /**
      * @brief Autonomous steering command forwarded by ROS command nodes.
      */
-    struct AutonomousSteeringCommand {
+    struct SteeringCommand {
         float angle_deg = 0.0f;
+        uint32_t timestamp_ticks = 0;
     };
 
     struct Config {
         crsf::Channel throttle_channel = crsf::INVALID_CHANNEL;
         crsf::Channel steering_channel = crsf::INVALID_CHANNEL;
-        // crsf::Channel deadman_switch_channel = crsf::INVALID_CHANNEL;
         crsf::Channel mode_switch_channel = crsf::INVALID_CHANNEL;
         uint32_t autonomous_command_timeout_ms = DRIVE_CONTROLLER_DEFAULT_AUTONOMOUS_COMMAND_TIMEOUT_MS;
 
@@ -79,24 +77,21 @@ class DriveController {
     bool restart();
 
     bool changeDriveMode(DriveMode mode);
-    DriveMode getDriveMode() { return current_drive_mode; }
+    DriveMode getDriveMode() const { return current_drive_mode; }
+
+    void enableAutonomousControl(bool enabled);
+    bool autonomousControlEnabled() const { return autonomous_control_enabled; }
 
     void emergencyStop();
-    bool updateAutonomousCommand(const AutonomousMotorCommand& command);
-    bool updateAutonomousCommand(const AutonomousSteeringCommand& command);
+    bool updateMotorCommand(const MotorCommand& command);
+    bool updateSteeringCommand(const SteeringCommand& command);
 
    private:
-    template <typename Command>
-    struct TimedCommand {
-        Command command{};
-        uint32_t timestamp_ms = 0;
-        bool valid = false;
+    enum class State { UNINITIALIZED, INITIALIZING, RUNNING, ERROR };
 
-        bool isStale(uint32_t now_ms, uint32_t timeout_ms) const { return !valid || (now_ms - timestamp_ms > timeout_ms); }
-    };
-
-    NodeState state = NodeState::UNINITIALIZED;
+    State state = State::UNINITIALIZED;
     DriveMode current_drive_mode = DriveMode::IDLE;
+    bool autonomous_control_enabled = false;
 
     const Config* config = nullptr;
 
@@ -105,33 +100,37 @@ class DriveController {
     Servo* servo = nullptr;
 
     RCReceiver::ChannelCallback rc_callback;
-    uint32_t last_rc_update_timestamp = 0;
-    TimedCommand<AutonomousMotorCommand> autonomous_motor_command{};
-    TimedCommand<AutonomousSteeringCommand> autonomous_steering_command{};
+    MotorCommand motor_command{};
+    SteeringCommand steering_command{};
+
+    osMutexId_t control_mutex = nullptr;
+    osMutexAttr_t mutex_attributes{};
+    StaticSemaphore_t mutex_control_block{};
 
     LightDispatcher light_dispatcher{"Tower Light Dispatcher"};
 
     osThreadId_t controller_thread = nullptr;
     osThreadAttr_t thread_attributes{};
     StaticTask_t thread_control_block{};
-    uint32_t thread_stack[DRIVE_CONTROLLER_THREAD_STACK_SIZE]{};
+    uint32_t thread_stack[DRIVE_CONTROLLER_THREAD_STACK_SIZE / sizeof(uint32_t)]{};
 
     TraceStateMachineHandle_t drive_mode_machine = nullptr;
     std::array<TraceStateMachineStateHandle_t, DRIVE_MODE_TRACE_STATE_COUNT> drive_mode_trace_states{};
     bool drive_mode_trace_initialized = false;
     bool drive_mode_trace_failed = false;
 
-    bool setState(NodeState new_state);
+    bool setState(State new_state);
     void setDriveMode(DriveMode mode);
-    bool initDriveModeTrace();
+    bool initDriveModeTracing();
     void traceDriveMode(DriveMode mode);
 
     void stopVehicle();
     bool handleEmergencyStop();
     bool handleModeSwitch(uint16_t channel_value);
-    bool handleThrottle(uint16_t channel_value);
-    bool handleSteering(uint16_t channel_value);
-    bool handleAutonomousControl(uint32_t now_ms);
+    bool handleManualThrottle(uint16_t channel_value);
+    bool handleManualSteering(uint16_t channel_value);
+    bool checkAutonomousCommandTimeouts();
+    bool isCommandStale(uint32_t timestamp_ticks) const;
 
     void controllerThread(void* argument);
 
