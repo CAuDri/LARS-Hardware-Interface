@@ -50662,7 +50662,6 @@
 		(path "/cf1698d3-a7dc-4a69-aa0f-b5b324d2ca62")
 		(sheetname "/")
 		(sheetfile "hardware_interface.kicad_sch")
-		(attr board_only exclude_from_pos_files)
 		(fp_poly
 			(pts
 				(xy 2.485541 -2.034389) (xy 2.535717 -2.048263) (xy 2.570137 -2.064574) (xy 2.587093 -2.074343)
