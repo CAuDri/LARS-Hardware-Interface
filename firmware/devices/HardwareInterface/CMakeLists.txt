@@ -116,6 +116,7 @@ target_include_directories(${PROJECT_NAME} PRIVATE
     ${LIB_DIR}/drivers/interfaces
     ${LIB_DIR}/drivers/vendor/vl53l5cx
     ${LIB_DIR}/lights/include
+    ${LIB_DIR}/lights/interfaces
     ${LIB_DIR}/lights/animations/include
     ${LIB_DIR}/nodes/include
     ${LIB_DIR}/microros/cpp_wrapper/include
