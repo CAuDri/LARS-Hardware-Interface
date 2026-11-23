@@ -11,14 +11,19 @@
 
 #include <cstdint>
 
-#include "state.hpp"
 #include "node.hpp"
+#include "state.hpp"
 #include "type_support.hpp"
 
 namespace ros {
 
 class BasePublisher {
    public:
+    /**
+     * @brief Publisher configuration options
+     * @param best_effort Whether to use best-effort QoS (default: false)
+     * @param publish_mutex_timeout_ms Timeout for acquiring the publish mutex (default: 0)
+     */
     struct Config {
         bool best_effort = false;
         uint32_t publish_mutex_timeout_ms = 0;
@@ -29,10 +34,7 @@ class BasePublisher {
     BasePublisher(const BasePublisher&) = delete;
     BasePublisher& operator=(const BasePublisher&) = delete;
 
-    rcl_ret_t init(Node& parent_node,
-                   const char* topic,
-                   const rosidl_message_type_support_t* message_type_support,
-                   const Config& publisher_config);
+    rcl_ret_t init(Node& parent_node, const char* topic, const rosidl_message_type_support_t* message_type_support, const Config& publisher_config);
     rcl_ret_t fini();
 
     EntityState getState() const;

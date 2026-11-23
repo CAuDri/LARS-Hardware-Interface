@@ -54,7 +54,7 @@ The hardware design files are released under the [CERN Open Hardware Licence v2]
 - TVS diodes against voltage spikes on all power rails
 - Current limited 5V output (max 2.4 A)
 - All data lines are 5V tolerant
-- Additional short-circuit, overcurrent and -voltage protection up to ~20V on all interfaces
+- Additional short-circuit, overcurrent and -voltage protection up to ~20V on all I/O pins
 
 ## PCB-Files
 
