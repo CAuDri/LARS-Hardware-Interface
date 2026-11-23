@@ -830,7 +830,12 @@ TraceHeapHandle_t xTraceKernelPortGetSystemHeapHandle(void);
 /* Called on vTaskDelete */
 #undef traceTASK_DELETE				// We don't allow for filtering out "delete" events. They are important and not very frequent. Moreover, we can't exclude create events, so this should be symmetrical.
 #define traceTASK_DELETE( pxTaskToDelete ) \
-	(void)xTraceTaskUnregisterWithoutHandle(pxTaskToDelete, (pxTaskToDelete)->uxPriority)
+	do { \
+		if (xTraceIsRecorderInitialized()) \
+		{ \
+			(void)xTraceTaskUnregisterWithoutHandle(pxTaskToDelete, (pxTaskToDelete)->uxPriority); \
+		} \
+	} while (0)
 
 #if (TRC_CFG_SCHEDULING_ONLY == 0)
 
