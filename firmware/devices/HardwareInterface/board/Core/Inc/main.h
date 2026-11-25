@@ -74,7 +74,7 @@ extern TIM_HandleTypeDef htim4;
 extern TIM_HandleTypeDef htim5;
 extern TIM_HandleTypeDef htim8;
 extern DMA_HandleTypeDef hdma_tim4_ch3;
-extern DMA_HandleTypeDef hdma_memtomem_dma2_stream3;
+extern DMA_HandleTypeDef hdma_memtomem_dma2_stream4;
 
 extern UART_HandleTypeDef huart2;
 extern UART_HandleTypeDef huart3;
@@ -110,6 +110,8 @@ extern USBD_HandleTypeDef hUsbDeviceHS;
 #define I2C1_GPIO7_EXTI_IRQn EXTI9_5_IRQn
 #define I2C1_GPIO8_Pin GPIO_PIN_13
 #define I2C1_GPIO8_GPIO_Port GPIOC
+#define RADIO_INVERT_Pin GPIO_PIN_2
+#define RADIO_INVERT_GPIO_Port GPIOF
 #define I2C2_GPIO1_Pin GPIO_PIN_5
 #define I2C2_GPIO1_GPIO_Port GPIOF
 #define I2C2_GPIO1_EXTI_IRQn EXTI9_5_IRQn
@@ -157,6 +159,8 @@ extern USBD_HandleTypeDef hUsbDeviceHS;
 #define GPIO3_Pin GPIO_PIN_15
 #define GPIO3_GPIO_Port GPIOF
 #define GPIO3_EXTI_IRQn EXTI15_10_IRQn
+#define LED2_PWM_Pin GPIO_PIN_9
+#define LED2_PWM_GPIO_Port GPIOE
 #define SPI_IO1_Pin GPIO_PIN_10
 #define SPI_IO1_GPIO_Port GPIOE
 #define SPI_IO2_Pin GPIO_PIN_11
@@ -173,16 +177,14 @@ extern USBD_HandleTypeDef hUsbDeviceHS;
 #define TIM2_GPIO_GPIO_Port GPIOD
 #define LED1_PWM_Pin GPIO_PIN_14
 #define LED1_PWM_GPIO_Port GPIOD
-#define LED2_PWM_Pin GPIO_PIN_15
-#define LED2_PWM_GPIO_Port GPIOD
 #define DEBUG_LED_BLUE_Pin GPIO_PIN_4
 #define DEBUG_LED_BLUE_GPIO_Port GPIOG
 #define DEBUG_LED_GREEN_Pin GPIO_PIN_5
 #define DEBUG_LED_GREEN_GPIO_Port GPIOG
 #define DEBUG_LED_RED_Pin GPIO_PIN_6
 #define DEBUG_LED_RED_GPIO_Port GPIOG
-#define TIM8_IO_Pin GPIO_PIN_8
-#define TIM8_IO_GPIO_Port GPIOC
+#define TIM8_GPIO_Pin GPIO_PIN_8
+#define TIM8_GPIO_GPIO_Port GPIOC
 #define USER_BUTTON_Pin GPIO_PIN_8
 #define USER_BUTTON_GPIO_Port GPIOA
 #define USER_BUTTON_EXTI_IRQn EXTI9_5_IRQn
@@ -196,8 +198,12 @@ extern USBD_HandleTypeDef hUsbDeviceHS;
 #define SWD_SWDIO_GPIO_Port GPIOA
 #define SWD_SWCLK_Pin GPIO_PIN_14
 #define SWD_SWCLK_GPIO_Port GPIOA
-#define UART3_GPIO_Pin GPIO_PIN_12
-#define UART3_GPIO_GPIO_Port GPIOC
+#define RADIO_TX_Pin GPIO_PIN_10
+#define RADIO_TX_GPIO_Port GPIOC
+#define RADIO_RX_Pin GPIO_PIN_11
+#define RADIO_RX_GPIO_Port GPIOC
+#define RADIO_GPIO_Pin GPIO_PIN_12
+#define RADIO_GPIO_GPIO_Port GPIOC
 #define UART2_GPIO_Pin GPIO_PIN_3
 #define UART2_GPIO_GPIO_Port GPIOD
 #define UART2_GPIO_EXTI_IRQn EXTI3_IRQn

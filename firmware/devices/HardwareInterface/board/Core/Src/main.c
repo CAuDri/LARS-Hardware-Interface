@@ -62,10 +62,12 @@ I2C_HandleTypeDef hi2c2;
 
 SPI_HandleTypeDef hspi4;
 
+TIM_HandleTypeDef htim1;
 TIM_HandleTypeDef htim3;
 TIM_HandleTypeDef htim4;
 TIM_HandleTypeDef htim5;
 TIM_HandleTypeDef htim8;
+DMA_HandleTypeDef hdma_tim1_ch1;
 DMA_HandleTypeDef hdma_tim4_ch3;
 
 UART_HandleTypeDef huart2;
@@ -78,7 +80,7 @@ DMA_HandleTypeDef hdma_usart3_tx;
 DMA_HandleTypeDef hdma_usart6_rx;
 DMA_HandleTypeDef hdma_usart6_tx;
 
-DMA_HandleTypeDef hdma_memtomem_dma2_stream3;
+DMA_HandleTypeDef hdma_memtomem_dma2_stream4;
 /* Definitions for mainTask */
 osThreadId_t mainTaskHandle;
 uint32_t mainTaskBuffer[ 4096 ];
@@ -114,6 +116,7 @@ static void MX_USART6_UART_Init(void);
 static void MX_TIM4_Init(void);
 static void MX_TIM8_Init(void);
 static void MX_TIM5_Init(void);
+static void MX_TIM1_Init(void);
 void StartMainTask(void *argument);
 
 /* USER CODE BEGIN PFP */
@@ -179,6 +182,7 @@ int main(void)
   MX_TIM4_Init();
   MX_TIM8_Init();
   MX_TIM5_Init();
+  MX_TIM1_Init();
   /* USER CODE BEGIN 2 */
 
   // CAuDri - Replace CubeMX's occasionally broken generated USB serial callback
@@ -564,6 +568,71 @@ static void MX_SPI4_Init(void)
 }
 
 /**
+  * @brief TIM1 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_TIM1_Init(void)
+{
+
+  /* USER CODE BEGIN TIM1_Init 0 */
+
+  /* USER CODE END TIM1_Init 0 */
+
+  TIM_MasterConfigTypeDef sMasterConfig = {0};
+  TIM_OC_InitTypeDef sConfigOC = {0};
+  TIM_BreakDeadTimeConfigTypeDef sBreakDeadTimeConfig = {0};
+
+  /* USER CODE BEGIN TIM1_Init 1 */
+
+  /* USER CODE END TIM1_Init 1 */
+  htim1.Instance = TIM1;
+  htim1.Init.Prescaler = 0;
+  htim1.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim1.Init.Period = 65535;
+  htim1.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+  htim1.Init.RepetitionCounter = 0;
+  htim1.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  if (HAL_TIM_PWM_Init(&htim1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+  if (HAL_TIMEx_MasterConfigSynchronization(&htim1, &sMasterConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sConfigOC.OCMode = TIM_OCMODE_PWM1;
+  sConfigOC.Pulse = 0;
+  sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
+  sConfigOC.OCNPolarity = TIM_OCNPOLARITY_HIGH;
+  sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
+  sConfigOC.OCIdleState = TIM_OCIDLESTATE_RESET;
+  sConfigOC.OCNIdleState = TIM_OCNIDLESTATE_RESET;
+  if (HAL_TIM_PWM_ConfigChannel(&htim1, &sConfigOC, TIM_CHANNEL_1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sBreakDeadTimeConfig.OffStateRunMode = TIM_OSSR_DISABLE;
+  sBreakDeadTimeConfig.OffStateIDLEMode = TIM_OSSI_DISABLE;
+  sBreakDeadTimeConfig.LockLevel = TIM_LOCKLEVEL_OFF;
+  sBreakDeadTimeConfig.DeadTime = 0;
+  sBreakDeadTimeConfig.BreakState = TIM_BREAK_DISABLE;
+  sBreakDeadTimeConfig.BreakPolarity = TIM_BREAKPOLARITY_HIGH;
+  sBreakDeadTimeConfig.AutomaticOutput = TIM_AUTOMATICOUTPUT_DISABLE;
+  if (HAL_TIMEx_ConfigBreakDeadTime(&htim1, &sBreakDeadTimeConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN TIM1_Init 2 */
+
+  /* USER CODE END TIM1_Init 2 */
+  HAL_TIM_MspPostInit(&htim1);
+
+}
+
+/**
   * @brief TIM3 Initialization Function
   * @param None
   * @retval None
@@ -672,10 +741,6 @@ static void MX_TIM4_Init(void)
   sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
   sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
   if (HAL_TIM_PWM_ConfigChannel(&htim4, &sConfigOC, TIM_CHANNEL_3) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  if (HAL_TIM_PWM_ConfigChannel(&htim4, &sConfigOC, TIM_CHANNEL_4) != HAL_OK)
   {
     Error_Handler();
   }
@@ -889,7 +954,7 @@ static void MX_USART6_UART_Init(void)
 /**
   * Enable DMA controller clock
   * Configure DMA for memory to memory transfers
-  *   hdma_memtomem_dma2_stream3
+  *   hdma_memtomem_dma2_stream4
   */
 static void MX_DMA_Init(void)
 {
@@ -898,21 +963,21 @@ static void MX_DMA_Init(void)
   __HAL_RCC_DMA1_CLK_ENABLE();
   __HAL_RCC_DMA2_CLK_ENABLE();
 
-  /* Configure DMA request hdma_memtomem_dma2_stream3 on DMA2_Stream3 */
-  hdma_memtomem_dma2_stream3.Instance = DMA2_Stream3;
-  hdma_memtomem_dma2_stream3.Init.Channel = DMA_CHANNEL_0;
-  hdma_memtomem_dma2_stream3.Init.Direction = DMA_MEMORY_TO_MEMORY;
-  hdma_memtomem_dma2_stream3.Init.PeriphInc = DMA_PINC_ENABLE;
-  hdma_memtomem_dma2_stream3.Init.MemInc = DMA_MINC_ENABLE;
-  hdma_memtomem_dma2_stream3.Init.PeriphDataAlignment = DMA_PDATAALIGN_BYTE;
-  hdma_memtomem_dma2_stream3.Init.MemDataAlignment = DMA_MDATAALIGN_BYTE;
-  hdma_memtomem_dma2_stream3.Init.Mode = DMA_NORMAL;
-  hdma_memtomem_dma2_stream3.Init.Priority = DMA_PRIORITY_LOW;
-  hdma_memtomem_dma2_stream3.Init.FIFOMode = DMA_FIFOMODE_ENABLE;
-  hdma_memtomem_dma2_stream3.Init.FIFOThreshold = DMA_FIFO_THRESHOLD_FULL;
-  hdma_memtomem_dma2_stream3.Init.MemBurst = DMA_MBURST_SINGLE;
-  hdma_memtomem_dma2_stream3.Init.PeriphBurst = DMA_PBURST_SINGLE;
-  if (HAL_DMA_Init(&hdma_memtomem_dma2_stream3) != HAL_OK)
+  /* Configure DMA request hdma_memtomem_dma2_stream4 on DMA2_Stream4 */
+  hdma_memtomem_dma2_stream4.Instance = DMA2_Stream4;
+  hdma_memtomem_dma2_stream4.Init.Channel = DMA_CHANNEL_0;
+  hdma_memtomem_dma2_stream4.Init.Direction = DMA_MEMORY_TO_MEMORY;
+  hdma_memtomem_dma2_stream4.Init.PeriphInc = DMA_PINC_ENABLE;
+  hdma_memtomem_dma2_stream4.Init.MemInc = DMA_MINC_ENABLE;
+  hdma_memtomem_dma2_stream4.Init.PeriphDataAlignment = DMA_PDATAALIGN_BYTE;
+  hdma_memtomem_dma2_stream4.Init.MemDataAlignment = DMA_MDATAALIGN_BYTE;
+  hdma_memtomem_dma2_stream4.Init.Mode = DMA_NORMAL;
+  hdma_memtomem_dma2_stream4.Init.Priority = DMA_PRIORITY_LOW;
+  hdma_memtomem_dma2_stream4.Init.FIFOMode = DMA_FIFOMODE_ENABLE;
+  hdma_memtomem_dma2_stream4.Init.FIFOThreshold = DMA_FIFO_THRESHOLD_FULL;
+  hdma_memtomem_dma2_stream4.Init.MemBurst = DMA_MBURST_SINGLE;
+  hdma_memtomem_dma2_stream4.Init.PeriphBurst = DMA_PBURST_SINGLE;
+  if (HAL_DMA_Init(&hdma_memtomem_dma2_stream4) != HAL_OK)
   {
     Error_Handler( );
   }
@@ -945,6 +1010,9 @@ static void MX_DMA_Init(void)
   /* DMA2_Stream3_IRQn interrupt configuration */
   HAL_NVIC_SetPriority(DMA2_Stream3_IRQn, 5, 0);
   HAL_NVIC_EnableIRQ(DMA2_Stream3_IRQn);
+  /* DMA2_Stream4_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(DMA2_Stream4_IRQn, 5, 0);
+  HAL_NVIC_EnableIRQ(DMA2_Stream4_IRQn);
   /* DMA2_Stream6_IRQn interrupt configuration */
   HAL_NVIC_SetPriority(DMA2_Stream6_IRQn, 5, 0);
   HAL_NVIC_EnableIRQ(DMA2_Stream6_IRQn);
@@ -974,6 +1042,9 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOD_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(RADIO_INVERT_GPIO_Port, RADIO_INVERT_Pin, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOE, SPI_IO1_Pin|SPI_IO2_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
@@ -989,27 +1060,34 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
 
   /*Configure GPIO pins : I2C1_GPIO4_Pin I2C1_GPIO6_Pin PE7 PE8
-                           PE9 PE15 I2C1_GPIO2_Pin */
+                           PE15 I2C1_GPIO2_Pin */
   GPIO_InitStruct.Pin = I2C1_GPIO4_Pin|I2C1_GPIO6_Pin|GPIO_PIN_7|GPIO_PIN_8
-                          |GPIO_PIN_9|GPIO_PIN_15|I2C1_GPIO2_Pin;
+                          |GPIO_PIN_15|I2C1_GPIO2_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
 
   /*Configure GPIO pins : I2C1_GPIO8_Pin PC14 PC15 I2C2_GPIO6_Pin
                            I2C2_GPIO8_Pin PC3 PC4 PC5
-                           TIM8_IO_Pin PC9 UART3_GPIO_Pin */
+                           TIM8_GPIO_Pin PC9 RADIO_GPIO_Pin */
   GPIO_InitStruct.Pin = I2C1_GPIO8_Pin|GPIO_PIN_14|GPIO_PIN_15|I2C2_GPIO6_Pin
                           |I2C2_GPIO8_Pin|GPIO_PIN_3|GPIO_PIN_4|GPIO_PIN_5
-                          |TIM8_IO_Pin|GPIO_PIN_9|UART3_GPIO_Pin;
+                          |TIM8_GPIO_Pin|GPIO_PIN_9|RADIO_GPIO_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : PF2 PF3 PF4 I2C2_GPIO2_Pin
-                           I2C2_GPIO4_Pin PF10 */
-  GPIO_InitStruct.Pin = GPIO_PIN_2|GPIO_PIN_3|GPIO_PIN_4|I2C2_GPIO2_Pin
-                          |I2C2_GPIO4_Pin|GPIO_PIN_10;
+  /*Configure GPIO pin : RADIO_INVERT_Pin */
+  GPIO_InitStruct.Pin = RADIO_INVERT_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(RADIO_INVERT_GPIO_Port, &GPIO_InitStruct);
+
+  /*Configure GPIO pins : PF3 PF4 I2C2_GPIO2_Pin I2C2_GPIO4_Pin
+                           PF10 */
+  GPIO_InitStruct.Pin = GPIO_PIN_3|GPIO_PIN_4|I2C2_GPIO2_Pin|I2C2_GPIO4_Pin
+                          |GPIO_PIN_10;
   GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOF, &GPIO_InitStruct);
@@ -1069,9 +1147,9 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_Init(PWR_EXT_ENABLE_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pins : PD8 PD9 TIM2_GPIO_Pin PD11
-                           PD2 PD4 PD7 */
+                           PD15 PD2 PD4 PD7 */
   GPIO_InitStruct.Pin = GPIO_PIN_8|GPIO_PIN_9|TIM2_GPIO_Pin|GPIO_PIN_11
-                          |GPIO_PIN_2|GPIO_PIN_4|GPIO_PIN_7;
+                          |GPIO_PIN_15|GPIO_PIN_2|GPIO_PIN_4|GPIO_PIN_7;
   GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);

@@ -52,7 +52,7 @@ DriveController::Config drive_controller_config{
 
 usb_cdc_transport_config_t microros_usb_transport_config{
     .usb_device = &hUsbHostPort,
-    .rx_dma = &hdma_memtomem_dma2_stream3,
+    .rx_dma = &hdma_memtomem_dma2_stream4,
 };
 
 ros::Client::Config microros_client_config{
