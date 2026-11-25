@@ -197,11 +197,52 @@ find_device_ioc() {
 }
 
 check_display() {
-    if [[ -z "${DISPLAY:-}" && -z "${WAYLAND_DISPLAY:-}" ]]; then
-        print_error "no graphical display was forwarded into the dev container."
-        printf 'Reopen the project in VS Code and verify that GUI application forwarding is enabled.\n' >&2
+    local host_display="${CUBEMX_HOST_DISPLAY:-}"
+    local host_authority="/tmp/host.Xauthority"
+    local display_number cookie
+
+    if [[ -z "${DISPLAY:-}" ]]; then
+        print_error "STM32CubeMX requires an X11 display. Reopen the dev container from a graphical VS Code session."
         return 1
     fi
+
+    if ! command -v xdpyinfo >/dev/null 2>&1 || ! command -v xauth >/dev/null 2>&1; then
+        print_error "X11 diagnostic tools are missing. Rebuild the dev container."
+        return 1
+    fi
+
+    if timeout 5s xdpyinfo >/dev/null 2>&1; then
+        return 0
+    fi
+
+    # VS Code can assign a different display number to its X11 proxy, and
+    # local Xauthority entries also encode the hostname.
+    if [[ "${DISPLAY}" =~ ^(unix/)?:[0-9]+(\.[0-9]+)?$ &&
+          "${host_display}" =~ ^(unix/)?:([0-9]+)(\.[0-9]+)?$ &&
+          -f "${host_authority}" && -r "${host_authority}" ]]; then
+        display_number="${BASH_REMATCH[2]}"
+        cookie="$(xauth -i -f "${host_authority}" list 2>/dev/null |
+            awk -v suffix="/unix:${display_number}" '
+                $2 == "MIT-MAGIC-COOKIE-1" &&
+                    substr($1, length($1) - length(suffix) + 1) == suffix { print $3 }
+            ' | sort -u)"
+
+        if [[ "${cookie}" =~ ^[[:xdigit:]]{32}$ ]]; then
+            cubemx_authority="$(mktemp -t cubemx.Xauthority.XXXXXXXX)" || return 1
+            trap 'rm -f -- "${cubemx_authority}"' EXIT
+            if printf 'add %s MIT-MAGIC-COOKIE-1 %s\n' "${DISPLAY}" "${cookie}" |
+                xauth -q -f "${cubemx_authority}" &&
+                XAUTHORITY="${cubemx_authority}" timeout 5s xdpyinfo >/dev/null 2>&1; then
+                export XAUTHORITY="${cubemx_authority}"
+                return 0
+            fi
+        fi
+    fi
+
+    print_error "cannot connect to X11 at DISPLAY=${DISPLAY} (host DISPLAY=${host_display:-unset})."
+    printf 'Check that X11 works on the host and reopen VS Code from that desktop session.\n' >&2
+    printf 'If the host uses ~/.Xauthority, export XAUTHORITY="$HOME/.Xauthority" before starting VS Code and rebuild the container.\n' >&2
+    return 1
 }
 
 main() {

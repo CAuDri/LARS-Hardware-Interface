@@ -20,6 +20,8 @@ RUN apt-get update && apt-get install -y \
     udev \
     dos2unix \
     openssh-client \
+    xauth \
+    x11-utils \
     # Build tools
     build-essential \
     cmake \

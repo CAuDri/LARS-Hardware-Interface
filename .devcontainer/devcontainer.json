@@ -31,20 +31,28 @@
             ]
         }
     },
-    // For a Ubuntu/Linux host, replace "type=volume" with "type=bind" to mount the local folder directly into the container
-    // On Windows systems, this will significantly impact file system performance
+    // Use with Linux hosts
+    // "workspaceMount": "source=${localWorkspaceFolder},target=/hardware_interface,type=bind",  
+
+    // Use with Windows hosts
     "workspaceMount": "source=${localWorkspaceFolderBasename},target=/hardware_interface,type=volume",
+    
     "workspaceFolder": "/hardware_interface",
+
     // Mounting the /dev directory will allow the devcontainer to access all host devices (e.g. serial ports)
     // Comment out the following line if you encounter issues with other devices on your host system
     "mounts": [
-        "source=/dev,target=/dev,type=bind"
+        "source=/dev,target=/dev,type=bind",
+        // Forward X11 authentication for Linux hosts
+        "source=${localEnv:XAUTHORITY:/dev/null},target=/tmp/host.Xauthority,type=bind,readonly"
     ],
+    "remoteEnv": {
+        "CUBEMX_HOST_DISPLAY": "${localEnv:DISPLAY}"
+    },
     "runArgs": [
         "--privileged",
         "--hostname=hardware-interface-dev"
     ],
-    // Optional Lichtblick HTTP server and ROS WebSocket bridge run in this container.
     "forwardPorts": [
         8080,
         8765
@@ -67,6 +75,6 @@
         }
     },
     // When a volume mount is used, the repository will be cloned into the container
-    // Local changes will not be reflected in the container repository!!
+    // Local changes will not be reflected in the container repository!
     "postCreateCommand": "if [ ! -d /hardware_interface/.git ]; then git clone --recurse-submodules https://github.com/CAuDri/LARS-Hardware-Interface.git /hardware_interface; else echo 'Repository has already been cloned'; fi"
 }
